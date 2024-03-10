@@ -5,5 +5,7 @@
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
-  "solidity.formatter": "forge"
+  "solidity.formatter": "forge",
+  "solidity.compileUsingLocalVersion": "/Users/adachi_tomoki/futaba/miki-test/soljson-v0.8.23+commit.f704f362.js",
+  "solidity.compileUsingRemoteVersion": "v0.8.23+commit.f704f362"
 }
