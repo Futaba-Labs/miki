@@ -5,7 +5,8 @@ import { Script } from "forge-std/src/Script.sol";
 
 abstract contract BaseScript is Script {
     /// @dev Included to enable compilation of the script without a $MNEMONIC environment variable.
-    string internal constant TEST_MNEMONIC = "test test test test test test test test test test test junk";
+    string internal constant TEST_MNEMONIC =
+        "kangaroo inflict strike elevator want cry hurdle friend hedgehog appear battle prison";
 
     /// @dev Needed for the deterministic deployments.
     bytes32 internal constant ZERO_SALT = bytes32(0);

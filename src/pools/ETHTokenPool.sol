@@ -117,7 +117,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
 
         _beforeBridge(dstChainId, fee, amount, bytes(""), bridgeAdapter);
 
-        bridgeAdapter.execCrossChainTransferAsset{ value: fee }(
+        bridgeAdapter.execCrossChainTransferAsset{ value: amount }(
             dstChainId, recipient, underlyingToken, fee, amount, params
         );
         IL2AssetManager(l2AssetManager).removeDeposits(address(this), msg.sender, fee + amount);
@@ -150,6 +150,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
 
     function addBatches(address user, uint256 amount) external onlyL2AssetManager {
         batches.push(BatchInfo(user, amount));
+        emit AddBatch(user, amount);
     }
 
     /* ----------------------------- Internal Functions -------------------------------- */

@@ -93,6 +93,9 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
 
     function test_NotSupportedChain() external {
         bytes4 selector = bytes4(keccak256("NotSupportedChain()"));
+        console2.logBytes4(bytes4(keccak256("DisabledRoute()")));
+        console2.logBytes4(bytes4(keccak256("InvalidQuoteTimestamp()")));
+        console2.logBytes4(bytes4(keccak256("InvalidFillDeadline()")));
         vm.expectRevert(selector);
         ethTokenPool.crossChainContractCall(2, address(this), "", 0, bytes(""));
     }

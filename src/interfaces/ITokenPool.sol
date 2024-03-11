@@ -9,6 +9,7 @@ interface ITokenPool {
     );
     event CrossChainTransferAsset(address sender, uint256 dstChainId, address recipient, uint256 amount);
     event SetBridgeAdapter(uint256 dstChainId, address bridgeAdapter);
+    event AddBatch(address user, uint256 amount);
     /* ----------------------------- Erorrs -------------------------------- */
 
     error OnlyL2AssetManager();
