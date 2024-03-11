@@ -8,16 +8,12 @@ import { console2 } from "forge-std/src/console2.sol";
 import { StdCheats } from "forge-std/src/StdCheats.sol";
 import { L2AssetManager } from "../src/L2AssetManager.sol";
 import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
-import { ITokenPool } from "../src/interfaces/ITokenPool.sol";
 
 contract L2AssetManagerTest is PRBTest, StdCheats {
     address public owner;
     ProxyAdmin public mikiProxyAdmin;
     L2AssetManager public l2AssetManager;
     ETHTokenPool public ethTokenPool;
-
-    // bytes32 privateKey = 0x1234567812345678123456781234567812345678123456781234567812345678;
-    // address account = cheats.addr(uint256(privateKey));
 
     /// @dev A function invoked before each test case is run.
     function setUp() public virtual {
@@ -51,6 +47,10 @@ contract L2AssetManagerTest is PRBTest, StdCheats {
         assertEq(ethTokenPool.totalAmount(), 1 ether);
         uint256 balance = l2AssetManager.getDeposit(address(ethTokenPool), address(this));
         assertEq(balance, 1 ether);
+        ETHTokenPool.BatchInfo[] memory batches = ethTokenPool.getBatches();
+        assertEq(batches.length, 1);
+        assertEq(batches[0].user, address(this));
+        assertEq(batches[0].amount, 1 ether);
     }
 
     function test_DepositETHInsufficientAmount() external {

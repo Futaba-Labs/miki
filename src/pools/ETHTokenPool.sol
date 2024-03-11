@@ -116,6 +116,10 @@ contract ETHTokenPool is ITokenPool, Ownable {
         return totalAmount;
     }
 
+    function getBatches() external view returns (BatchInfo[] memory) {
+        return batches;
+    }
+
     function setBridgeAdapter(uint256 dstChainId, address bridgeAdapter) external onlyOwner {
         if (bridgeAdapter == address(0)) {
             revert ZeroAddress();
