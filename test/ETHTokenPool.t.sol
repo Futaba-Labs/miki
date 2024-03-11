@@ -13,6 +13,7 @@ import { BridgeAdapterMock } from "./mock/BridgeAdapterMock.sol";
 contract ETHTokenPoolTest is PRBTest, StdCheats {
     bytes4 private constant SELECTOR = bytes4(keccak256("mint(uint256, address)"));
     address public owner;
+    address public underlyingToken;
     ProxyAdmin public mikiProxyAdmin;
     L2AssetManager public l2AssetManager;
     ETHTokenPool public ethTokenPool;
@@ -23,6 +24,7 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
     function setUp() public virtual {
         // Instantiate the contract-under-test.
         owner = msg.sender;
+        underlyingToken = address(this);
         mikiProxyAdmin = new ProxyAdmin(owner);
         L2AssetManager l2AssetManagerImplementation = new L2AssetManager();
         l2AssetManager = L2AssetManager(
@@ -34,7 +36,7 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
                 )
             )
         );
-        ethTokenPool = new ETHTokenPool(owner, address(l2AssetManager), owner);
+        ethTokenPool = new ETHTokenPool(owner, address(l2AssetManager), owner, underlyingToken);
 
         // Set the native token pool.
         vm.prank(owner);
@@ -54,7 +56,8 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
         address recipient = address(this);
         bytes memory data = abi.encodeWithSelector(SELECTOR, 1 ether, address(this));
         uint256 fee = 0.01 ether;
-        ethTokenPool.crossChainContractCall(dstChainId, recipient, data, fee);
+        bytes memory params = bytes("");
+        ethTokenPool.crossChainContractCall(dstChainId, recipient, data, fee, params);
         uint256 balance = l2AssetManager.getDeposit(address(ethTokenPool), address(this));
         assertEq(balance, 1 ether - fee);
     }
@@ -66,7 +69,8 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
         bytes memory data = abi.encodeWithSelector(SELECTOR, 1 ether, address(this));
         uint256 fee = 0.01 ether;
         uint256 amount = 0.5 ether;
-        ethTokenPool.crossChainContractCallWithAsset(dstChainId, recipient, data, fee, amount);
+        bytes memory params = bytes("");
+        ethTokenPool.crossChainContractCallWithAsset(dstChainId, recipient, data, fee, amount, params);
         uint256 balance = l2AssetManager.getDeposit(address(ethTokenPool), address(this));
         assertEq(balance, 1 ether - fee - amount);
     }
@@ -77,7 +81,8 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
         address recipient = address(this);
         uint256 fee = 0.01 ether;
         uint256 amount = 0.5 ether;
-        ethTokenPool.crossChainTransferAsset(dstChainId, recipient, fee, amount);
+        bytes memory params = bytes("");
+        ethTokenPool.crossChainTransferAsset(dstChainId, recipient, fee, amount, params);
         uint256 balance = l2AssetManager.getDeposit(address(ethTokenPool), address(this));
         assertEq(balance, 1 ether - fee - amount);
     }
@@ -89,13 +94,21 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
     function test_NotSupportedChain() external {
         bytes4 selector = bytes4(keccak256("NotSupportedChain()"));
         vm.expectRevert(selector);
-        ethTokenPool.crossChainContractCall(2, address(this), "", 0);
+        ethTokenPool.crossChainContractCall(2, address(this), "", 0, bytes(""));
+    }
+
+    function test_InsufficientAmount() external {
+        _deposit();
+        bytes4 selector = bytes4(keccak256("InsufficientAmount()"));
+        vm.expectRevert(selector);
+        ethTokenPool.crossChainTransferAsset(1, address(this), 0.01 ether, 1 ether, bytes(""));
     }
 
     function test_InsufficientFee() external {
+        _deposit();
         bytes4 selector = bytes4(keccak256("InsufficientFee()"));
         vm.expectRevert(selector);
-        ethTokenPool.crossChainContractCall(1, address(this), "", 5000);
+        ethTokenPool.crossChainContractCall(1, address(this), "", 5000, bytes(""));
     }
 
     function test_DepositOnlyL2AssetManager() external {

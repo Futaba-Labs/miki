@@ -11,6 +11,7 @@ import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
 
 contract L2AssetManagerTest is PRBTest, StdCheats {
     address public owner;
+    address public underlyingToken;
     ProxyAdmin public mikiProxyAdmin;
     L2AssetManager public l2AssetManager;
     ETHTokenPool public ethTokenPool;
@@ -19,6 +20,7 @@ contract L2AssetManagerTest is PRBTest, StdCheats {
     function setUp() public virtual {
         // Instantiate the contract-under-test.
         owner = msg.sender;
+        underlyingToken = address(this);
         mikiProxyAdmin = new ProxyAdmin(owner);
         L2AssetManager l2AssetManagerImplementation = new L2AssetManager();
         l2AssetManager = L2AssetManager(
@@ -30,7 +32,7 @@ contract L2AssetManagerTest is PRBTest, StdCheats {
                 )
             )
         );
-        ethTokenPool = new ETHTokenPool(owner, address(l2AssetManager), owner);
+        ethTokenPool = new ETHTokenPool(owner, address(l2AssetManager), owner, underlyingToken);
 
         // Set the native token pool.
         vm.prank(owner);

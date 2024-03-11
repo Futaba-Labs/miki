@@ -8,7 +8,8 @@ contract BridgeAdapterMock is IL2BridgeAdapter {
         uint256 dstChainId,
         address recipient,
         bytes calldata message,
-        uint256 fee
+        uint256 fee,
+        bytes calldata params
     )
         external
         payable
@@ -17,9 +18,11 @@ contract BridgeAdapterMock is IL2BridgeAdapter {
     function execCrossChainContractCallWithAsset(
         uint256 dstChainId,
         address recipient,
+        address asset,
         bytes calldata message,
         uint256 fee,
-        uint256 amount
+        uint256 amount,
+        bytes calldata params
     )
         external
         payable
@@ -28,8 +31,10 @@ contract BridgeAdapterMock is IL2BridgeAdapter {
     function execCrossChainTransferAsset(
         uint256 dstChainId,
         address recipient,
+        address asset,
         uint256 fee,
-        uint256 amount
+        uint256 amount,
+        bytes calldata params
     )
         external
         payable

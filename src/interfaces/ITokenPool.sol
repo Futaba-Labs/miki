@@ -26,7 +26,8 @@ interface ITokenPool {
         uint256 dstChainId,
         address recipient,
         bytes calldata data,
-        uint256 fee
+        uint256 fee,
+        bytes calldata params
     )
         external
         payable;
@@ -35,7 +36,8 @@ interface ITokenPool {
         address recipient,
         bytes calldata data,
         uint256 fee,
-        uint256 amount
+        uint256 amount,
+        bytes calldata params
     )
         external
         payable;
@@ -43,11 +45,12 @@ interface ITokenPool {
         uint256 dstChainId,
         address recipient,
         uint256 fee,
-        uint256 amount
+        uint256 amount,
+        bytes calldata params
     )
         external
         payable;
-    function crossChainContractCallWithAssetToL1(uint256 fee) external payable;
+    function crossChainContractCallWithAssetToL1(uint256 fee, bytes calldata params) external payable;
     function getTotalAmount() external view returns (uint256);
     function setBridgeAdapter(uint256 dstChainId, address bridgeAdapter) external;
     function getBridgeAdapter(uint256 dstChainId) external view returns (address);

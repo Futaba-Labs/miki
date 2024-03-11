@@ -11,6 +11,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
     address public immutable l2AssetManager;
     address public immutable operator;
     uint256 public totalAmount;
+    address public underlyingToken;
     mapping(uint256 dstChainId => address bridgeAdapter) public bridgeAdapters;
     BatchInfo[] public batches;
 
@@ -21,9 +22,17 @@ contract ETHTokenPool is ITokenPool, Ownable {
     }
 
     /* ----------------------------- Constructor -------------------------------- */
-    constructor(address _initialOwner, address _l2AssetManager, address _operator) Ownable(_initialOwner) {
+    constructor(
+        address _initialOwner,
+        address _l2AssetManager,
+        address _underlyingToken,
+        address _operator
+    )
+        Ownable(_initialOwner)
+    {
         l2AssetManager = _l2AssetManager;
         operator = _operator;
+        underlyingToken = _underlyingToken;
     }
 
     /* ----------------------------- Modifier -------------------------------- */
@@ -56,16 +65,17 @@ contract ETHTokenPool is ITokenPool, Ownable {
         uint256 dstChainId,
         address recipient,
         bytes calldata data,
-        uint256 fee
+        uint256 fee,
+        bytes calldata params
     )
         external
         payable
     {
         IL2BridgeAdapter bridgeAdapter = IL2BridgeAdapter(bridgeAdapters[dstChainId]);
 
-        _beforeBridge(dstChainId, fee, data, bridgeAdapter);
+        _beforeBridge(dstChainId, fee, 0, data, bridgeAdapter);
 
-        bridgeAdapter.execCrossChainContractCall{ value: fee }(dstChainId, recipient, data, fee);
+        bridgeAdapter.execCrossChainContractCall{ value: fee }(dstChainId, recipient, data, fee, params);
         IL2AssetManager(l2AssetManager).removeDeposits(address(this), msg.sender, fee);
 
         emit CrossChainContractCall(msg.sender, dstChainId, recipient, data, fee);
@@ -76,16 +86,19 @@ contract ETHTokenPool is ITokenPool, Ownable {
         address recipient,
         bytes calldata data,
         uint256 fee,
-        uint256 amount
+        uint256 amount,
+        bytes calldata params
     )
         external
         payable
     {
         IL2BridgeAdapter bridgeAdapter = IL2BridgeAdapter(bridgeAdapters[dstChainId]);
 
-        _beforeBridge(dstChainId, fee, data, bridgeAdapter);
+        _beforeBridge(dstChainId, fee, amount, data, bridgeAdapter);
 
-        bridgeAdapter.execCrossChainContractCallWithAsset{ value: fee }(dstChainId, recipient, data, fee, amount);
+        bridgeAdapter.execCrossChainContractCallWithAsset{ value: fee }(
+            dstChainId, recipient, underlyingToken, data, fee, amount, params
+        );
         IL2AssetManager(l2AssetManager).removeDeposits(address(this), msg.sender, fee + amount);
         emit CrossChainContractCallWithAsset(msg.sender, dstChainId, recipient, data, fee, amount);
     }
@@ -94,21 +107,24 @@ contract ETHTokenPool is ITokenPool, Ownable {
         uint256 dstChainId,
         address recipient,
         uint256 fee,
-        uint256 amount
+        uint256 amount,
+        bytes calldata params
     )
         external
         payable
     {
         IL2BridgeAdapter bridgeAdapter = IL2BridgeAdapter(bridgeAdapters[dstChainId]);
 
-        _beforeBridge(dstChainId, fee, bytes(""), bridgeAdapter);
+        _beforeBridge(dstChainId, fee, amount, bytes(""), bridgeAdapter);
 
-        bridgeAdapter.execCrossChainTransferAsset{ value: fee }(dstChainId, recipient, fee, amount);
+        bridgeAdapter.execCrossChainTransferAsset{ value: fee }(
+            dstChainId, recipient, underlyingToken, fee, amount, params
+        );
         IL2AssetManager(l2AssetManager).removeDeposits(address(this), msg.sender, fee + amount);
         emit CrossChainTransferAsset(msg.sender, dstChainId, recipient, amount);
     }
 
-    function crossChainContractCallWithAssetToL1(uint256 fee) external payable onlyOperator {
+    function crossChainContractCallWithAssetToL1(uint256 fee, bytes calldata params) external payable onlyOperator {
         // TODO: Call the cross chain contract
     }
 
@@ -140,6 +156,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
     function _beforeBridge(
         uint256 dstChainId,
         uint256 fee,
+        uint256 amount,
         bytes memory data,
         IL2BridgeAdapter bridgeAdapter
     )
@@ -148,6 +165,11 @@ contract ETHTokenPool is ITokenPool, Ownable {
     {
         if (bridgeAdapters[dstChainId] == address(0)) {
             revert NotSupportedChain();
+        }
+
+        uint256 balance = IL2AssetManager(l2AssetManager).getDeposit(address(this), msg.sender);
+        if (balance < fee + amount) {
+            revert InsufficientAmount();
         }
 
         uint256 estimatedFee = bridgeAdapter.estimateFee(dstChainId, data);

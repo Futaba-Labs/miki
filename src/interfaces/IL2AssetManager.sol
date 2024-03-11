@@ -34,6 +34,7 @@ interface IL2AssetManager {
     function removeDeposits(address tokenPool, address user, uint256 amount) external;
     function setTokenPoolWhitelists(address[] calldata tokenPools, bool[] calldata isWhitelisted) external;
     function getTokenPoolWhitelist(address tokenPool) external view returns (bool);
+    function getDeposit(address tokenPool, address user) external view returns (uint256);
     function getDeposits(address user) external view returns (address[] memory, uint256[] memory);
     function setNativeTokenPool(address tokenPool) external;
     function getNativeTokenPool() external view returns (address);
