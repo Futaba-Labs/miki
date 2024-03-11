@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.23;
 
+import { ITokenPool } from "./interfaces/ITokenPool.sol";
 import { L2AssetManagerStorage } from "./L2AssetManagerStorage.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
 contract L2AssetManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable, L2AssetManagerStorage {
+    using SafeERC20 for IERC20;
     /* ----------------------------- Modifier -------------------------------- */
+
     modifier onlyWhitelistedTokenPool() {
         _checkTokenPoolIsWhitelisted(msg.sender);
         _;
@@ -23,19 +28,37 @@ contract L2AssetManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         __ReentrancyGuard_init();
     }
 
-    function deposit(address tokenPool, uint256 amount) external {
-        // TODO: Implement deposit
+    function deposit(address token, address tokenPool, uint256 amount) external nonReentrant {
+        _checkTokenPoolIsWhitelisted(tokenPool);
+        IERC20(token).safeTransferFrom(msg.sender, address(tokenPool), amount);
+        ITokenPool(tokenPool).deposit(amount);
+        ITokenPool(tokenPool).addBatches(msg.sender, amount);
+        _addDeposits(tokenPool, msg.sender, amount);
     }
 
-    function depositETH(uint256 amount) external {
-        // TODO: Implement depositETH
+    function depositETH(uint256 amount) external payable {
+        ITokenPool(nativeTokenPool).deposit{ value: amount }(amount);
+        ITokenPool(nativeTokenPool).addBatches(msg.sender, amount);
+        _addDeposits(nativeTokenPool, msg.sender, amount);
     }
 
-    function withdraw(address token, uint256 amount, address recipient) external {
-        // TODO: Implement withdraw
+    function withdraw(address tokenPool, uint256 amount, address recipient) external {
+        _checkTokenPoolIsWhitelisted(tokenPool);
+        ITokenPool(tokenPool).withdraw(recipient, amount);
+        _removeDeposits(tokenPool, msg.sender, amount);
     }
+
     function withdrawETH(uint256 amount, address recipient) external {
-        // TODO: Implement withdrawETH
+        ITokenPool(nativeTokenPool).withdraw(recipient, amount);
+        _removeDeposits(nativeTokenPool, msg.sender, amount);
+    }
+
+    function addDeposits(address tokenPool, address user, uint256 amount) external onlyWhitelistedTokenPool {
+        _addDeposits(tokenPool, user, amount);
+    }
+
+    function removeDeposits(address tokenPool, address user, uint256 amount) external onlyWhitelistedTokenPool {
+        _removeDeposits(tokenPool, user, amount);
     }
 
     /**
@@ -43,7 +66,7 @@ contract L2AssetManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * @param tokenPools The token pool addresses
      * @param isWhitelisted The whitelist status
      */
-    function setTokenPoolWhitelists(address[] calldata tokenPools, bool[] calldata isWhitelisted) external {
+    function setTokenPoolWhitelists(address[] calldata tokenPools, bool[] calldata isWhitelisted) external onlyOwner {
         uint256 length = tokenPools.length;
         if (length != isWhitelisted.length) revert ArrayLengthMismatch();
 
@@ -65,6 +88,45 @@ contract L2AssetManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         return tokenPoolisWhitelisted[tokenPool];
     }
 
+    /**
+     * @notice Set the native token pool
+     * @param tokenPool The token pool address
+     */
+    function setNativeTokenPool(address tokenPool) external onlyOwner {
+        nativeTokenPool = tokenPool;
+        tokenPoolisWhitelisted[tokenPool] = true;
+    }
+
+    /**
+     * @notice Get the native token pool
+     * @return The native token pool address
+     */
+    function getNativeTokenPool() external view returns (address) {
+        return nativeTokenPool;
+    }
+
+    function getDeposit(address tokenPool, address user) external view returns (uint256) {
+        return balances[tokenPool][user];
+    }
+
+    /**
+     * @notice Get the deposits for the user
+     * @param user The user address
+     * @return The token pool addresses and the amounts
+     */
+    function getDeposits(address user) external view returns (address[] memory, uint256[] memory) {
+        uint256 length = userTokenPools[user].length;
+        uint256[] memory amounts = new uint256[](length);
+
+        for (uint256 i; i < length;) {
+            amounts[i] = balances[userTokenPools[user][i]][user];
+            unchecked {
+                ++i;
+            }
+        }
+
+        return (userTokenPools[user], amounts);
+    }
     /* ----------------------------- Internal Functions -------------------------------- */
 
     /**
@@ -72,8 +134,10 @@ contract L2AssetManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * @param user The user address
      * @param amount The amount to add
      */
-    function _addDeposits(address user, uint256 amount) external {
-        address tokenPool = msg.sender;
+    function _addDeposits(address tokenPool, address user, uint256 amount) internal {
+        if (balances[tokenPool][user] == 0) {
+            userTokenPools[user].push(tokenPool);
+        }
         balances[tokenPool][user] += amount;
         emit AddDeposits(tokenPool, user, amount);
     }
@@ -83,10 +147,18 @@ contract L2AssetManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
      * @param user The user address
      * @param amount The amount to remove
      */
-    function _removeDeposits(address user, uint256 amount) external {
-        address tokenPool = msg.sender;
+    function _removeDeposits(address tokenPool, address user, uint256 amount) internal {
         uint256 currentBalance = balances[tokenPool][user];
         if (currentBalance < amount) revert AmountLessThanZero();
+        if (currentBalance == amount) {
+            for (uint256 i; i < userTokenPools[user].length; i++) {
+                if (userTokenPools[user][i] == tokenPool) {
+                    userTokenPools[user][i] = userTokenPools[user][userTokenPools[user].length - 1];
+                    userTokenPools[user].pop();
+                    break;
+                }
+            }
+        }
         balances[tokenPool][user] -= amount;
         emit RemoveDeposits(tokenPool, user, amount);
     }

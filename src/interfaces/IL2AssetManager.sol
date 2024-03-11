@@ -26,10 +26,15 @@ interface IL2AssetManager {
 
     /* ----------------------------- Functions -------------------------------- */
 
-    function deposit(address token, uint256 amount) external;
-    function depositETH(uint256 amount) external;
+    function deposit(address token, address tokenPool, uint256 amount) external;
+    function depositETH(uint256 amount) external payable;
     function withdraw(address token, uint256 amount, address recipient) external;
     function withdrawETH(uint256 amount, address recipient) external;
+    function addDeposits(address tokenPool, address user, uint256 amount) external;
+    function removeDeposits(address tokenPool, address user, uint256 amount) external;
     function setTokenPoolWhitelists(address[] calldata tokenPools, bool[] calldata isWhitelisted) external;
     function getTokenPoolWhitelist(address tokenPool) external view returns (bool);
+    function getDeposits(address user) external view returns (address[] memory, uint256[] memory);
+    function setNativeTokenPool(address tokenPool) external;
+    function getNativeTokenPool() external view returns (address);
 }

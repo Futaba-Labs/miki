@@ -17,9 +17,10 @@ interface ITokenPool {
     error NotSupportedChain();
     error InsufficientFee();
     error InvalidTransfer();
+    error InsufficientAmount();
     /* ----------------------------- Functions -------------------------------- */
 
-    function deposit(uint256 amount) external;
+    function deposit(uint256 amount) external payable;
     function withdraw(address user, uint256 amount) external;
     function crossChainContractCall(
         uint256 dstChainId,
@@ -50,4 +51,5 @@ interface ITokenPool {
     function getTotalAmount() external view returns (uint256);
     function setBridgeAdapter(uint256 dstChainId, address bridgeAdapter) external;
     function getBridgeAdapter(uint256 dstChainId) external view returns (address);
+    function addBatches(address user, uint256 amount) external;
 }

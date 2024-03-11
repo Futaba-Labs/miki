@@ -3,6 +3,7 @@ pragma solidity 0.8.23;
 
 import { ITokenPool } from "../interfaces/ITokenPool.sol";
 import { IL2BridgeAdapter } from "../interfaces/IL2BridgeAdapter.sol";
+import { IL2AssetManager } from "../interfaces/IL2AssetManager.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ETHTokenPool is ITokenPool, Ownable {
@@ -39,12 +40,13 @@ contract ETHTokenPool is ITokenPool, Ownable {
 
     /* ----------------------------- External Functions -------------------------------- */
 
-    function deposit(uint256 amount) external onlyL2AssetManager {
-        // TODO: Add deposits to the user
+    function deposit(uint256 amount) external payable onlyL2AssetManager {
+        if (msg.value <= 0) revert InsufficientAmount();
         totalAmount += amount;
     }
 
     function withdraw(address user, uint256 amount) external onlyL2AssetManager {
+        if (amount <= 0) revert InsufficientAmount();
         totalAmount -= amount;
         (bool success,) = payable(user).call{ value: amount }("");
         if (!success) revert InvalidTransfer();
@@ -64,6 +66,8 @@ contract ETHTokenPool is ITokenPool, Ownable {
         _beforeBridge(dstChainId, fee, data, bridgeAdapter);
 
         bridgeAdapter.execCrossChainContractCall{ value: fee }(dstChainId, recipient, data, fee);
+        IL2AssetManager(l2AssetManager).removeDeposits(address(this), msg.sender, fee);
+
         emit CrossChainContractCall(msg.sender, dstChainId, recipient, data, fee);
     }
 
@@ -82,6 +86,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
         _beforeBridge(dstChainId, fee, data, bridgeAdapter);
 
         bridgeAdapter.execCrossChainContractCallWithAsset{ value: fee }(dstChainId, recipient, data, fee, amount);
+        IL2AssetManager(l2AssetManager).removeDeposits(address(this), msg.sender, fee + amount);
         emit CrossChainContractCallWithAsset(msg.sender, dstChainId, recipient, data, fee, amount);
     }
 
@@ -99,6 +104,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
         _beforeBridge(dstChainId, fee, bytes(""), bridgeAdapter);
 
         bridgeAdapter.execCrossChainTransferAsset{ value: fee }(dstChainId, recipient, fee, amount);
+        IL2AssetManager(l2AssetManager).removeDeposits(address(this), msg.sender, fee + amount);
         emit CrossChainTransferAsset(msg.sender, dstChainId, recipient, amount);
     }
 
@@ -120,6 +126,10 @@ contract ETHTokenPool is ITokenPool, Ownable {
 
     function getBridgeAdapter(uint256 dstChainId) external view returns (address) {
         return bridgeAdapters[dstChainId];
+    }
+
+    function addBatches(address user, uint256 amount) external onlyL2AssetManager {
+        batches.push(BatchInfo(user, amount));
     }
 
     /* ----------------------------- Internal Functions -------------------------------- */
