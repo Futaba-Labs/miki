@@ -73,7 +73,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
     {
         IL2BridgeAdapter bridgeAdapter = IL2BridgeAdapter(bridgeAdapters[dstChainId]);
 
-        _beforeBridge(dstChainId, fee, 0, data, bridgeAdapter);
+        _beforeBridge(dstChainId, fee, 0, data, bridgeAdapter, params);
 
         bridgeAdapter.execCrossChainContractCall{ value: fee }(dstChainId, recipient, data, fee, params);
         IL2AssetManager(l2AssetManager).removeDeposits(address(this), msg.sender, fee);
@@ -94,9 +94,9 @@ contract ETHTokenPool is ITokenPool, Ownable {
     {
         IL2BridgeAdapter bridgeAdapter = IL2BridgeAdapter(bridgeAdapters[dstChainId]);
 
-        _beforeBridge(dstChainId, fee, amount, data, bridgeAdapter);
+        _beforeBridge(dstChainId, fee, amount, data, bridgeAdapter, params);
 
-        bridgeAdapter.execCrossChainContractCallWithAsset{ value: fee }(
+        bridgeAdapter.execCrossChainContractCallWithAsset{ value: fee + amount }(
             dstChainId, recipient, underlyingToken, data, fee, amount, params
         );
         IL2AssetManager(l2AssetManager).removeDeposits(address(this), msg.sender, fee + amount);
@@ -115,9 +115,9 @@ contract ETHTokenPool is ITokenPool, Ownable {
     {
         IL2BridgeAdapter bridgeAdapter = IL2BridgeAdapter(bridgeAdapters[dstChainId]);
 
-        _beforeBridge(dstChainId, fee, amount, bytes(""), bridgeAdapter);
+        _beforeBridge(dstChainId, fee, amount, bytes(""), bridgeAdapter, params);
 
-        bridgeAdapter.execCrossChainTransferAsset{ value: amount }(
+        bridgeAdapter.execCrossChainTransferAsset{ value: amount + fee }(
             dstChainId, recipient, underlyingToken, fee, amount, params
         );
         IL2AssetManager(l2AssetManager).removeDeposits(address(this), msg.sender, fee + amount);
@@ -159,7 +159,8 @@ contract ETHTokenPool is ITokenPool, Ownable {
         uint256 fee,
         uint256 amount,
         bytes memory data,
-        IL2BridgeAdapter bridgeAdapter
+        IL2BridgeAdapter bridgeAdapter,
+        bytes memory params
     )
         internal
         view
@@ -173,7 +174,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
             revert InsufficientAmount();
         }
 
-        uint256 estimatedFee = bridgeAdapter.estimateFee(dstChainId, data);
+        uint256 estimatedFee = bridgeAdapter.estimateFee(dstChainId, data, params);
         if (fee < estimatedFee) {
             revert InsufficientFee();
         }

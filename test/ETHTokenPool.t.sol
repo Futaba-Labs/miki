@@ -9,15 +9,20 @@ import { StdCheats } from "forge-std/src/StdCheats.sol";
 import { L2AssetManager } from "../src/L2AssetManager.sol";
 import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
 import { BridgeAdapterMock } from "./mock/BridgeAdapterMock.sol";
+import { BridgeReceiverMock } from "./mock/BridgeReceiverMock.sol";
+import { HelloWorld } from "../src/examples/HelloWorld.sol";
 
 contract ETHTokenPoolTest is PRBTest, StdCheats {
-    bytes4 private constant SELECTOR = bytes4(keccak256("mint(uint256, address)"));
+    bytes4 private constant SELECTOR = bytes4(keccak256("greet(string)"));
+    bytes private ENCODED_SELECTOR = abi.encodeWithSelector(SELECTOR, "Hello, world!");
     address public owner;
     address public underlyingToken;
     ProxyAdmin public mikiProxyAdmin;
     L2AssetManager public l2AssetManager;
     ETHTokenPool public ethTokenPool;
     BridgeAdapterMock public bridgeAdapterMock;
+    BridgeReceiverMock public bridgeReceiverMock;
+    HelloWorld public helloWorld;
 
     /// @dev A function invoked before each test case is run.
 
@@ -48,16 +53,21 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
         // Set the bridge adapter.
         vm.prank(owner);
         ethTokenPool.setBridgeAdapter(1, address(bridgeAdapterMock));
+
+        // Instantiate the BridgeReceiverMock.
+        bridgeReceiverMock = new BridgeReceiverMock();
+
+        // Instantiate the HelloWorld contract.
+        helloWorld = new HelloWorld();
     }
 
     function test_CrossChainContractCall() external {
         _deposit();
         uint256 dstChainId = 1;
         address recipient = address(this);
-        bytes memory data = abi.encodeWithSelector(SELECTOR, 1 ether, address(this));
         uint256 fee = 0.01 ether;
         bytes memory params = bytes("");
-        ethTokenPool.crossChainContractCall(dstChainId, recipient, data, fee, params);
+        ethTokenPool.crossChainContractCall(dstChainId, recipient, ENCODED_SELECTOR, fee, params);
         uint256 balance = l2AssetManager.getDeposit(address(ethTokenPool), address(this));
         assertEq(balance, 1 ether - fee);
     }
@@ -65,14 +75,18 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
     function test_CrossChainContractCallWithAsset() external {
         _deposit();
         uint256 dstChainId = 1;
-        address recipient = address(this);
-        bytes memory data = abi.encodeWithSelector(SELECTOR, 1 ether, address(this));
+        address recipient = address(helloWorld);
         uint256 fee = 0.01 ether;
         uint256 amount = 0.5 ether;
         bytes memory params = bytes("");
-        ethTokenPool.crossChainContractCallWithAsset(dstChainId, recipient, data, fee, amount, params);
+        ethTokenPool.crossChainContractCallWithAsset(dstChainId, recipient, ENCODED_SELECTOR, fee, amount, params);
         uint256 balance = l2AssetManager.getDeposit(address(ethTokenPool), address(this));
         assertEq(balance, 1 ether - fee - amount);
+
+        // receive the msg and asset
+        bytes memory payload = abi.encode(recipient, true, ENCODED_SELECTOR);
+        address(bridgeReceiverMock).call{ value: amount }("");
+        bridgeReceiverMock.receiveMsgWithAmount(1, address(this), underlyingToken, amount, payload);
     }
 
     function test_CrossChainTransferAsset() external {

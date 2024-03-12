@@ -40,7 +40,15 @@ contract BridgeAdapterMock is IL2BridgeAdapter {
         payable
     { }
 
-    function estimateFee(uint256 dstChainId, bytes calldata message) external view returns (uint256) {
+    function estimateFee(
+        uint256 dstChainId,
+        bytes calldata messag,
+        bytes calldata params
+    )
+        external
+        view
+        returns (uint256)
+    {
         return 10_000;
     }
 }

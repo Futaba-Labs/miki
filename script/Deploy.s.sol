@@ -19,7 +19,6 @@ contract Deploy is BaseScript {
     ProxyAdmin public mikiProxyAdmin;
     L2AssetManager public l2AssetManager;
     ETHTokenPool public ethTokenPool;
-    L2BridgeAdapter public bridgeAdapter;
 
     function run() public broadcast {
         owner = broadcaster;
@@ -38,11 +37,5 @@ contract Deploy is BaseScript {
 
         // Set the native token pool.
         l2AssetManager.setNativeTokenPool(address(ethTokenPool));
-
-        // Instantiate the BridgeAdapterMock.
-        bridgeAdapter = new L2BridgeAdapter(spokePool);
-
-        // Set the bridge adapter.
-        ethTokenPool.setBridgeAdapter(dstCahinId, address(bridgeAdapter));
     }
 }

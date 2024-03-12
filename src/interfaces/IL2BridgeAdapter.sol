@@ -34,5 +34,12 @@ interface IL2BridgeAdapter {
         external
         payable;
 
-    function estimateFee(uint256 dstChainId, bytes calldata message) external view returns (uint256);
+    function estimateFee(
+        uint256 dstChainId,
+        bytes calldata message,
+        bytes calldata params
+    )
+        external
+        view
+        returns (uint256);
 }

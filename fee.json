@@ -1,1 +1,17 @@
-{"capitalFeePct":"100002000000000","capitalFeeTotal":"1000020000000","relayGasFeePct":"56741815742708100","relayGasFeeTotal":"567418157427081","relayFeePct":"57222710019447722","relayFeeTotal":"572227100194477","lpFeePct":"0","timestamp":"1710180000","isAmountTooLow":false,"quoteBlock":"19413498","spokePoolAddress":"0xe35e9842fceaCA96570B734083f4a58e8F7C5f2A","totalRelayFee":{"pct":"57222710019447722","total":"572227100194477"},"relayerCapitalFee":{"pct":"100002000000000","total":"1000020000000"},"relayerGasFee":{"pct":"56741815742708100","total":"567418157427081"},"lpFee":{"pct":"380892276739622","total":"3808922767396"}}
+{
+  "capitalFeePct": "100002000000000",
+  "capitalFeeTotal": "1000020000000",
+  "relayGasFeePct": "56741815742708100",
+  "relayGasFeeTotal": "567418157427081",
+  "relayFeePct": "57222710019447722",
+  "relayFeeTotal": "572227100194477",
+  "lpFeePct": "0",
+  "timestamp": "1710180000",
+  "isAmountTooLow": false,
+  "quoteBlock": "19413498",
+  "spokePoolAddress": "0xe35e9842fceaCA96570B734083f4a58e8F7C5f2A",
+  "totalRelayFee": { "pct": "57222710019447722", "total": "572227100194477" },
+  "relayerCapitalFee": { "pct": "100002000000000", "total": "1000020000000" },
+  "relayerGasFee": { "pct": "56741815742708100", "total": "567418157427081" },
+  "lpFee": { "pct": "380892276739622", "total": "3808922767396" }
+}
