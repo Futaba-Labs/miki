@@ -101,40 +101,6 @@ contract ETHTokenPool is ITokenPool, Ownable {
         _crossChainTransferAsset(msg.sender, dstChainId, recipient, fee, amount, params);
     }
 
-    function crossChainContractCallRelay(
-        uint256 dstChainId,
-        address recipient,
-        bytes calldata data,
-        uint256 fee,
-        bytes calldata params
-    )
-        external
-        payable
-    { }
-
-    function crossChainContractCallWithAssetRelay(
-        uint256 dstChainId,
-        address recipient,
-        bytes calldata data,
-        uint256 fee,
-        uint256 amount,
-        bytes calldata params
-    )
-        external
-        payable
-    { }
-
-    function crossChainTransferAssetRelay(
-        uint256 dstChainId,
-        address recipient,
-        uint256 fee,
-        uint256 amount,
-        bytes calldata params
-    )
-        external
-        payable
-    { }
-
     function crossChainContractCallWithAssetToL1(uint256 fee, bytes calldata params) external payable onlyOperator {
         // TODO: Call the cross chain contract
     }
@@ -192,7 +158,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
         }
     }
 
-    function _afterBridge(address user, uint256 amount) internal {
+    function _removeDepoits(address user, uint256 amount) internal {
         IL2AssetManager(l2AssetManager).removeDeposits(address(this), user, amount);
     }
 
@@ -212,7 +178,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
 
         bridgeAdapter.execCrossChainContractCall{ value: fee }(user, dstChainId, recipient, data, fee, params);
 
-        _afterBridge(user, fee);
+        _removeDepoits(user, fee);
 
         emit CrossChainContractCall(user, dstChainId, recipient, data, fee);
     }
@@ -237,7 +203,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
             user, dstChainId, recipient, underlyingToken, data, fee, amount, params
         );
 
-        _afterBridge(user, total);
+        _removeDepoits(user, total);
         emit CrossChainContractCallWithAsset(user, dstChainId, recipient, data, fee, amount);
     }
 
@@ -261,7 +227,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
             user, dstChainId, recipient, underlyingToken, fee, amount, params
         );
 
-        _afterBridge(user, total);
+        _removeDepoits(user, total);
         emit CrossChainTransferAsset(user, dstChainId, recipient, amount);
     }
 

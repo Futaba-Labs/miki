@@ -3,3 +3,4 @@
 @prb/test/=node_modules/@prb/test/
 forge-std/=node_modules/forge-std/
 @axelar-network/axelar-gmp-sdk-solidity/=node_modules/@axelar-network/axelar-gmp-sdk-solidity/
+@gelatonetwork/relay-context/=node_modules/@gelatonetwork/relay-context/
