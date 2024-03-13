@@ -2,17 +2,18 @@
 pragma solidity 0.8.23;
 
 import { IStargateReceiver } from "../interfaces/IStargateReceiver.sol";
+import { ILayerZeroReceiver } from "../interfaces/ILayerZeroReceiver.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract LayerZeroReceiver is IStargateReceiver {
+contract LayerZeroReceiver is IStargateReceiver, ILayerZeroReceiver {
     using Address for address;
     /* ----------------------------- Storage -------------------------------- */
 
     address public immutable stargateRouter;
 
     /* ----------------------------- Events -------------------------------- */
-
+    event ExecutedFunctionCall(address sender, address receiver, bytes encodedSelector, bytes data);
     event ReceiveSuceess(uint16 _srcChainId, address _srcAddress, address _token, address _receiver, uint256 _amountLD);
     event FallbackReceived(address indexed sender, uint256 value, string message);
     event Received(address indexed sender, uint256 value, string message);
@@ -54,6 +55,10 @@ contract LayerZeroReceiver is IStargateReceiver {
         external
         override
     {
+        if (msg.sender != stargateRouter) {
+            revert InvalidRouter();
+        }
+
         (address receiver, bool isNative, bytes memory encodedSelector) = abi.decode(_payload, (address, bool, bytes));
 
         if (isNative) {
@@ -65,5 +70,23 @@ contract LayerZeroReceiver is IStargateReceiver {
             receiver.functionCall(encodedSelector);
             (encodedSelector);
         }
+    }
+
+    function lzReceive(
+        uint16 _srcChainId,
+        bytes calldata _srcAddress,
+        uint64 _nonce,
+        bytes calldata _payload
+    )
+        external
+    {
+        // Decode the payload
+        (address sender, address receiver, bytes memory encodedSelector) =
+            abi.decode(_payload, (address, address, bytes));
+
+        // Call the receiver
+        bytes memory data = receiver.functionCall(encodedSelector);
+
+        emit ExecutedFunctionCall(sender, receiver, encodedSelector, data);
     }
 }

@@ -3,6 +3,7 @@ pragma solidity 0.8.23;
 
 interface IL2BridgeAdapter {
     function execCrossChainContractCall(
+        address sender,
         uint256 dstChainId,
         address recipient,
         bytes calldata message,
@@ -13,6 +14,7 @@ interface IL2BridgeAdapter {
         payable;
 
     function execCrossChainContractCallWithAsset(
+        address sender,
         uint256 dstChainId,
         address recipient,
         address asset,
@@ -24,6 +26,7 @@ interface IL2BridgeAdapter {
         external
         payable;
     function execCrossChainTransferAsset(
+        address sender,
         uint256 dstChainId,
         address recipient,
         address asset,

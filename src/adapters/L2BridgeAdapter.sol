@@ -15,6 +15,7 @@ contract L2BridgeAdapter is IL2BridgeAdapter {
     }
 
     function execCrossChainContractCall(
+        address sender,
         uint256 dstChainId,
         address recipient,
         bytes calldata message,
@@ -28,6 +29,7 @@ contract L2BridgeAdapter is IL2BridgeAdapter {
     }
 
     function execCrossChainContractCallWithAsset(
+        address sender,
         uint256 dstChainId,
         address recipient,
         address asset,
@@ -60,6 +62,7 @@ contract L2BridgeAdapter is IL2BridgeAdapter {
     }
 
     function execCrossChainTransferAsset(
+        address sender,
         uint256 dstChainId,
         address recipient,
         address asset,

@@ -71,14 +71,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
         external
         payable
     {
-        IL2BridgeAdapter bridgeAdapter = IL2BridgeAdapter(bridgeAdapters[dstChainId]);
-
-        _beforeBridge(dstChainId, fee, 0, data, bridgeAdapter, params);
-
-        bridgeAdapter.execCrossChainContractCall{ value: fee }(dstChainId, recipient, data, fee, params);
-        IL2AssetManager(l2AssetManager).removeDeposits(address(this), msg.sender, fee);
-
-        emit CrossChainContractCall(msg.sender, dstChainId, recipient, data, fee);
+        _crossChainContractCall(msg.sender, dstChainId, recipient, data, fee, params);
     }
 
     function crossChainContractCallWithAsset(
@@ -92,15 +85,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
         external
         payable
     {
-        IL2BridgeAdapter bridgeAdapter = IL2BridgeAdapter(bridgeAdapters[dstChainId]);
-
-        _beforeBridge(dstChainId, fee, amount, data, bridgeAdapter, params);
-
-        bridgeAdapter.execCrossChainContractCallWithAsset{ value: fee + amount }(
-            dstChainId, recipient, underlyingToken, data, fee, amount, params
-        );
-        IL2AssetManager(l2AssetManager).removeDeposits(address(this), msg.sender, fee + amount);
-        emit CrossChainContractCallWithAsset(msg.sender, dstChainId, recipient, data, fee, amount);
+        _crossChainContractCallWithAsset(msg.sender, dstChainId, recipient, data, fee, amount, params);
     }
 
     function crossChainTransferAsset(
@@ -113,16 +98,42 @@ contract ETHTokenPool is ITokenPool, Ownable {
         external
         payable
     {
-        IL2BridgeAdapter bridgeAdapter = IL2BridgeAdapter(bridgeAdapters[dstChainId]);
-
-        _beforeBridge(dstChainId, fee, amount, bytes(""), bridgeAdapter, params);
-
-        bridgeAdapter.execCrossChainTransferAsset{ value: amount + fee }(
-            dstChainId, recipient, underlyingToken, fee, amount, params
-        );
-        IL2AssetManager(l2AssetManager).removeDeposits(address(this), msg.sender, fee + amount);
-        emit CrossChainTransferAsset(msg.sender, dstChainId, recipient, amount);
+        _crossChainTransferAsset(msg.sender, dstChainId, recipient, fee, amount, params);
     }
+
+    function crossChainContractCallRelay(
+        uint256 dstChainId,
+        address recipient,
+        bytes calldata data,
+        uint256 fee,
+        bytes calldata params
+    )
+        external
+        payable
+    { }
+
+    function crossChainContractCallWithAssetRelay(
+        uint256 dstChainId,
+        address recipient,
+        bytes calldata data,
+        uint256 fee,
+        uint256 amount,
+        bytes calldata params
+    )
+        external
+        payable
+    { }
+
+    function crossChainTransferAssetRelay(
+        uint256 dstChainId,
+        address recipient,
+        uint256 fee,
+        uint256 amount,
+        bytes calldata params
+    )
+        external
+        payable
+    { }
 
     function crossChainContractCallWithAssetToL1(uint256 fee, bytes calldata params) external payable onlyOperator {
         // TODO: Call the cross chain contract
@@ -155,6 +166,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
 
     /* ----------------------------- Internal Functions -------------------------------- */
     function _beforeBridge(
+        address user,
         uint256 dstChainId,
         uint256 fee,
         uint256 amount,
@@ -169,7 +181,7 @@ contract ETHTokenPool is ITokenPool, Ownable {
             revert NotSupportedChain();
         }
 
-        uint256 balance = IL2AssetManager(l2AssetManager).getDeposit(address(this), msg.sender);
+        uint256 balance = IL2AssetManager(l2AssetManager).getDeposit(address(this), user);
         if (balance < fee + amount) {
             revert InsufficientAmount();
         }
@@ -179,4 +191,81 @@ contract ETHTokenPool is ITokenPool, Ownable {
             revert InsufficientFee();
         }
     }
+
+    function _afterBridge(address user, uint256 amount) internal {
+        IL2AssetManager(l2AssetManager).removeDeposits(address(this), user, amount);
+    }
+
+    function _crossChainContractCall(
+        address user,
+        uint256 dstChainId,
+        address recipient,
+        bytes calldata data,
+        uint256 fee,
+        bytes calldata params
+    )
+        internal
+    {
+        IL2BridgeAdapter bridgeAdapter = IL2BridgeAdapter(bridgeAdapters[dstChainId]);
+
+        _beforeBridge(user, dstChainId, fee, 0, data, bridgeAdapter, params);
+
+        bridgeAdapter.execCrossChainContractCall{ value: fee }(user, dstChainId, recipient, data, fee, params);
+
+        _afterBridge(user, fee);
+
+        emit CrossChainContractCall(user, dstChainId, recipient, data, fee);
+    }
+
+    function _crossChainContractCallWithAsset(
+        address user,
+        uint256 dstChainId,
+        address recipient,
+        bytes calldata data,
+        uint256 fee,
+        uint256 amount,
+        bytes calldata params
+    )
+        internal
+    {
+        IL2BridgeAdapter bridgeAdapter = IL2BridgeAdapter(bridgeAdapters[dstChainId]);
+
+        _beforeBridge(user, dstChainId, fee, amount, data, bridgeAdapter, params);
+
+        uint256 total = fee + amount;
+        bridgeAdapter.execCrossChainContractCallWithAsset{ value: totalAmount }(
+            user, dstChainId, recipient, underlyingToken, data, fee, amount, params
+        );
+
+        _afterBridge(user, total);
+        emit CrossChainContractCallWithAsset(user, dstChainId, recipient, data, fee, amount);
+    }
+
+    function _crossChainTransferAsset(
+        address user,
+        uint256 dstChainId,
+        address recipient,
+        uint256 fee,
+        uint256 amount,
+        bytes calldata params
+    )
+        internal
+    {
+        IL2BridgeAdapter bridgeAdapter = IL2BridgeAdapter(bridgeAdapters[dstChainId]);
+
+        _beforeBridge(user, dstChainId, fee, amount, bytes(""), bridgeAdapter, params);
+
+        uint256 total = fee + amount;
+
+        bridgeAdapter.execCrossChainTransferAsset{ value: totalAmount }(
+            user, dstChainId, recipient, underlyingToken, fee, amount, params
+        );
+
+        _afterBridge(user, total);
+        emit CrossChainTransferAsset(user, dstChainId, recipient, amount);
+    }
+
+    fallback() external payable { }
+
+    receive() external payable { }
 }

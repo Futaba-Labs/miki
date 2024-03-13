@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.23;
 
-import { BaseScript } from "./Base.s.sol";
+import { BaseScript } from "../Base.s.sol";
 
-import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
-import { LayerZeroReceiver } from "../src/adapters/LayerZeroReceiver.sol";
-import { HelloWorld } from "../src/examples/HelloWorld.sol";
+import { ETHTokenPool } from "../../src/pools/ETHTokenPool.sol";
+import { LayerZeroReceiver } from "../../src/adapters/LayerZeroReceiver.sol";
+import { HelloWorld } from "../../src/examples/HelloWorld.sol";
 
 /// @dev See the Solidity Scripting tutorial: https://book.getfoundry.sh/tutorials/solidity-scripting
 contract DeployLZReceiver is BaseScript {
@@ -19,8 +19,5 @@ contract DeployLZReceiver is BaseScript {
 
         // Instantiate the BridgeAdapterMock.
         lzReceiver = new LayerZeroReceiver(stargateRouter);
-
-        // Instantiate the HelloWorld contract.
-        helloWorld = new HelloWorld();
     }
 }
