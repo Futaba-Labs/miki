@@ -2,8 +2,7 @@
 pragma solidity 0.8.23;
 
 import { BaseScript } from "../Base.s.sol";
-
-import { ETHTokenPool } from "../../src/pools/ETHTokenPool.sol";
+import { GaslessETHTokenPool } from "../../src/pools/GaslessETHTokenPool.sol";
 import { LayerZeroAdapter } from "../../src/adapters/LayerZeroAdapter.sol";
 
 /// @dev See the Solidity Scripting tutorial: https://book.getfoundry.sh/tutorials/solidity-scripting
@@ -14,7 +13,7 @@ contract DeployLZAdapter is BaseScript {
     address public gateway = 0x6098e96a28E02f27B1e6BD381f870F1C8Bd169d3;
     address[] public receivers = [0xEe88b30245471077A725B0F38CfBd91182d9b976]; // Optimism Sepolia Receiver
     address public owner;
-    ETHTokenPool public ethTokenPool = ETHTokenPool(payable(0x02f70133DA3f51D878224C967f9677EaEf285D47));
+    GaslessETHTokenPool public ethTokenPool = GaslessETHTokenPool(payable(0xaaD783B36B84Ad14979Ce68DeECb390523784502));
     LayerZeroAdapter public lzAdapter;
 
     function run() public broadcast {

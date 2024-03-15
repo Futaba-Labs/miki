@@ -149,11 +149,6 @@ contract LayerZeroAdapter is IL2BridgeAdapter, Ownable {
         } else {
             return _estimateLZFee(chainIdUint16, payload);
         }
-
-        (uint256 fee, uint256 poolId) = IStargateRouter(stargateRouter).quoteLayerZeroFee(
-            chainIdUint16, 1, toAddress, payload, IStargateRouter.lzTxObj(0, 0, "0x")
-        );
-        return fee;
     }
 
     function setChainId(uint256 _chainId, uint16 _chainIdUint16) public onlyOwner {

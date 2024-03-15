@@ -7,7 +7,7 @@ import { TransparentUpgradeableProxy } from "@openzeppelin/contracts/proxy/trans
 import { ProxyAdmin } from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 
 import { L2AssetManager } from "../src/L2AssetManager.sol";
-import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
+import { GaslessETHTokenPool } from "../src/pools/GaslessETHTokenPool.sol";
 import { L2BridgeAdapter } from "../src/adapters/L2BridgeAdapter.sol";
 
 /// @dev See the Solidity Scripting tutorial: https://book.getfoundry.sh/tutorials/solidity-scripting
@@ -18,7 +18,7 @@ contract Deploy is BaseScript {
     address public owner;
     ProxyAdmin public mikiProxyAdmin;
     L2AssetManager public l2AssetManager;
-    ETHTokenPool public ethTokenPool;
+    GaslessETHTokenPool public ethTokenPool;
 
     function run() public broadcast {
         owner = broadcaster;
@@ -33,7 +33,7 @@ contract Deploy is BaseScript {
                 )
             )
         );
-        ethTokenPool = new ETHTokenPool(owner, address(l2AssetManager), owner, weth);
+        ethTokenPool = new GaslessETHTokenPool(owner, address(l2AssetManager), owner, weth);
 
         // Set the native token pool.
         l2AssetManager.setNativeTokenPool(address(ethTokenPool));

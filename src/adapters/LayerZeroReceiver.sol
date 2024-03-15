@@ -3,10 +3,12 @@ pragma solidity 0.8.23;
 
 import { IStargateReceiver } from "../interfaces/IStargateReceiver.sol";
 import { ILayerZeroReceiver } from "../interfaces/ILayerZeroReceiver.sol";
+import { ILayerZeroComposer } from "../interfaces/ILayerZeroComposer.sol";
+import { OApp } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/OApp.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract LayerZeroReceiver is IStargateReceiver, ILayerZeroReceiver {
+contract LayerZeroReceiver is IStargateReceiver, ILayerZeroReceiver, ILayerZeroComposer {
     using Address for address;
     /* ----------------------------- Storage -------------------------------- */
 
@@ -15,8 +17,6 @@ contract LayerZeroReceiver is IStargateReceiver, ILayerZeroReceiver {
     /* ----------------------------- Events -------------------------------- */
     event ExecutedFunctionCall(address sender, address receiver, bytes encodedSelector, bytes data);
     event ReceiveSuceess(uint16 _srcChainId, address _srcAddress, address _token, address _receiver, uint256 _amountLD);
-    event FallbackReceived(address indexed sender, uint256 value, string message);
-    event Received(address indexed sender, uint256 value, string message);
 
     /* ----------------------------- Erorrs -------------------------------- */
 
@@ -26,14 +26,6 @@ contract LayerZeroReceiver is IStargateReceiver, ILayerZeroReceiver {
     /* ----------------------------- Constructor -------------------------------- */
     constructor(address _stargateRouter) {
         stargateRouter = _stargateRouter;
-    }
-
-    fallback() external payable {
-        emit FallbackReceived(msg.sender, msg.value, "Fallback was called");
-    }
-
-    receive() external payable {
-        emit Received(msg.sender, msg.value, "Receive was called");
     }
 
     /**
@@ -89,4 +81,29 @@ contract LayerZeroReceiver is IStargateReceiver, ILayerZeroReceiver {
 
         emit ExecutedFunctionCall(sender, receiver, encodedSelector, data);
     }
+
+    function lzCompose(
+        address _oApp,
+        bytes32, /*_guid*/
+        bytes calldata _message,
+        address,
+        bytes calldata
+    )
+        external
+        payable
+        override
+    {
+        (uint64 nonce, uint32 srcEid, uint256 amountLD, bytes memory composeMsg) =
+            abi.decode(_message, (uint64, uint32, uint256, bytes));
+        (address sender, address receiver, bytes memory encodedSelector) =
+            abi.decode(composeMsg, (address, address, bytes));
+
+        IERC20(_oApp).approve(receiver, amountLD);
+        receiver.functionCall(encodedSelector);
+        (encodedSelector);
+    }
+
+    fallback() external payable { }
+
+    receive() external payable { }
 }
