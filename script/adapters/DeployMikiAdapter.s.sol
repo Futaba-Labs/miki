@@ -11,10 +11,14 @@ contract DeployMikiAdapter is BaseScript {
     MikiAdapter public mikiAdapter;
     uint256[] public chainIds = [11_155_420, 421_614];
     uint32[] public eids = [40_232, 40_231];
+    address[] public receivers =
+        [0x062b29298A670Ffc5a7F8b6030aF858E701Dd20f, 0x062b29298A670Ffc5a7F8b6030aF858E701Dd20f];
 
     function run() public broadcast {
         mikiAdapter = new MikiAdapter(mikiToken, broadcaster);
 
         mikiAdapter.setEids(chainIds, eids);
+
+        mikiAdapter.setReceivers(chainIds, receivers);
     }
 }

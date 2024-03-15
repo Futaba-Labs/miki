@@ -17,6 +17,7 @@ contract MikiAdapter is IL2BridgeAdapter, Ownable {
     /* ----------------------------- Storage -------------------------------- */
     address public mikiToken;
     mapping(uint256 => uint32) public eidOf;
+    mapping(uint256 => address) public receivers;
 
     /* ----------------------------- Erorrs -------------------------------- */
 
@@ -52,7 +53,19 @@ contract MikiAdapter is IL2BridgeAdapter, Ownable {
     )
         external
         payable
-    { }
+    {
+        bytes memory payload = abi.encode(sender, recipient, message);
+        address receiver = receivers[dstChainId];
+
+        IERC20(mikiToken).transferFrom(msg.sender, address(this), amount);
+        IERC20(mikiToken).approve(address(this), amount);
+        (uint256 minAmount, bytes memory option) = abi.decode(params, (uint256, bytes));
+
+        SendParam memory sendParam =
+            SendParam(eidOf[dstChainId], _addressToBytes32(receiver), amount, minAmount, option, payload, "");
+        MessagingFee memory msgFee = MessagingFee(fee, 0);
+        IOFT(mikiToken).send{ value: msgFee.nativeFee }(sendParam, msgFee, msg.sender);
+    }
 
     function execCrossChainTransferAsset(
         address sender,
@@ -88,8 +101,15 @@ contract MikiAdapter is IL2BridgeAdapter, Ownable {
         (uint256 amount, uint256 minAmount, address recipient, bytes memory option) =
             abi.decode(params, (uint256, uint256, address, bytes));
 
+        bytes memory payload;
+        if (message.length != 0) {
+            payload = abi.encode(msg.sender, recipient, message);
+        }
+
+        address receiver = receivers[dstChainId];
+
         SendParam memory sendParam =
-            SendParam(eidOf[dstChainId], _addressToBytes32(recipient), amount, minAmount, option, message, "");
+            SendParam(eidOf[dstChainId], _addressToBytes32(receiver), amount, minAmount, option, message, "");
         MessagingFee memory msgFee = IOFT(mikiToken).quoteSend(sendParam, false);
         return msgFee.nativeFee;
     }
@@ -119,6 +139,19 @@ contract MikiAdapter is IL2BridgeAdapter, Ownable {
             uint32 eid = eidOf[_dstChainIds[i]];
             bytes32 peer = _addressToBytes32(_peers[i]);
             IOAppCore(mikiToken).setPeer(eid, peer);
+        }
+    }
+
+    function setReceivers(uint256[] calldata _dstChainIds, address[] calldata _receivers) external onlyOwner {
+        uint256 dstChainsLen = _dstChainIds.length;
+        uint256 receiversLen = _receivers.length;
+
+        if (dstChainsLen == 0 || receiversLen == 0) revert InvalidLength();
+
+        if (dstChainsLen != receiversLen) revert MismatchLength();
+
+        for (uint256 i; i < dstChainsLen; i++) {
+            receivers[_dstChainIds[i]] = _receivers[i];
         }
     }
 
