@@ -11,4 +11,6 @@ interface IMikiReceiver {
     )
         external
         payable;
+
+    function mikiReceiveMsg(uint256 srcChainId, address srcAddress, bytes calldata message) external payable;
 }

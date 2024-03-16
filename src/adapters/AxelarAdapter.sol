@@ -85,8 +85,12 @@ contract AxelarAdapter is IL2BridgeAdapter, AxelarExecutable, Ownable {
     { }
 
     function estimateFee(
+        address sender,
         uint256 dstChainId,
-        bytes calldata messag,
+        address recipient,
+        address asset,
+        bytes calldata message,
+        uint256 amount,
         bytes calldata params
     )
         external

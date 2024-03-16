@@ -3,20 +3,28 @@ pragma solidity 0.8.23;
 
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IMikiReceiver } from "../../src/interfaces/IMikiReceiver.sol";
 
 contract BridgeReceiverMock {
     using Address for address;
 
-    event FallbackReceived(address indexed sender, uint256 value, string message);
-    event Received(address indexed sender, uint256 value, string message);
+    event SentMsgAndToken(
+        uint256 _srcChainId, address _srcAddress, address _token, address _receiver, uint256 _amountLD, bytes _message
+    );
 
-    fallback() external payable {
-        emit FallbackReceived(msg.sender, msg.value, "Fallback was called");
-    }
+    event SentMsg(uint256 _srcChainId, address _srcAddress, address _receiver, bytes _message);
 
-    receive() external payable {
-        emit Received(msg.sender, msg.value, "Receive was called");
-    }
+    event FailedMsgAndToken(
+        uint256 _srcChainId,
+        address _srcAddress,
+        address _token,
+        address _receiver,
+        uint256 _amountLD,
+        bytes _message,
+        string _reason
+    );
+
+    event FailedMsg(uint256 _srcChainId, address _srcAddress, address _receiver, bytes _message, string _reason);
 
     function receiveMsgWithAmount(
         uint256 _srcChainId,
@@ -27,23 +35,37 @@ contract BridgeReceiverMock {
     )
         external
     {
-        (address receiver, bool isNative, bytes memory encodedSelector) = abi.decode(_payload, (address, bool, bytes));
+        (address sender, address receiver, bool isNative, bytes memory message) =
+            abi.decode(_payload, (address, address, bool, bytes));
 
         if (isNative) {
             receiver.call{ value: _amountLD }("");
-            receiver.functionCall(encodedSelector);
-            (encodedSelector);
         } else {
             IERC20(_token).transfer(receiver, _amountLD);
-            receiver.functionCall(encodedSelector);
-            (encodedSelector);
+        }
+
+        try IMikiReceiver(receiver).mikiReceive(_srcChainId, sender, _token, _amountLD, message) {
+            emit SentMsgAndToken(_srcChainId, sender, _token, receiver, _amountLD, message);
+        } catch Error(string memory reason) {
+            emit FailedMsgAndToken(_srcChainId, sender, _token, receiver, _amountLD, message, reason);
+        } catch {
+            emit FailedMsgAndToken(_srcChainId, sender, _token, receiver, _amountLD, message, "Unknown error");
         }
     }
 
     function receiveMsg(uint256 _srcChainId, address _srcAddress, bytes memory _payload) external {
-        (address receiver, bytes memory encodedSelector) = abi.decode(_payload, (address, bytes));
+        (address sender, address receiver, bytes memory message) = abi.decode(_payload, (address, address, bytes));
 
-        receiver.functionCall(encodedSelector);
-        (encodedSelector);
+        try IMikiReceiver(receiver).mikiReceiveMsg(_srcChainId, sender, message) {
+            emit SentMsg(_srcChainId, sender, receiver, message);
+        } catch Error(string memory reason) {
+            emit FailedMsg(_srcChainId, sender, receiver, message, reason);
+        } catch {
+            emit FailedMsg(_srcChainId, sender, receiver, message, "Unknown error");
+        }
     }
+
+    fallback() external payable { }
+
+    receive() external payable { }
 }

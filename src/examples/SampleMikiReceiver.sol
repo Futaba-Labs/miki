@@ -16,4 +16,9 @@ contract SampleMikiReceiver is IMikiReceiver {
         emit Received(msg.sender, token, amount, message);
         emit Greeting(greeting);
     }
+
+    function mikiReceiveMsg(uint256, address, bytes calldata message) external payable {
+        string memory greeting = abi.decode(message, (string));
+        emit Greeting(greeting);
+    }
 }

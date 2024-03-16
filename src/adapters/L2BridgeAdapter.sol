@@ -92,8 +92,12 @@ contract L2BridgeAdapter is IL2BridgeAdapter {
     }
 
     function estimateFee(
+        address sender,
         uint256 dstChainId,
+        address recipient,
+        address asset,
         bytes calldata message,
+        uint256 amount,
         bytes calldata params
     )
         external

@@ -53,6 +53,7 @@ interface ITokenPool {
         payable;
     function crossChainContractCallWithAssetToL1(uint256 fee, bytes calldata params) external payable;
     function getTotalAmount() external view returns (uint256);
+    function getUnderlyingToken() external view returns (address);
     function setBridgeAdapter(uint256 dstChainId, address bridgeAdapter) external;
     function getBridgeAdapter(uint256 dstChainId) external view returns (address);
     function addBatches(address user, uint256 amount) external;

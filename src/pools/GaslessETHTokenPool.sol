@@ -60,7 +60,7 @@ contract GaslessETHTokenPool is ETHTokenPool, GelatoRelayContextERC2771 {
         _transferRelayFee();
 
         uint256 relayFee = _getFee();
-        _removeDepoits(sender, relayFee);
+        _afterBridge(sender, relayFee);
 
         emit CrossChainContractCallRelay(sender, dstChainId, recipient, data, fee, relayFee, params);
     }
@@ -83,7 +83,7 @@ contract GaslessETHTokenPool is ETHTokenPool, GelatoRelayContextERC2771 {
         _transferRelayFee();
 
         uint256 relayFee = _getFee();
-        _removeDepoits(sender, relayFee);
+        _afterBridge(sender, relayFee);
 
         emit CrossChainContractCallWithAssetRelay(sender, dstChainId, recipient, data, fee, relayFee, amount, params);
     }
@@ -105,7 +105,7 @@ contract GaslessETHTokenPool is ETHTokenPool, GelatoRelayContextERC2771 {
         _transferRelayFee();
 
         uint256 relayFee = _getFee();
-        _removeDepoits(sender, relayFee);
+        _afterBridge(sender, relayFee);
 
         emit CrossChainTransferAssetRelay(sender, dstChainId, recipient, fee, relayFee, amount, params);
     }

@@ -43,7 +43,7 @@ contract CrossChain is BaseScript {
         // calc fee by LZ
         bytes memory params = abi.encode(broadcaster, true, false);
         bytes memory message = abi.encodeWithSignature("greet(string)", "Hello, world!!");
-        uint256 fee = lzAdapter.estimateFee(dstCahinId, message, params);
+        uint256 fee = lzAdapter.estimateFee(broadcaster, dstCahinId, recipient, weth, message, amount, params);
 
         // calc fee by Axelar
         // string[] memory inputs = new string[](2);

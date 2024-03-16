@@ -44,8 +44,12 @@ contract BridgeAdapterMock is IL2BridgeAdapter {
     { }
 
     function estimateFee(
+        address sender,
         uint256 dstChainId,
-        bytes calldata messag,
+        address recipient,
+        address asset,
+        bytes calldata message,
+        uint256 amount,
         bytes calldata params
     )
         external

@@ -59,7 +59,8 @@ contract MikiAdapter is IL2BridgeAdapter, Ownable {
 
         IERC20(mikiToken).transferFrom(msg.sender, address(this), amount);
         IERC20(mikiToken).approve(address(this), amount);
-        (uint256 minAmount, bytes memory option) = abi.decode(params, (uint256, bytes));
+        (uint256 amount, uint256 minAmount, address recipient, bytes memory option) =
+            abi.decode(params, (uint256, uint256, address, bytes));
 
         SendParam memory sendParam =
             SendParam(eidOf[dstChainId], _addressToBytes32(receiver), amount, minAmount, option, payload, "");
@@ -81,7 +82,8 @@ contract MikiAdapter is IL2BridgeAdapter, Ownable {
     {
         IERC20(mikiToken).transferFrom(msg.sender, address(this), amount);
         IERC20(mikiToken).approve(address(this), amount);
-        (uint256 minAmount, bytes memory option) = abi.decode(params, (uint256, bytes));
+        (uint256 amount, uint256 minAmount, address recipient, bytes memory option) =
+            abi.decode(params, (uint256, uint256, address, bytes));
 
         SendParam memory sendParam =
             SendParam(eidOf[dstChainId], _addressToBytes32(recipient), amount, minAmount, option, "", "");
@@ -90,8 +92,12 @@ contract MikiAdapter is IL2BridgeAdapter, Ownable {
     }
 
     function estimateFee(
+        address sender,
         uint256 dstChainId,
+        address recipient,
+        address asset,
         bytes calldata message,
+        uint256 amount,
         bytes calldata params
     )
         external
