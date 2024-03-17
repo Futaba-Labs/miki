@@ -50,7 +50,7 @@ contract ERC20TokenPool is PRBTest, StdCheats {
         ERC20Mock erc20 = new ERC20Mock("Test", "TEST");
         erc20.mint(address(this), 100 ether);
         underlyingToken = address(erc20);
-        erc20TokenPool = new ERC20TokenPoolMock(owner, address(l2AssetManager), owner, underlyingToken);
+        erc20TokenPool = new ERC20TokenPoolMock(owner, address(l2AssetManager), underlyingToken, owner);
 
         // Set the erc20 token pool.
         vm.prank(owner);
@@ -77,7 +77,7 @@ contract ERC20TokenPool is PRBTest, StdCheats {
         address recipient = address(sampleMikiReceiver);
         uint256 fee = 0.01 ether;
         uint256 amount = 0.5 ether;
-        bytes memory params = bytes("");
+        bytes memory params = abi.encode(false);
         erc20TokenPool.crossChainContractCallWithAsset{ value: fee }(
             dstChainId, recipient, MESSAGE, fee, amount, params
         );
@@ -100,7 +100,7 @@ contract ERC20TokenPool is PRBTest, StdCheats {
         address recipient = address(this);
         uint256 fee = 0.01 ether;
         uint256 amount = 0.5 ether;
-        bytes memory params = bytes("");
+        bytes memory params = abi.encode(false);
         erc20TokenPool.crossChainTransferAsset{ value: fee }(dstChainId, recipient, fee, amount, params);
         uint256 balance = l2AssetManager.getDeposit(address(erc20TokenPool), address(this));
         assertEq(balance, 1 ether - amount);

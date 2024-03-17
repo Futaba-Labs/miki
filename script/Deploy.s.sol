@@ -10,6 +10,7 @@ import { L2AssetManager } from "../src/L2AssetManager.sol";
 import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
 import { MikiTokenPool } from "../src/pools/MikiTokenPool.sol";
 import { MikiAdapter } from "../src/adapters/MikiAdapter.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /// @dev See the Solidity Scripting tutorial: https://book.getfoundry.sh/tutorials/solidity-scripting
 
 contract Deploy is BaseScript {
@@ -23,7 +24,7 @@ contract Deploy is BaseScript {
     L2AssetManager public l2AssetManager;
     ETHTokenPool public ethTokenPool;
     MikiTokenPool public mikiTokenPool;
-    MikiAdapter public mikiAdapter = MikiAdapter(payable(0x534E4F70837635C70c6Ae3C34fF803833A50177b));
+    MikiAdapter public mikiAdapter = MikiAdapter(payable(0x700596f9F85b7E9c7bF6a2F58134362A22873A18));
 
     function run() public broadcast {
         owner = broadcaster;
@@ -38,8 +39,8 @@ contract Deploy is BaseScript {
                 )
             )
         );
-        ethTokenPool = new ETHTokenPool(owner, address(l2AssetManager), owner, weth);
-        mikiTokenPool = new MikiTokenPool(owner, address(l2AssetManager), owner, mikiToken);
+        ethTokenPool = new ETHTokenPool(owner, address(l2AssetManager), weth, owner);
+        mikiTokenPool = new MikiTokenPool(owner, address(l2AssetManager), mikiToken, owner);
 
         // Set the native token pool.
         l2AssetManager.setNativeTokenPool(address(ethTokenPool));
@@ -50,5 +51,12 @@ contract Deploy is BaseScript {
 
         // Set the bridge adapter.
         mikiTokenPool.setBridgeAdapter(dstChainId, address(mikiAdapter));
+
+        // send erc20 to mikiTokenPool
+        IERC20(mikiToken).approve(address(l2AssetManager), 10 ether);
+        l2AssetManager.deposit(address(mikiToken), address(mikiTokenPool), 10 ether);
+
+        // send eth to ethTokenPool
+        l2AssetManager.depositETH{ value: 0.1 ether }(0.1 ether);
     }
 }

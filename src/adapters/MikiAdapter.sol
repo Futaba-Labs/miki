@@ -12,9 +12,12 @@ import { IOAppCore } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/interfac
 import { MessagingFee } from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract MikiAdapter is IL2BridgeAdapter, Ownable {
+    using SafeERC20 for IERC20;
     /* ----------------------------- Storage -------------------------------- */
+
     address public mikiToken;
     mapping(uint256 => uint32) public eidOf;
     mapping(uint256 => address) public receivers;
@@ -57,14 +60,15 @@ contract MikiAdapter is IL2BridgeAdapter, Ownable {
         bytes memory payload = abi.encode(sender, recipient, message);
         address receiver = receivers[dstChainId];
 
-        IERC20(mikiToken).transferFrom(msg.sender, address(this), amount);
-        IERC20(mikiToken).approve(address(this), amount);
-        (uint256 amount, uint256 minAmount, address recipient, bytes memory option) =
-            abi.decode(params, (uint256, uint256, address, bytes));
+        (uint256 minAmount, bytes memory option) = abi.decode(params, (uint256, bytes));
 
         SendParam memory sendParam =
             SendParam(eidOf[dstChainId], _addressToBytes32(receiver), amount, minAmount, option, payload, "");
         MessagingFee memory msgFee = MessagingFee(fee, 0);
+
+        IERC20(mikiToken).safeTransferFrom(msg.sender, address(this), amount);
+        IERC20(mikiToken).approve(address(this), amount);
+
         IOFT(mikiToken).send{ value: msgFee.nativeFee }(sendParam, msgFee, msg.sender);
     }
 
@@ -80,14 +84,15 @@ contract MikiAdapter is IL2BridgeAdapter, Ownable {
         external
         payable
     {
-        IERC20(mikiToken).transferFrom(msg.sender, address(this), amount);
-        IERC20(mikiToken).approve(address(this), amount);
-        (uint256 amount, uint256 minAmount, address recipient, bytes memory option) =
-            abi.decode(params, (uint256, uint256, address, bytes));
+        (uint256 minAmount, bytes memory option) = abi.decode(params, (uint256, bytes));
 
         SendParam memory sendParam =
             SendParam(eidOf[dstChainId], _addressToBytes32(recipient), amount, minAmount, option, "", "");
         MessagingFee memory msgFee = MessagingFee(fee, 0);
+
+        IERC20(mikiToken).safeTransferFrom(msg.sender, address(this), amount);
+        IERC20(mikiToken).approve(address(this), amount);
+
         IOFT(mikiToken).send{ value: msgFee.nativeFee }(sendParam, msgFee, msg.sender);
     }
 
@@ -104,12 +109,11 @@ contract MikiAdapter is IL2BridgeAdapter, Ownable {
         view
         returns (uint256)
     {
-        (uint256 amount, uint256 minAmount, address recipient, bytes memory option) =
-            abi.decode(params, (uint256, uint256, address, bytes));
+        (uint256 minAmount, bytes memory option) = abi.decode(params, (uint256, bytes));
 
         bytes memory payload;
         if (message.length != 0) {
-            payload = abi.encode(msg.sender, recipient, message);
+            payload = abi.encode(sender, recipient, message);
         }
 
         address receiver = receivers[dstChainId];

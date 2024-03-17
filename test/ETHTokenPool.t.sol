@@ -67,7 +67,7 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
         uint256 dstChainId = 1;
         address recipient = address(sampleMikiReceiver);
         uint256 fee = 0.01 ether;
-        bytes memory params = bytes("");
+        bytes memory params = abi.encode(true);
         ethTokenPool.crossChainContractCall(dstChainId, recipient, MESSAGE, fee, params);
         uint256 balance = l2AssetManager.getDeposit(address(ethTokenPool), address(this));
         assertEq(balance, 1 ether - fee);
@@ -85,7 +85,7 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
         address recipient = address(sampleMikiReceiver);
         uint256 fee = 0.01 ether;
         uint256 amount = 0.5 ether;
-        bytes memory params = bytes("");
+        bytes memory params = abi.encode(true);
         ethTokenPool.crossChainContractCallWithAsset(dstChainId, recipient, MESSAGE, fee, amount, params);
         uint256 balance = l2AssetManager.getDeposit(address(ethTokenPool), address(this));
         assertEq(balance, 1 ether - fee - amount);
@@ -105,7 +105,7 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
         address recipient = address(this);
         uint256 fee = 0.01 ether;
         uint256 amount = 0.5 ether;
-        bytes memory params = bytes("");
+        bytes memory params = abi.encode(true);
         ethTokenPool.crossChainTransferAsset(dstChainId, recipient, fee, amount, params);
         uint256 balance = l2AssetManager.getDeposit(address(ethTokenPool), address(this));
         assertEq(balance, 1 ether - fee - amount);
@@ -117,9 +117,6 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
 
     function test_NotSupportedChain() external {
         bytes4 selector = bytes4(keccak256("NotSupportedChain()"));
-        console2.logBytes4(bytes4(keccak256("DisabledRoute()")));
-        console2.logBytes4(bytes4(keccak256("InvalidQuoteTimestamp()")));
-        console2.logBytes4(bytes4(keccak256("InvalidFillDeadline()")));
         vm.expectRevert(selector);
         ethTokenPool.crossChainContractCall(2, address(this), "", 0, bytes(""));
     }

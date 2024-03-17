@@ -93,6 +93,7 @@ contract ERC20TokenPoolMock is BaseTokenPool {
 
         _beforeBridge(user, dstChainId, recipient, fee, amount, data, bridgeAdapter, params);
 
+        IERC20(underlyingToken).approve(address(bridgeAdapter), amount);
         bridgeAdapter.execCrossChainContractCallWithAsset{ value: fee }(
             user, dstChainId, recipient, underlyingToken, data, fee, amount, params
         );
@@ -114,6 +115,8 @@ contract ERC20TokenPoolMock is BaseTokenPool {
         IL2BridgeAdapter bridgeAdapter = IL2BridgeAdapter(bridgeAdapters[dstChainId]);
 
         _beforeBridge(user, dstChainId, recipient, fee, amount, bytes(""), bridgeAdapter, params);
+
+        IERC20(underlyingToken).approve(address(bridgeAdapter), amount);
 
         bridgeAdapter.execCrossChainTransferAsset{ value: fee }(
             user, dstChainId, recipient, underlyingToken, fee, amount, params

@@ -5,9 +5,12 @@ import { BaseTokenPool } from "./BaseTokenPool.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IL2BridgeAdapter } from "../interfaces/IL2BridgeAdapter.sol";
 import { IL2AssetManager } from "../interfaces/IL2AssetManager.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract MikiTokenPool is BaseTokenPool {
+    using SafeERC20 for IERC20;
     /* ----------------------------- Constructor -------------------------------- */
+
     constructor(
         address _initialOwner,
         address _l2AssetManager,
@@ -28,8 +31,7 @@ contract MikiTokenPool is BaseTokenPool {
         if (amount <= 0) revert InsufficientAmount();
         totalAmount -= amount;
 
-        bool success = IERC20(underlyingToken).transfer(user, amount);
-        if (!success) revert InvalidTransfer();
+        IERC20(underlyingToken).safeTransfer(user, amount);
     }
 
     function crossChainContractCall(
@@ -92,6 +94,7 @@ contract MikiTokenPool is BaseTokenPool {
 
         _beforeBridge(user, dstChainId, recipient, fee, amount, data, bridgeAdapter, params);
 
+        IERC20(underlyingToken).approve(address(bridgeAdapter), amount);
         bridgeAdapter.execCrossChainContractCallWithAsset{ value: fee }(
             user, dstChainId, recipient, underlyingToken, data, fee, amount, params
         );
@@ -114,6 +117,7 @@ contract MikiTokenPool is BaseTokenPool {
 
         _beforeBridge(user, dstChainId, recipient, fee, amount, bytes(""), bridgeAdapter, params);
 
+        IERC20(underlyingToken).approve(address(bridgeAdapter), amount);
         bridgeAdapter.execCrossChainTransferAsset{ value: fee }(
             user, dstChainId, recipient, underlyingToken, fee, amount, params
         );

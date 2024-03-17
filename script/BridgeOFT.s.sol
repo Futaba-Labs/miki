@@ -18,9 +18,9 @@ import { MikiTokenPool } from "../src/pools/MikiTokenPool.sol";
 contract BridgeOFT is BaseScript {
     using OptionsBuilder for bytes;
 
-    MikiAdapter public mikiAdapter = MikiAdapter(payable(0x534E4F70837635C70c6Ae3C34fF803833A50177b));
+    MikiAdapter public mikiAdapter = MikiAdapter(payable(0x700596f9F85b7E9c7bF6a2F58134362A22873A18));
     MikiTestToken public miki = MikiTestToken(0x587AF5e09a4e6011d5B7C38d45344792D6800898);
-    MikiTokenPool public mikiTokenPool = MikiTokenPool(payable(0x863806e04b2CeF7D126535f14A388cb2a3062154));
+    MikiTokenPool public mikiTokenPool = MikiTokenPool(payable(0x8953512400A5fde7C5730e0942f14811Fc674e0B));
 
     address recepient = 0x238Ae0427004bc4bF7fc2F0d9d99F87e9E367B3D;
     uint256 dstChainId = 11_155_420;
@@ -34,14 +34,12 @@ contract BridgeOFT is BaseScript {
 
         bytes memory message = abi.encode(greeting);
 
-        bytes memory estimatedFeeParams = abi.encode(amount, minAmount, recepient, option);
-        uint256 fee = mikiAdapter.estimateFee(
-            broadcaster, dstChainId, recepient, address(miki), message, amount, estimatedFeeParams
-        );
+        bytes memory params = abi.encode(minAmount, option);
+        uint256 fee =
+            mikiAdapter.estimateFee(broadcaster, dstChainId, recepient, address(miki), message, amount, params);
 
-        IERC20(miki).approve(address(mikiTokenPool), amount);
         mikiTokenPool.crossChainContractCallWithAsset{ value: fee * 120 / 100 }(
-            dstChainId, recepient, message, fee * 120 / 100, amount, estimatedFeeParams
+            dstChainId, recepient, message, fee * 120 / 100, amount, params
         );
     }
 }
