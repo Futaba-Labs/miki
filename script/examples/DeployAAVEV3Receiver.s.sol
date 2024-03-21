@@ -10,9 +10,10 @@ contract DeployAAVEV3Receiver is BaseScript {
     address public aaveV3Pool = 0xcC6114B983E4Ed2737E9BD3961c9924e6216c704;
     address public USDC = 0x52D800ca262522580CeBAD275395ca6e7598C014;
     address public aUSDC = 0x4086fabeE92a080002eeBA1220B9025a27a40A49;
+    address public permit2 = 0x000000000022D473030F116dDEE9F6B43aC78BA3;
 
     function run() public broadcast {
-        aaveV3Receiver = new AAVEV3Receiver(broadcaster);
+        aaveV3Receiver = new AAVEV3Receiver(broadcaster, permit2);
 
         aaveV3Receiver.setTokenPool(USDC, aUSDC, aaveV3Pool);
     }

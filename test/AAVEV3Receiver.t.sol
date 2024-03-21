@@ -9,6 +9,7 @@ import { ATokenMock } from "./mock/ATokenMock.sol";
 import { AAVEV3PoolMock } from "./mock/AAVEV3PoolMock.sol";
 import { ERC20Mock } from "./mock/ERC20Mock.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IATokenMock } from "./mock/ATokenMock.sol";
 
 contract AAVEV3ReceiverTest is PRBTest, StdCheats {
     address public owner;
@@ -26,7 +27,7 @@ contract AAVEV3ReceiverTest is PRBTest, StdCheats {
 
         aToken = new ATokenMock("aToken", "aToken");
         pool = new AAVEV3PoolMock(address(aToken));
-        receiver = new AAVEV3Receiver(owner);
+        receiver = new AAVEV3Receiver(owner, address(this));
         erc20 = new ERC20Mock("erc20", "erc20");
         anotherErc20 = new ERC20Mock("anotherErc20", "anotherErc20");
 
@@ -58,6 +59,18 @@ contract AAVEV3ReceiverTest is PRBTest, StdCheats {
         bytes4 selector = bytes4(keccak256("ZeroAmount()"));
         vm.expectRevert(selector);
         receiver.mikiReceive(1, owner, address(erc20), 0, bytes(""));
+    }
+
+    function test_Withdraw() public {
+        vm.startPrank(owner);
+        IERC20(erc20).transfer(address(receiver), 100 ether);
+        receiver.mikiReceive(1, owner, address(erc20), 100 ether, bytes(""));
+        IATokenMock(aToken).approve(address(receiver), 50 ether);
+        receiver.withdraw(address(erc20), 50 ether);
+        vm.stopPrank();
+        assertEq(erc20.balanceOf(owner), 900 ether);
+        assertEq(erc20.balanceOf(address(receiver)), 50 ether);
+        assertEq(aToken.balanceOf(owner), 50 ether);
     }
 
     function test_SetTokenPool() public {
