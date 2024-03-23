@@ -2,15 +2,17 @@
 pragma solidity 0.8.23;
 
 import { IStargateReceiver } from "../interfaces/IStargateReceiver.sol";
-import { ILayerZeroReceiver } from "../interfaces/ILayerZeroReceiver.sol";
 import { IOAppComposer } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/interfaces/IOAppComposer.sol";
-import { OApp } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/OApp.sol";
+import { OAppReceiver } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/OAppReceiver.sol";
+import { Origin } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/interfaces/IOAppReceiver.sol";
+import { OAppCore } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/OAppCore.sol";
 import { OFTComposeMsgCodec } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oft/libs/OFTComposeMsgCodec.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IMikiReceiver } from "../interfaces/IMikiReceiver.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract LayerZeroReceiver is IStargateReceiver, ILayerZeroReceiver, IOAppComposer {
+contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
     using Address for address;
     using OFTComposeMsgCodec for bytes;
     /* ----------------------------- Storage -------------------------------- */
@@ -19,10 +21,11 @@ contract LayerZeroReceiver is IStargateReceiver, ILayerZeroReceiver, IOAppCompos
     mapping(uint32 => uint256) public chainIdOf;
 
     /* ----------------------------- Events -------------------------------- */
-    event ExecutedFunctionCall(address sender, address receiver, bytes encodedSelector, bytes data);
     event SentMsgAndToken(
         uint256 _srcChainId, address _srcAddress, address _token, address _receiver, uint256 _amountLD, bytes _message
     );
+
+    event SentMsg(uint256 _srcChainId, address _srcAddress, address _receiver, bytes _message);
 
     event FailedMsgAndToken(
         uint256 _srcChainId,
@@ -34,6 +37,8 @@ contract LayerZeroReceiver is IStargateReceiver, ILayerZeroReceiver, IOAppCompos
         string _reason
     );
 
+    event FailedMsg(uint256 _srcChainId, address _srcAddress, address _receiver, bytes _message, string _reason);
+
     /* ----------------------------- Erorrs -------------------------------- */
 
     error InvalidRouter();
@@ -43,7 +48,14 @@ contract LayerZeroReceiver is IStargateReceiver, ILayerZeroReceiver, IOAppCompos
     error TransferFailed();
 
     /* ----------------------------- Constructor -------------------------------- */
-    constructor(address _stargateRouter) {
+    constructor(
+        address _stargateRouter,
+        address _gateway,
+        address _initialOwner
+    )
+        OAppCore(_gateway, _initialOwner)
+        Ownable(_initialOwner)
+    {
         stargateRouter = _stargateRouter;
     }
 
@@ -83,22 +95,26 @@ contract LayerZeroReceiver is IStargateReceiver, ILayerZeroReceiver, IOAppCompos
         }
     }
 
-    function lzReceive(
-        uint16 _srcChainId,
-        bytes calldata _srcAddress,
-        uint64 _nonce,
-        bytes calldata _payload
+    function _lzReceive(
+        Origin calldata _origin, // struct containing info about the message sender
+        bytes32 _guid, // global packet identifier
+        bytes calldata payload, // encoded message payload being received
+        address _executor, // the Executor address.
+        bytes calldata _extraData // arbitrary data appended by the Executor
     )
-        external
+        internal
+        override
     {
-        // Decode the payload
-        (address sender, address receiver, bytes memory encodedSelector) =
-            abi.decode(_payload, (address, address, bytes));
+        uint256 chainId = chainIdOf[_origin.srcEid];
+        (address sender, address receiver, bytes memory message) = abi.decode(payload, (address, address, bytes));
 
-        // Call the receiver
-        bytes memory data = receiver.functionCall(encodedSelector);
-
-        emit ExecutedFunctionCall(sender, receiver, encodedSelector, data);
+        try IMikiReceiver(receiver).mikiReceiveMsg(chainId, sender, message) {
+            emit SentMsg(chainId, sender, receiver, message);
+        } catch Error(string memory reason) {
+            emit FailedMsg(chainId, sender, receiver, message, reason);
+        } catch {
+            emit FailedMsg(chainId, sender, receiver, message, "Unknown error");
+        }
     }
 
     function lzCompose(

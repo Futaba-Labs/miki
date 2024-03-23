@@ -10,6 +10,7 @@ import { SampleMikiReceiver } from "../../src/examples/SampleMikiReceiver.sol";
 /// @dev See the Solidity Scripting tutorial: https://book.getfoundry.sh/tutorials/solidity-scripting
 contract DeployLZReceiver is BaseScript {
     address public stargateRouter = 0xa2dfFdDc372C6aeC3a8e79aAfa3953e8Bc956D63;
+    address public gateway = 0x6EDCE65403992e310A62460808c4b910D972f10f;
     address public owner;
     LayerZeroReceiver public lzReceiver;
     SampleMikiReceiver public mikiReceiver;
@@ -20,7 +21,7 @@ contract DeployLZReceiver is BaseScript {
         owner = broadcaster;
 
         // Instantiate the BridgeAdapterMock.
-        lzReceiver = new LayerZeroReceiver(stargateRouter);
+        lzReceiver = new LayerZeroReceiver(stargateRouter, gateway, owner);
 
         // set chainIds and eids
         lzReceiver.setChainIds(eids, chainIds);
