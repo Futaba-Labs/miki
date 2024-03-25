@@ -10,13 +10,21 @@
     "@openzeppelin/contracts": "^5.0.1"
   },
   "devDependencies": {
+    "@aave/core-v3": "^1.19.3",
     "@axelar-network/axelar-gmp-sdk-solidity": "^5.6.4",
     "@axelar-network/axelarjs-sdk": "^0.14.2",
+    "@gelatonetwork/relay-context": "^3.2.0",
+    "@gelatonetwork/relay-sdk": "^5.5.6",
+    "@layerzerolabs/lz-evm-messagelib-v2": "^2.1.18",
+    "@layerzerolabs/lz-evm-oapp-v2": "^2.1.18",
+    "@layerzerolabs/lz-evm-protocol-v2": "^2.1.18",
+    "@layerzerolabs/lz-v2-utilities": "^2.1.18",
     "@openzeppelin/contracts-upgradeable": "^5.0.2",
     "@prb/test": "^0.6.4",
     "forge-std": "github:foundry-rs/forge-std#v1.7.5",
     "prettier": "^3.0.0",
-    "solhint": "^3.6.2"
+    "solhint": "^3.6.2",
+    "solidity-bytes-utils": "^0.8.2"
   },
   "keywords": [
     "blockchain",
@@ -31,12 +39,14 @@
   "scripts": {
     "clean": "rm -rf cache out",
     "build": "forge build",
-    "lint": "bun run lint:sol && bun run prettier:check",
-    "lint:sol": "forge fmt --check && bun solhint {script,src,test}/**/*.sol",
+    "lint": "yarn lint:sol && yarn prettier:check",
+    "lint:sol": "forge fmt --check && yarn solhint {script,src,test}/**/*.sol",
     "prettier:check": "prettier --check **/*.{json,md,yml} --ignore-path=.prettierignore",
     "prettier:write": "prettier --write **/*.{json,md,yml} --ignore-path=.prettierignore",
     "test": "forge test",
     "test:coverage": "forge coverage",
-    "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage"
+    "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage",
+    "set-peer:miki": "./bin/set_peer.sh 'setMikiPeer()'",
+    "set-peer:lz": "./bin/set_peer.sh 'setLzAdapterPeer()'"
   }
 }

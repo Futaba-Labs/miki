@@ -38,8 +38,12 @@ interface IL2BridgeAdapter {
         payable;
 
     function estimateFee(
+        address sender,
         uint256 dstChainId,
+        address recipient,
+        address asset,
         bytes calldata message,
+        uint256 amount,
         bytes calldata params
     )
         external
