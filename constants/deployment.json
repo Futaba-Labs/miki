@@ -2,15 +2,15 @@
   "arbitrum_sepolia": {
     "name": "arbitrum_sepolia",
     "chainId": 421614,
-    "l2AssetManager": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
+    "l2AssetManager": "0x35E29cBEDe79A4b0279F7C55353e3D4a383Ef596",
     "pools": {
       "ethTokenPool": {
-        "underlying": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-        "pool": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
+        "underlying": "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
+        "pool": "0xE4E5af463852944FB90807461F4bbef512CaCaA8"
       },
       "mikiTokenPool": {
-        "underlying": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-        "pool": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
+        "underlying": "0x9D2778CD4d232dC3e3f0C42caccA891D12EC9c8a",
+        "pool": "0xFbD2fDe2b50A0AE724765424578296A8d5fb2E73"
       }
     },
     "adapters": {
@@ -31,7 +31,9 @@
           "underlying": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
           "aToken": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
         },
-        "pool": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
+        "permit2": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+        "pool": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
+        "receiver": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
       },
       "nft": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
       "amm": {
@@ -62,7 +64,9 @@
           "underlying": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
           "aToken": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
         },
-        "pool": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
+        "permit2": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+        "pool": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
+        "receiver": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
       },
       "nft": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
       "amm": {
@@ -90,10 +94,12 @@
     "examples": {
       "aave": {
         "usdc": {
-          "underlying": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-          "aToken": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
+          "underlying": "0x52D800ca262522580CeBAD275395ca6e7598C014",
+          "aToken": "0x4086fabeE92a080002eeBA1220B9025a27a40A49"
         },
-        "pool": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
+        "permit2": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+        "pool": "0xcC6114B983E4Ed2737E9BD3961c9924e6216c704",
+        "receiver": "0xa238333Cc00E83C52eE701f54E9eECE57F5DD53e"
       },
       "nft": "0x062b29298A670Ffc5a7F8b6030aF858E701Dd20f",
       "amm": {
