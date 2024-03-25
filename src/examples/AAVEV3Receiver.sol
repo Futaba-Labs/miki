@@ -8,10 +8,13 @@ import { IAToken } from "@aave/core-v3/contracts/interfaces/IAToken.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { GelatoRelayContextERC2771 } from "@gelatonetwork/relay-context/contracts/GelatoRelayContextERC2771.sol";
 import { IAllowanceTransfer } from "../interfaces/IAllowanceTransfer.sol";
+import { ISampleAMM } from "../interfaces/ISampleAMM.sol";
 
 contract AAVEV3Receiver is IMikiReceiver, Ownable, GelatoRelayContextERC2771 {
     /* ----------------------------- Storage -------------------------------- */
     IAllowanceTransfer public immutable permit2;
+    ISampleAMM public immutable amm;
+    address public immutable mikiReceiver;
     mapping(address token => TokenPool pool) public tokenToPool;
 
     /* ----------------------------- Struct -------------------------------- */
@@ -30,16 +33,22 @@ contract AAVEV3Receiver is IMikiReceiver, Ownable, GelatoRelayContextERC2771 {
     error MismatchedLength();
     error ZeroAmount();
     error InvalidSpender();
+    error NotMikiReceiver();
 
     /* ----------------------------- Constructor -------------------------------- */
-    constructor(address _initialOwner, address _permit2) Ownable(_initialOwner) {
+    constructor(address _initialOwner, address _permit2, address _amm, address _mikiReceiver) Ownable(_initialOwner) {
         permit2 = IAllowanceTransfer(_permit2);
+        amm = ISampleAMM(_amm);
+        mikiReceiver = _mikiReceiver;
     }
 
-    fallback() external payable { }
+    /* ----------------------------- Modifier -------------------------------- */
+    modifier onlyMikiReceiver() {
+        if (msg.sender != mikiReceiver) revert NotMikiReceiver();
+        _;
+    }
 
-    receive() external payable { }
-
+    /* ----------------------------- External Functions -------------------------------- */
     function mikiReceive(
         uint256,
         address user,
@@ -49,8 +58,14 @@ contract AAVEV3Receiver is IMikiReceiver, Ownable, GelatoRelayContextERC2771 {
     )
         external
         payable
+        onlyMikiReceiver
     {
-        TokenPool memory tokenPool = tokenToPool[token];
+        address underlyingToken = token;
+        if (message.length > 0) {
+            underlyingToken = abi.decode(message, (address));
+        }
+
+        TokenPool memory tokenPool = tokenToPool[underlyingToken];
         if (tokenPool.pool == address(0) || tokenPool.aToken == address(0)) {
             revert InvalidToken();
         }
@@ -58,9 +73,17 @@ contract AAVEV3Receiver is IMikiReceiver, Ownable, GelatoRelayContextERC2771 {
         if (amount == 0) {
             revert ZeroAmount();
         }
-        IERC20(token).approve(tokenPool.pool, amount);
-        IPool(tokenPool.pool).supply(token, amount, user, 0);
+
+        uint256 amountIn = amount;
+        if (underlyingToken != token) {
+            IERC20(token).approve(address(amm), amount);
+            amountIn = amm.swap(token, amount);
+        }
+
+        IERC20(underlyingToken).approve(tokenPool.pool, amountIn);
+        IPool(tokenPool.pool).supply(underlyingToken, amountIn, user, 0);
         uint256 aTokenBalance = IAToken(tokenPool.aToken).balanceOf(user);
+
         emit Supply(user, token, amount, tokenPool.aToken, aTokenBalance);
     }
 
@@ -153,6 +176,7 @@ contract AAVEV3Receiver is IMikiReceiver, Ownable, GelatoRelayContextERC2771 {
         return tokenToPool[token];
     }
 
+    /* ----------------------------- Internal Functions -------------------------------- */
     function _withdraw(
         address sender,
         address token,
@@ -165,4 +189,8 @@ contract AAVEV3Receiver is IMikiReceiver, Ownable, GelatoRelayContextERC2771 {
         IAToken(tokenPool.aToken).approve(tokenPool.pool, amount);
         return IPool(tokenPool.pool).withdraw(token, amount, address(this));
     }
+
+    fallback() external payable { }
+
+    receive() external payable { }
 }

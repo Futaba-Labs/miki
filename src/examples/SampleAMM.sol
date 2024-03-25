@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.23;
 
-contract SampleAMM {
+import { ISampleAMM } from "../interfaces/ISampleAMM.sol";
+
+contract SampleAMM is ISampleAMM {
     IERC20 public immutable token0;
     IERC20 public immutable token1;
 
