@@ -17,6 +17,25 @@ abstract contract BaseScript is Script {
     /// @dev Used to derive the broadcaster's address if $ETH_FROM is not defined.
     string internal mnemonic;
 
+    string internal deploymentPath = "constants/deployment.json";
+    string internal deploymentsJson = vm.readFile(deploymentPath);
+
+    mapping(Chains chains => Network network) internal networks;
+
+    Chains[] internal deployedChains = [Chains.ArbitrumSepolia, Chains.OptimismSepolia, Chains.PolygonMumbai];
+
+    enum Chains {
+        ArbitrumSepolia,
+        OptimismSepolia,
+        PolygonMumbai
+    }
+
+    struct Network {
+        string name;
+        uint256 chainId;
+        uint32 eid;
+    }
+
     /// @dev Initializes the transaction broadcaster like this:
     ///
     /// - If $ETH_FROM is defined, use it.
@@ -32,11 +51,44 @@ abstract contract BaseScript is Script {
             mnemonic = vm.envOr({ name: "MNEMONIC", defaultValue: TEST_MNEMONIC });
             (broadcaster,) = deriveRememberKey({ mnemonic: mnemonic, index: 0 });
         }
+
+        networks[Chains.ArbitrumSepolia] = Network("arbitrum_sepolia", 421_614, 40_231);
+        networks[Chains.OptimismSepolia] = Network("optimism_sepolia", 11_155_420, 40_232);
+        networks[Chains.PolygonMumbai] = Network("mumbai", 80_001, 40_109);
     }
 
     modifier broadcast() {
         vm.startBroadcast(broadcaster);
         _;
         vm.stopBroadcast();
+    }
+
+    function _createSelectFork(Chains chain) internal {
+        vm.createSelectFork(vm.rpcUrl(networks[chain].name));
+    }
+
+    function _createFork(Chains chain) internal {
+        vm.createFork(vm.rpcUrl(networks[chain].name));
+    }
+
+    function _getNetwork(uint256 chainId) internal view returns (Network memory) {
+        for (uint256 i = 0; i < deployedChains.length; i++) {
+            if (networks[deployedChains[i]].chainId == chainId) {
+                return networks[deployedChains[i]];
+            }
+        }
+        revert("Network not found");
+    }
+
+    function _getAllNetworks() internal view returns (Network[] memory) {
+        Network[] memory allNetworks = new Network[](deployedChains.length);
+        for (uint256 i = 0; i < deployedChains.length; i++) {
+            allNetworks[i] = networks[deployedChains[i]];
+        }
+        return allNetworks;
+    }
+
+    function _getChainKey(uint256 chainId) internal view returns (string memory) {
+        return string.concat(".", _getNetwork(chainId).name);
     }
 }

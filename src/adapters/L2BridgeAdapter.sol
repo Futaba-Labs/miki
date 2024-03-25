@@ -44,6 +44,7 @@ contract L2BridgeAdapter is IL2BridgeAdapter {
         uint32 quoteTimestamp = abi.decode(params, (uint32));
 
         bytes memory payload = abi.encodePacked(message, recipient);
+        uint256 destinationChainId = dstChainId;
 
         IAcrossV3SpokePool(spokePool).depositV3{ value: amount }(
             msg.sender,
@@ -52,7 +53,7 @@ contract L2BridgeAdapter is IL2BridgeAdapter {
             address(0),
             amount,
             amount - fee,
-            dstChainId,
+            destinationChainId,
             address(0),
             quoteTimestamp,
             uint32(block.timestamp + 21_600),
@@ -75,6 +76,8 @@ contract L2BridgeAdapter is IL2BridgeAdapter {
     {
         uint32 quoteTimestamp = abi.decode(params, (uint32));
 
+        uint256 destinationChainId = dstChainId;
+
         IAcrossV3SpokePool(spokePool).depositV3{ value: amount }(
             msg.sender,
             recipient,
@@ -82,7 +85,7 @@ contract L2BridgeAdapter is IL2BridgeAdapter {
             address(0),
             amount,
             amount - fee,
-            dstChainId,
+            destinationChainId,
             address(0),
             quoteTimestamp,
             uint32(block.timestamp + 21_600),

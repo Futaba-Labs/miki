@@ -35,7 +35,12 @@ contract NFTReceiver is IMikiReceiver, ERC721URIStorage {
         external
         payable
         onlyMikiReceiver
-    { }
+    {
+        address to = abi.decode(message, (address));
+        uint256 tokenId = _nextTokenId++;
+        _safeMint(to, tokenId);
+        emit MikiNFTMinted(to, tokenId);
+    }
 
     function mikiReceiveMsg(uint256, address, bytes calldata message) external payable onlyMikiReceiver {
         address to = abi.decode(message, (address));

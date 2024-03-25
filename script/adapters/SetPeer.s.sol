@@ -10,29 +10,37 @@ import { LayerZeroReceiver } from "../../src/adapters/LayerZeroReceiver.sol";
 
 /// @dev See the Solidity Scripting tutorial: https://book.getfoundry.sh/tutorials/solidity-scripting
 contract SetPeer is BaseScript {
-    // MikiTestToken public miki = MikiTestToken(0x587AF5e09a4e6011d5B7C38d45344792D6800898);
-    MikiTestToken public miki = MikiTestToken(0x7529afb262e776620a52e143d3610299A3F0C013);
-    LayerZeroAdapter public lzAdapter = LayerZeroAdapter(payable(0x80B86E002D91534F33046fBf138fEA8B832975cf));
-    LayerZeroReceiver public lzReceiver = LayerZeroReceiver(payable(0x175EC2f76e71f7a0f28B29244bd947a40ff11642));
+    Network[] public deployedNetworks = [networks[Chains.ArbitrumSepolia], networks[Chains.PolygonMumbai]];
 
-    address[] public peers = [0x7529afb262e776620a52e143d3610299A3F0C013, 0x587AF5e09a4e6011d5B7C38d45344792D6800898];
+    function setMikiPeer() public broadcast {
+        for (uint256 i = 0; i < deployedNetworks.length; i++) {
+            if (deployedNetworks[i].chainId == block.chainid) continue;
+            string memory targetChainKey = _getChainKey(deployedNetworks[i].chainId);
+            address peerAddress =
+                vm.parseJsonAddress(deploymentsJson, string.concat(targetChainKey, ".adapters.miki.token"));
 
-    address[] public lzAdapterPeers =
-        [0x175EC2f76e71f7a0f28B29244bd947a40ff11642, 0x80B86E002D91534F33046fBf138fEA8B832975cf];
+            string memory srcChainKey = _getChainKey(block.chainid);
+            address mikiAddress =
+                vm.parseJsonAddress(deploymentsJson, string.concat(srcChainKey, ".adapters.miki.token"));
 
-    uint32[] public eids = [40_232, 40_231];
+            MikiTestToken miki = MikiTestToken(mikiAddress);
+            miki.setPeer(deployedNetworks[i].eid, bytes32(uint256(uint160(peerAddress))));
+        }
+    }
 
-    function run() public broadcast {
-        // for (uint256 i = 0; i < peers.length; i++) {
-        //     miki.setPeer(eids[i], bytes32(uint256(uint160(peers[i]))));
-        // }
+    function setLzAdapterPeer() public broadcast {
+        for (uint256 i = 0; i < deployedNetworks.length; i++) {
+            if (deployedNetworks[i].chainId == block.chainid) continue;
+            string memory targetChainKey = _getChainKey(deployedNetworks[i].chainId);
+            address peerAddress =
+                vm.parseJsonAddress(deploymentsJson, string.concat(targetChainKey, ".adapters.layerZero.receiver"));
 
-        // for (uint256 i = 0; i < lzAdapterPeers.length; i++) {
-        //     lzAdapter.setPeer(eids[i], bytes32(uint256(uint160(lzAdapterPeers[i]))));
-        // }
+            string memory srcChainKey = _getChainKey(block.chainid);
+            address lzAdapterAddress =
+                vm.parseJsonAddress(deploymentsJson, string.concat(srcChainKey, ".adapters.layerZero.sender"));
 
-        for (uint256 i = 0; i < lzAdapterPeers.length; i++) {
-            lzReceiver.setPeer(eids[i], bytes32(uint256(uint160(lzAdapterPeers[i]))));
+            LayerZeroAdapter lzAdapter = LayerZeroAdapter(lzAdapterAddress);
+            lzAdapter.setPeer(deployedNetworks[i].eid, bytes32(uint256(uint160(peerAddress))));
         }
     }
 }

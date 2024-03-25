@@ -18,28 +18,49 @@ import { MikiTokenPool } from "../src/pools/MikiTokenPool.sol";
 contract BridgeOFT is BaseScript {
     using OptionsBuilder for bytes;
 
-    MikiAdapter public mikiAdapter = MikiAdapter(payable(0x700596f9F85b7E9c7bF6a2F58134362A22873A18));
-    MikiTestToken public miki = MikiTestToken(0x587AF5e09a4e6011d5B7C38d45344792D6800898);
-    MikiTokenPool public mikiTokenPool = MikiTokenPool(payable(0x8953512400A5fde7C5730e0942f14811Fc674e0B));
+    // MikiAdapter public mikiAdapter = MikiAdapter(payable(0x700596f9F85b7E9c7bF6a2F58134362A22873A18));
+    // MikiTestToken public miki = MikiTestToken(0x587AF5e09a4e6011d5B7C38d45344792D6800898);
+    // MikiTokenPool public mikiTokenPool = MikiTokenPool(payable(0x8953512400A5fde7C5730e0942f14811Fc674e0B));
 
     address recepient = 0x238Ae0427004bc4bF7fc2F0d9d99F87e9E367B3D;
-    uint256 dstChainId = 11_155_420;
+    uint256 dstChainId = 80_001;
     uint256 amount = 1 ether;
     uint256 minAmount = 1 ether;
     string greeting = "Hello, Miki!";
 
-    function run() public broadcast {
-        bytes memory option =
-            OptionsBuilder.newOptions().addExecutorLzReceiveOption(200_000, 0).addExecutorLzComposeOption(0, 200_000, 0);
+    function run() public broadcast { }
 
-        bytes memory message = abi.encode(greeting);
+    function bridgeFromTokenPool() public broadcast {
+        // bytes memory option =
+        //     OptionsBuilder.newOptions().addExecutorLzReceiveOption(200_000, 0).addExecutorLzComposeOption(0, 200_000,
+        // 0);
 
-        bytes memory params = abi.encode(minAmount, option);
-        uint256 fee =
-            mikiAdapter.estimateFee(broadcaster, dstChainId, recepient, address(miki), message, amount, params);
+        // bytes memory message = abi.encode(greeting);
 
-        mikiTokenPool.crossChainContractCallWithAsset{ value: fee * 120 / 100 }(
-            dstChainId, recepient, message, fee * 120 / 100, amount, params
-        );
+        // bytes memory params = abi.encode(minAmount, option);
+        // uint256 fee =
+        //     mikiAdapter.estimateFee(broadcaster, dstChainId, recepient, address(miki), message, amount, params);
+
+        // mikiTokenPool.crossChainContractCallWithAsset{ value: fee * 120 / 100 }(
+        //     dstChainId, recepient, message, fee * 120 / 100, amount, params
+        // );
+    }
+
+    function bridgeFromOFT() public broadcast {
+        bytes memory option = OptionsBuilder.newOptions().addExecutorLzReceiveOption(200_000, 0);
+
+        string memory srcChainKey = _getChainKey(block.chainid);
+        address mikiAddr = vm.parseJsonAddress(deploymentsJson, string.concat(srcChainKey, ".adapters.miki.token"));
+
+        MikiTestToken miki = MikiTestToken(mikiAddr);
+
+        Network memory network = _getNetwork(dstChainId);
+
+        SendParam memory sendParam =
+            SendParam(network.eid, bytes32(uint256(uint160(msg.sender))), amount, minAmount, option, "", "");
+
+        MessagingFee memory msgFee = miki.quoteSend(sendParam, false);
+
+        miki.send{ value: msgFee.nativeFee }(sendParam, msgFee, msg.sender);
     }
 }

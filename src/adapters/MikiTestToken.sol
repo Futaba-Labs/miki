@@ -25,4 +25,8 @@ contract MikiTestToken is OFT {
         // your contract logic here
         _mint(msg.sender, 100 ether); // mints 100 tokens to the deployer
     }
+
+    function mint(address to, uint256 amount) external onlyOwner {
+        _mint(to, amount);
+    }
 }
