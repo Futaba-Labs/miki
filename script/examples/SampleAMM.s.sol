@@ -29,7 +29,7 @@ contract SampleAMMScript is BaseScript {
         }
     }
 
-    function addLiquidity(uint256 token0Amount, uint256 token1Amount) public broadcast {
+    function addLiquidity(uint256 token0Amount) public broadcast {
         string memory chainKey = _getChainKey(block.chainid);
 
         address amm = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.amm.pool"));
@@ -37,6 +37,15 @@ contract SampleAMMScript is BaseScript {
         address token1 = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.amm.token1"));
 
         sampleAMM = SampleAMM(amm);
+
+        uint256 reserve0 = sampleAMM.reserve0();
+        uint256 reserve1 = sampleAMM.reserve1();
+
+        uint256 token1Amount = token0Amount;
+
+        if (reserve0 != 0) {
+            token1Amount = token0Amount * reserve1 / reserve0;
+        }
 
         IERC20(token0).approve(address(sampleAMM), token0Amount);
         IERC20(token1).approve(address(sampleAMM), token1Amount);
