@@ -2,15 +2,19 @@
   "arbitrum_sepolia": {
     "name": "arbitrum_sepolia",
     "chainId": 421614,
-    "l2AssetManager": "0x35E29cBEDe79A4b0279F7C55353e3D4a383Ef596",
+    "l2AssetManager": "0x4F9221f2e4f83081a3b4f209EF1C9344D62405Eb",
     "pools": {
       "ethTokenPool": {
         "underlying": "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
-        "pool": "0xE4E5af463852944FB90807461F4bbef512CaCaA8"
+        "pool": "0x4F9221f2e4f83081a3b4f209EF1C9344D62405Eb"
       },
       "mikiTokenPool": {
         "underlying": "0x9D2778CD4d232dC3e3f0C42caccA891D12EC9c8a",
-        "pool": "0xFbD2fDe2b50A0AE724765424578296A8d5fb2E73"
+        "pool": "0xFA7D34a5B87C6DD91511B69b8609c590a5F03f1d"
+      },
+      "usdcTokenPool": {
+        "underlying": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+        "pool": "0xe6f872D817Fcd7A603Ebe6f46684CD408B8b5A78"
       }
     },
     "adapters": {

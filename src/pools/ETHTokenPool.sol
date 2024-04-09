@@ -3,18 +3,21 @@ pragma solidity 0.8.23;
 
 import { IL2BridgeAdapter } from "../interfaces/IL2BridgeAdapter.sol";
 import { IL2AssetManager } from "../interfaces/IL2AssetManager.sol";
-import { BaseTokenPool } from "./BaseTokenPool.sol";
+import { TokenPoolBase } from "./TokenPoolBase.sol";
 
-contract ETHTokenPool is BaseTokenPool {
+contract ETHTokenPool is TokenPoolBase {
     /* ----------------------------- Constructor -------------------------------- */
     constructor(
-        address _initialOwner,
         address _l2AssetManager,
         address _underlyingToken,
         address _operator
     )
-        BaseTokenPool(_initialOwner, _l2AssetManager, _underlyingToken, _operator)
+        TokenPoolBase(_l2AssetManager, _underlyingToken, _operator)
     { }
+
+    function initialize(address _initialOwner, address _underlyingToken) public override initializer {
+        _initializeTokenPoolBase(_initialOwner, _underlyingToken);
+    }
 
     /* ----------------------------- External Functions -------------------------------- */
 

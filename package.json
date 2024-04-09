@@ -44,7 +44,7 @@
     "lint:sol": "forge fmt --check && yarn solhint {script,src,test}/**/*.sol",
     "prettier:check": "prettier --check **/*.{json,md,yml} --ignore-path=.prettierignore",
     "prettier:write": "prettier --write **/*.{json,md,yml} --ignore-path=.prettierignore",
-    "test": "forge test",
+    "test": "forge test -vvvv --via-ir",
     "test:coverage": "forge coverage",
     "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage",
     "set-peer:miki": "./bin/set_peer.sh 'setMikiPeer()'",

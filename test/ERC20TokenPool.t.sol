@@ -50,7 +50,18 @@ contract ERC20TokenPool is PRBTest, StdCheats {
         ERC20Mock erc20 = new ERC20Mock("Test", "TEST");
         erc20.mint(address(this), 100 ether);
         underlyingToken = address(erc20);
-        erc20TokenPool = new ERC20TokenPoolMock(owner, address(l2AssetManager), underlyingToken, owner);
+        ERC20TokenPoolMock erc20TokenPoolImpl = new ERC20TokenPoolMock(address(l2AssetManager), underlyingToken, owner);
+        erc20TokenPool = ERC20TokenPoolMock(
+            payable(
+                address(
+                    new TransparentUpgradeableProxy(
+                        address(erc20TokenPoolImpl),
+                        address(mikiProxyAdmin),
+                        abi.encodeWithSelector(ERC20TokenPoolMock.initialize.selector, owner, underlyingToken)
+                    )
+                )
+            )
+        );
 
         // Set the erc20 token pool.
         vm.prank(owner);

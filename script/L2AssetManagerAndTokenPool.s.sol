@@ -8,7 +8,7 @@ import { ProxyAdmin } from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin
 
 import { L2AssetManager } from "../src/L2AssetManager.sol";
 import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
-import { MikiTokenPool } from "../src/pools/MikiTokenPool.sol";
+import { ERC20TokenPool } from "../src/pools/ERC20TokenPool.sol";
 import { MikiAdapter } from "../src/adapters/MikiAdapter.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { OptionsBuilder } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/libs/OptionsBuilder.sol";
@@ -24,7 +24,8 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
     ProxyAdmin public mikiProxyAdmin;
     L2AssetManager public l2AssetManager;
     ETHTokenPool public ethTokenPool;
-    MikiTokenPool public mikiTokenPool;
+    ERC20TokenPool public erc20TokenPool;
+    ERC20TokenPool public usdcTokenPool;
 
     function run() public broadcast {
         string memory chainKey = _getChainKey(block.chainid);
@@ -33,6 +34,7 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
         address mikiTokenAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.miki.token"));
 
         address weth = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.underlying"));
+        address usdc = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.usdcTokenPool.underlying"));
 
         owner = broadcaster;
         mikiProxyAdmin = new ProxyAdmin(owner);
@@ -46,24 +48,60 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
                 )
             )
         );
-        ethTokenPool = new ETHTokenPool(owner, address(l2AssetManager), weth, owner);
-        mikiTokenPool = new MikiTokenPool(owner, address(l2AssetManager), mikiTokenAddr, owner);
+        ETHTokenPool ethTokenPoolImpl = new ETHTokenPool(address(l2AssetManager), weth, owner);
+        ethTokenPool = ETHTokenPool(
+            payable(
+                address(
+                    new TransparentUpgradeableProxy(
+                        address(ethTokenPoolImpl),
+                        address(mikiProxyAdmin),
+                        abi.encodeWithSelector(ETHTokenPool.initialize.selector, owner, weth)
+                    )
+                )
+            )
+        );
+
+        ERC20TokenPool erc20TokenPoolImpl = new ERC20TokenPool(address(l2AssetManager), mikiTokenAddr, owner);
+        erc20TokenPool = ERC20TokenPool(
+            payable(
+                address(
+                    new TransparentUpgradeableProxy(
+                        address(erc20TokenPoolImpl),
+                        address(mikiProxyAdmin),
+                        abi.encodeWithSelector(ERC20TokenPool.initialize.selector, owner, mikiTokenAddr)
+                    )
+                )
+            )
+        );
+
+        ERC20TokenPool usdcTokenPoolImpl = new ERC20TokenPool(address(l2AssetManager), usdc, owner);
+        usdcTokenPool = ERC20TokenPool(
+            payable(
+                address(
+                    new TransparentUpgradeableProxy(
+                        address(usdcTokenPoolImpl),
+                        address(mikiProxyAdmin),
+                        abi.encodeWithSelector(ERC20TokenPool.initialize.selector, owner, usdc)
+                    )
+                )
+            )
+        );
 
         // Set the native token pool.
         l2AssetManager.setNativeTokenPool(address(ethTokenPool));
 
         // Set the ERC20 token pool.
-        tokenPools.push(address(mikiTokenPool));
+        tokenPools.push(address(erc20TokenPool));
         l2AssetManager.setTokenPoolWhitelists(tokenPools, tokenPoolWhitelists);
 
         MikiAdapter mikiAdapter = MikiAdapter(payable(mikiAdapterAddr));
 
         // Set the bridge adapter.
-        mikiTokenPool.setBridgeAdapter(80_001, address(mikiAdapter));
+        erc20TokenPool.setBridgeAdapter(80_001, address(mikiAdapter));
 
         // send erc20 to mikiTokenPool
         IERC20(mikiTokenAddr).approve(address(l2AssetManager), 100 ether);
-        l2AssetManager.deposit(address(mikiTokenAddr), address(mikiTokenPool), 100 ether);
+        l2AssetManager.deposit(address(mikiTokenAddr), address(erc20TokenPool), 100 ether);
 
         // send eth to ethTokenPool
         l2AssetManager.depositETH{ value: 0.1 ether }(0.1 ether);
@@ -74,7 +112,10 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
             vm.toString(address(ethTokenPool)), deploymentPath, string.concat(chainKey, ".pools.ethTokenPool.pool")
         );
         vm.writeJson(
-            vm.toString(address(mikiTokenPool)), deploymentPath, string.concat(chainKey, ".pools.mikiTokenPool.pool")
+            vm.toString(address(erc20TokenPool)), deploymentPath, string.concat(chainKey, ".pools.mikiTokenPool.pool")
+        );
+        vm.writeJson(
+            vm.toString(address(usdcTokenPool)), deploymentPath, string.concat(chainKey, ".pools.usdcTokenPool.pool")
         );
     }
 
@@ -111,7 +152,7 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
 
         IERC20(mikiTokenAddr).approve(mikiAdapterAddr, amount);
 
-        MikiTokenPool tokenPool = MikiTokenPool(payable(mikiTokenPoolAddr));
+        ERC20TokenPool tokenPool = ERC20TokenPool(payable(mikiTokenPoolAddr));
 
         tokenPool.crossChainContractCallWithAsset{ value: fee * 120 / 100 }(
             dstChainId, aaveV3ReceiverAddr, message, fee * 120 / 100, amount, params

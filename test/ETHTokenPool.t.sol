@@ -42,7 +42,18 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
                 )
             )
         );
-        ethTokenPool = new ETHTokenPool(owner, address(l2AssetManager), owner, underlyingToken);
+        ETHTokenPool ethTokenPoolImpl = new ETHTokenPool(address(l2AssetManager), underlyingToken, owner);
+        ethTokenPool = ETHTokenPool(
+            payable(
+                address(
+                    new TransparentUpgradeableProxy(
+                        address(ethTokenPoolImpl),
+                        address(mikiProxyAdmin),
+                        abi.encodeWithSelector(ETHTokenPool.initialize.selector, owner, underlyingToken)
+                    )
+                )
+            )
+        );
 
         // Set the native token pool.
         vm.prank(owner);
