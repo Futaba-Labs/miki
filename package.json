@@ -15,6 +15,7 @@
     "@axelar-network/axelarjs-sdk": "^0.14.2",
     "@gelatonetwork/relay-context": "^3.2.0",
     "@gelatonetwork/relay-sdk": "^5.5.6",
+    "@layerzerolabs/devtools": "LayerZero-Labs/devtools",
     "@layerzerolabs/lz-evm-messagelib-v2": "^2.1.18",
     "@layerzerolabs/lz-evm-oapp-v2": "^2.1.18",
     "@layerzerolabs/lz-evm-protocol-v2": "^2.1.18",
