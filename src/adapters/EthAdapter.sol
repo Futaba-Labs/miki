@@ -4,6 +4,7 @@ pragma solidity 0.8.23;
 import { IL2BridgeAdapter } from "../interfaces/IL2BridgeAdapter.sol";
 import { IOrbiterXRouterV3 } from "../interfaces/IOrbiterXRouterV3.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { ILayerZeroAdapter } from "../interfaces/ILayerZeroAdapter.sol";
 
 /**
  * @title EthAdapter
@@ -12,12 +13,15 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 contract EthAdapter is IL2BridgeAdapter, Ownable {
     /* ----------------------------- Storage -------------------------------- */
     address public orbiterRouter;
+    address public mikiRouter;
+    address public lzAdapter;
     address public receiver;
 
     mapping(uint256 chainId => uint16 code) public identificationCodes;
 
     /* ----------------------------- Events -------------------------------- */
     event SetIdentificationCode(uint256 chainId, uint16 code);
+    event TransferMikiRouter(address sender, uint256 dstChainId, address recipient, uint256 amount, bytes message);
 
     /* ----------------------------- Errors -------------------------------- */
     error InvalidLength();
@@ -26,8 +30,17 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
 
     /* ----------------------------- Constructor -------------------------------- */
 
-    constructor(address payable _orbiterRouter, address _initialOwner) Ownable(_initialOwner) {
+    constructor(
+        address payable _orbiterRouter,
+        address payable _mikiRouter,
+        address _lzAdapter,
+        address _initialOwner
+    )
+        Ownable(_initialOwner)
+    {
         orbiterRouter = _orbiterRouter;
+        mikiRouter = _mikiRouter;
+        lzAdapter = _lzAdapter;
     }
 
     function execCrossChainContractCall(
@@ -40,7 +53,9 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
     )
         external
         payable
-    { }
+    {
+        ILayerZeroAdapter(lzAdapter).lzSend{ value: fee }(sender, dstChainId, recipient, message, fee, params);
+    }
 
     function execCrossChainContractCallWithAsset(
         address sender,
@@ -54,7 +69,13 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
     )
         external
         payable
-    { }
+    {
+        bytes memory _payload = abi.encode(sender, recipient, message);
+
+        payable(mikiRouter).transfer(amount + fee);
+
+        emit TransferMikiRouter(sender, dstChainId, recipient, amount, _payload);
+    }
 
     function execCrossChainTransferAsset(
         address sender,
@@ -68,20 +89,22 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         external
         payable
     {
-        uint16 code = identificationCodes[dstChainId];
+        // uint16 code = identificationCodes[dstChainId];
 
-        if (code == 0) {
-            revert InvalidCode();
-        }
+        // if (code == 0) {
+        //     revert InvalidCode();
+        // }
 
-        uint256 totalAmount = amount + code;
+        // uint256 totalAmount = amount + code;
 
-        address[] memory recipients = new address[](1);
-        recipients[0] = recipient;
-        uint256[] memory amounts = new uint256[](1);
-        amounts[0] = totalAmount;
+        // address[] memory recipients = new address[](1);
+        // recipients[0] = recipient;
+        // uint256[] memory amounts = new uint256[](1);
+        // amounts[0] = totalAmount;
 
-        payable(orbiterRouter).transfer(totalAmount);
+        payable(mikiRouter).transfer(amount + fee);
+
+        emit TransferMikiRouter(sender, dstChainId, recipient, amount, bytes(""));
     }
 
     function estimateFee(
@@ -97,6 +120,11 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         view
         returns (uint256)
     {
+        if (params.length > 0) {
+            return
+                ILayerZeroAdapter(lzAdapter).estimateFee(sender, dstChainId, recipient, asset, message, amount, params);
+        }
+
         return 0;
     }
 

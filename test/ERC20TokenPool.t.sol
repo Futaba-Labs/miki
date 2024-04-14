@@ -13,6 +13,7 @@ import { SampleMikiReceiver } from "../src/examples/SampleMikiReceiver.sol";
 import { ERC20TokenPoolMock } from "./mock/ERC20TokenPoolMock.sol";
 import { ERC20Mock } from "./mock/ERC20Mock.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { MikiReceiver } from "../src/adapters/MikiReceiver.sol";
 
 contract ERC20TokenPool is PRBTest, StdCheats {
     bytes constant MESSAGE = abi.encode("Hello, world!");
@@ -26,6 +27,7 @@ contract ERC20TokenPool is PRBTest, StdCheats {
     BridgeAdapterMock public bridgeAdapterMock;
     BridgeReceiverMock public bridgeReceiverMock;
     SampleMikiReceiver public sampleMikiReceiver;
+    MikiReceiver public mikiReceiver;
 
     event Greeting(string message);
     event Received(address sender, address token, uint256 amount, bytes message);
@@ -75,11 +77,20 @@ contract ERC20TokenPool is PRBTest, StdCheats {
         vm.prank(owner);
         erc20TokenPool.setBridgeAdapter(1, address(bridgeAdapterMock));
 
+        // Instantiate the MikiReceiver.
+        mikiReceiver = new MikiReceiver(owner);
+
         // Instantiate the BridgeReceiverMock.
-        bridgeReceiverMock = new BridgeReceiverMock();
+        bridgeReceiverMock = new BridgeReceiverMock(address(mikiReceiver));
 
         // Instantiate the HelloWorld contract.
         sampleMikiReceiver = new SampleMikiReceiver();
+
+        // set the miki receiver
+        address[] memory adapters = new address[](1);
+        adapters[0] = address(mikiReceiver);
+        vm.prank(owner);
+        mikiReceiver.setAdapters(adapters);
     }
 
     function test_CrossChainContractCallWithAsset() external {

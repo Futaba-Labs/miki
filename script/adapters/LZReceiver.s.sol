@@ -74,6 +74,7 @@ contract LZReceiverScript is BaseScript {
     }
 
     function _deployLZReceiver(address gateway) internal broadcast {
-        lzReceiver = new LayerZeroReceiver(gateway, gateway, broadcaster);
+        // TODO: set miki receiver
+        lzReceiver = new LayerZeroReceiver(gateway, gateway, gateway, broadcaster);
     }
 }

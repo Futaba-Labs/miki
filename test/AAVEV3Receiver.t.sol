@@ -12,9 +12,12 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IATokenMock } from "./mock/ATokenMock.sol";
 import { BridgeReceiverMock } from "./mock/BridgeReceiverMock.sol";
 import { SampleAMM } from "../src/examples/SampleAMM.sol";
+import { MikiReceiver } from "../src/adapters/MikiReceiver.sol";
 
 contract AAVEV3ReceiverTest is PRBTest, StdCheats {
     address public owner;
+    address[] private adapters;
+    MikiReceiver public mikiReceiver;
     BridgeReceiverMock public bridgeReceiver;
     AAVEV3Receiver public aaveReceiver;
     ATokenMock public aToken;
@@ -41,16 +44,20 @@ contract AAVEV3ReceiverTest is PRBTest, StdCheats {
         erc20 = new ERC20Mock("erc20", "erc20");
         anotherErc20 = new ERC20Mock("anotherErc20", "anotherErc20");
 
-        bridgeReceiver = new BridgeReceiverMock();
+        mikiReceiver = new MikiReceiver(owner);
+
+        bridgeReceiver = new BridgeReceiverMock(address(mikiReceiver));
         amm = new SampleAMM(address(anotherErc20), address(erc20));
         aToken = new ATokenMock("aToken", "aToken");
         pool = new AAVEV3PoolMock(address(aToken));
-        aaveReceiver = new AAVEV3Receiver(owner, address(this), address(amm), address(bridgeReceiver));
+        aaveReceiver = new AAVEV3Receiver(owner, address(this), address(amm), address(mikiReceiver));
 
         erc20.mint(owner, 11_000 ether);
         anotherErc20.mint(owner, 11_000 ether);
 
         vm.startPrank(owner);
+        adapters = [address(mikiReceiver)];
+        mikiReceiver.setAdapters(adapters);
         aaveReceiver.setTokenPool(address(erc20), address(aToken), address(pool));
 
         IERC20(erc20).approve(address(amm), 1000 ether);
@@ -104,17 +111,6 @@ contract AAVEV3ReceiverTest is PRBTest, StdCheats {
         );
 
         bridgeReceiver.receiveMsgWithAmount(1, owner, address(anotherErc20), 100 ether, payload);
-    }
-
-    function test_ZeroAmount() public {
-        bytes memory payload = abi.encode(owner, address(aaveReceiver), false, bytes(""));
-
-        vm.expectEmit(true, true, true, true);
-        emit FailedMsgAndToken(
-            1, owner, address(anotherErc20), address(aaveReceiver), 0 ether, bytes(""), "Unknown error"
-        );
-
-        bridgeReceiver.receiveMsgWithAmount(1, owner, address(anotherErc20), 0 ether, payload);
     }
 
     function test_Withdraw() public {

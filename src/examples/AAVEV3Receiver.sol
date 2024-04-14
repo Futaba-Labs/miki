@@ -2,7 +2,7 @@
 pragma solidity 0.8.23;
 
 import { IPool } from "@aave/core-v3/contracts/interfaces/IPool.sol";
-import { IMikiReceiver } from "../interfaces/IMikiReceiver.sol";
+import { IMikiAppReceiver } from "../interfaces/IMikiAppReceiver.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IAToken } from "@aave/core-v3/contracts/interfaces/IAToken.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -10,7 +10,7 @@ import { GelatoRelayContextERC2771 } from "@gelatonetwork/relay-context/contract
 import { IAllowanceTransfer } from "../interfaces/IAllowanceTransfer.sol";
 import { ISampleAMM } from "../interfaces/ISampleAMM.sol";
 
-contract AAVEV3Receiver is IMikiReceiver, Ownable, GelatoRelayContextERC2771 {
+contract AAVEV3Receiver is IMikiAppReceiver, Ownable, GelatoRelayContextERC2771 {
     /* ----------------------------- Storage -------------------------------- */
     IAllowanceTransfer public immutable permit2;
     ISampleAMM public immutable amm;
@@ -31,7 +31,6 @@ contract AAVEV3Receiver is IMikiReceiver, Ownable, GelatoRelayContextERC2771 {
     error InvalidLength();
     error InvalidToken();
     error MismatchedLength();
-    error ZeroAmount();
     error InvalidSpender();
     error NotMikiReceiver();
 
@@ -61,6 +60,9 @@ contract AAVEV3Receiver is IMikiReceiver, Ownable, GelatoRelayContextERC2771 {
         onlyMikiReceiver
     {
         address underlyingToken = token;
+        if (underlyingToken == address(0)) {
+            underlyingToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+        }
         if (message.length > 0) {
             underlyingToken = abi.decode(message, (address));
         }
@@ -68,10 +70,6 @@ contract AAVEV3Receiver is IMikiReceiver, Ownable, GelatoRelayContextERC2771 {
         TokenPool memory tokenPool = tokenToPool[underlyingToken];
         if (tokenPool.pool == address(0) || tokenPool.aToken == address(0)) {
             revert InvalidToken();
-        }
-
-        if (amount == 0) {
-            revert ZeroAmount();
         }
 
         uint256 amountIn = amount;

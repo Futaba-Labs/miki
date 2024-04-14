@@ -26,7 +26,8 @@ abstract contract BaseScript is Script {
     enum Chains {
         ArbitrumSepolia,
         OptimismSepolia,
-        PolygonMumbai
+        PolygonMumbai,
+        BaseSepolia
     }
 
     struct Network {
@@ -54,6 +55,7 @@ abstract contract BaseScript is Script {
         networks[Chains.ArbitrumSepolia] = Network("arbitrum_sepolia", 421_614, 40_231);
         networks[Chains.OptimismSepolia] = Network("optimism_sepolia", 11_155_420, 40_232);
         networks[Chains.PolygonMumbai] = Network("mumbai", 80_001, 40_109);
+        networks[Chains.BaseSepolia] = Network("base_sepolia", 84_532, 40_245);
     }
 
     modifier broadcast() {

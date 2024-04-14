@@ -16,8 +16,9 @@ contract NFTReceiverScript is BaseScript {
     string public uri = "ipfs://QmeuC3tFtndSF1pBTzZxUmArWiBFv3ozNhEnAPFKJp9T1E/0";
 
     function run() public {
-        Chains[] memory deployForks = new Chains[](1);
-        deployForks[0] = Chains.PolygonMumbai;
+        Chains[] memory deployForks = new Chains[](2);
+        deployForks[0] = Chains.OptimismSepolia;
+        deployForks[1] = Chains.BaseSepolia;
 
         for (uint256 i = 0; i < deployForks.length; i++) {
             Network memory network = networks[deployForks[i]];
@@ -58,6 +59,12 @@ contract NFTReceiverScript is BaseScript {
         mikiAdapter.execCrossChainContractCallWithAsset{ value: fee * 120 / 100 }(
             msg.sender, dstChainId, nftReceiverAddr, mikiTokenAddr, message, fee * 120 / 100, amount, params
         );
+    }
+
+    function deployNFTReceiver() public {
+        string memory chainKey = _getChainKey(block.chainid);
+        address ethReceiver = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.receiver"));
+        _deployNFTReceiver(ethReceiver);
     }
 
     function _deployNFTReceiver(address mikiReceiver) internal broadcast {

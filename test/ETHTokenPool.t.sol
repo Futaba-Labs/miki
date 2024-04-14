@@ -11,6 +11,7 @@ import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
 import { BridgeAdapterMock } from "./mock/BridgeAdapterMock.sol";
 import { BridgeReceiverMock } from "./mock/BridgeReceiverMock.sol";
 import { SampleMikiReceiver } from "../src/examples/SampleMikiReceiver.sol";
+import { MikiReceiver } from "../src/adapters/MikiReceiver.sol";
 
 contract ETHTokenPoolTest is PRBTest, StdCheats {
     bytes constant MESSAGE = abi.encode("Hello, world!");
@@ -22,6 +23,7 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
     BridgeAdapterMock public bridgeAdapterMock;
     BridgeReceiverMock public bridgeReceiverMock;
     SampleMikiReceiver public sampleMikiReceiver;
+    MikiReceiver public mikiReceiver;
 
     event Greeting(string message);
 
@@ -66,11 +68,20 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
         vm.prank(owner);
         ethTokenPool.setBridgeAdapter(1, address(bridgeAdapterMock));
 
+        // Instantiate the MikiReceiver.
+        mikiReceiver = new MikiReceiver(owner);
+
         // Instantiate the BridgeReceiverMock.
-        bridgeReceiverMock = new BridgeReceiverMock();
+        bridgeReceiverMock = new BridgeReceiverMock(address(mikiReceiver));
 
         // Instantiate the HelloWorld contract.
         sampleMikiReceiver = new SampleMikiReceiver();
+
+        // Set the miki receiver.
+        address[] memory adapters = new address[](1);
+        adapters[0] = address(mikiReceiver);
+        vm.prank(owner);
+        mikiReceiver.setAdapters(adapters);
     }
 
     function test_CrossChainContractCall() external {
@@ -103,10 +114,9 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
 
         // receive the msg and asset
         bytes memory payload = abi.encode(address(ethTokenPool), recipient, true, MESSAGE);
-        address(bridgeReceiverMock).call{ value: amount }("");
         vm.expectEmit(true, true, true, true);
         emit Greeting("Hello, world!");
-        bridgeReceiverMock.receiveMsgWithAmount(1, address(this), underlyingToken, amount, payload);
+        bridgeReceiverMock.receiveMsgWithAmount{ value: amount }(1, address(this), address(0), amount, payload);
         assertEq(address(sampleMikiReceiver).balance, 0.5 ether);
     }
 
