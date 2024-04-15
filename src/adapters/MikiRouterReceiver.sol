@@ -7,25 +7,6 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 contract MikiRouterReceiver is Ownable {
     address public mikiRouter;
     address public mikiReceiver;
-    /* ----------------------------- Events -------------------------------- */
-
-    event SentMsgAndToken(
-        uint256 _srcChainId, address _srcAddress, address _token, address _receiver, uint256 _amountLD, bytes _message
-    );
-
-    event SentMsg(uint256 _srcChainId, address _srcAddress, address _receiver, bytes _message);
-
-    event FailedMsgAndToken(
-        uint256 _srcChainId,
-        address _srcAddress,
-        address _token,
-        address _receiver,
-        uint256 _amountLD,
-        bytes _message,
-        string _reason
-    );
-
-    event FailedMsg(uint256 _srcChainId, address _srcAddress, address _receiver, bytes _message, string _reason);
 
     /* ----------------------------- Erorrs -------------------------------- */
 

@@ -13,17 +13,6 @@ contract LZReceiverScript is BaseScript {
     SampleMikiReceiver public mikiReceiver;
 
     function run() public {
-        // owner = broadcaster;
-
-        // // Instantiate the BridgeAdapterMock.
-        // lzReceiver = new LayerZeroReceiver(stargateRouter, gateway, owner);
-
-        // // set chainIds and eids
-        // lzReceiver.setChainIds(eids, chainIds);
-
-        // // Instantiate the SampleMikiReceiver.
-        // mikiReceiver = new SampleMikiReceiver();
-
         Chains[] memory deployForks = new Chains[](2);
         deployForks[0] = Chains.ArbitrumSepolia;
         deployForks[1] = Chains.PolygonMumbai;
@@ -32,10 +21,12 @@ contract LZReceiverScript is BaseScript {
             string memory chainKey = _getChainKey(networks[deployForks[i]].chainId);
             address gateway =
                 vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.layerZero.gateway"));
+            address mikiReceiver =
+                vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.mikiReceiver"));
 
             _createSelectFork(deployForks[i]);
 
-            _deployLZReceiver(gateway);
+            _deployLZReceiver(mikiReceiver, gateway);
 
             vm.writeJson(
                 vm.toString(address(lzReceiver)),
@@ -73,8 +64,18 @@ contract LZReceiverScript is BaseScript {
         LayerZeroReceiver(payable(lzReceiverAddr)).setChainIds(eids, chainIds);
     }
 
-    function _deployLZReceiver(address gateway) internal broadcast {
-        // TODO: set miki receiver
-        lzReceiver = new LayerZeroReceiver(gateway, gateway, gateway, broadcaster);
+    function deployLZReceiver() public {
+        string memory chainKey = _getChainKey(block.chainid);
+        address gateway = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.layerZero.gateway"));
+        address mikiReceiverAddr =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.mikiReceiver"));
+        _deployLZReceiver(mikiReceiverAddr, gateway);
+        vm.writeJson(
+            vm.toString(address(lzReceiver)), deploymentPath, string.concat(chainKey, ".adapters.layerZero.receiver")
+        );
+    }
+
+    function _deployLZReceiver(address mikiReceiverAddr, address gateway) internal broadcast {
+        lzReceiver = new LayerZeroReceiver(gateway, mikiReceiverAddr, gateway, broadcaster);
     }
 }

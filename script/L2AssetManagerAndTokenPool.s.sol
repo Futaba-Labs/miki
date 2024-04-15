@@ -12,6 +12,7 @@ import { ERC20TokenPool } from "../src/pools/ERC20TokenPool.sol";
 import { MikiAdapter } from "../src/adapters/MikiAdapter.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { OptionsBuilder } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/libs/OptionsBuilder.sol";
+import { EthAdapter } from "../src/adapters/EthAdapter.sol";
 
 /// @dev See the Solidity Scripting tutorial: https://book.getfoundry.sh/tutorials/solidity-scripting
 
@@ -31,6 +32,7 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
         string memory chainKey = _getChainKey(block.chainid);
 
         address mikiAdapterAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.miki.sender"));
+        address ethAdapterAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.sender"));
         address mikiTokenAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.miki.token"));
 
         address weth = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.underlying"));
@@ -99,6 +101,9 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
         // Set the bridge adapter.
         erc20TokenPool.setBridgeAdapter(80_001, address(mikiAdapter));
 
+        // Set the eth adapter.
+        ethTokenPool.setBridgeAdapter(networks[Chains.OptimismSepolia].chainId, ethAdapterAddr);
+
         // send erc20 to mikiTokenPool
         IERC20(mikiTokenAddr).approve(address(l2AssetManager), 100 ether);
         l2AssetManager.deposit(address(mikiTokenAddr), address(erc20TokenPool), 100 ether);
@@ -107,7 +112,7 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
         l2AssetManager.depositETH{ value: 0.1 ether }(0.1 ether);
 
         // write json
-        vm.writeJson(vm.toString(address(ethTokenPool)), deploymentPath, string.concat(chainKey, ".l2AssetManager"));
+        vm.writeJson(vm.toString(address(l2AssetManager)), deploymentPath, string.concat(chainKey, ".l2AssetManager"));
         vm.writeJson(
             vm.toString(address(ethTokenPool)), deploymentPath, string.concat(chainKey, ".pools.ethTokenPool.pool")
         );
@@ -157,5 +162,60 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
         tokenPool.crossChainContractCallWithAsset{ value: fee * 120 / 100 }(
             dstChainId, aaveV3ReceiverAddr, message, fee * 120 / 100, amount, params
         );
+    }
+
+    function upgradeETHTokenPool() public broadcast {
+        string memory chainKey = _getChainKey(block.chainid);
+        address ethTokenPoolAddr =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.pool"));
+
+        address weth = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.underlying"));
+
+        ETHTokenPool ethTokenPoolImpl = new ETHTokenPool(address(l2AssetManager), weth, owner);
+
+        ethTokenPool.upgradeTo(ethTokenPoolImpl);
+    }
+
+    function crossChainMint(uint256 dstChainId, address to) public broadcast {
+        bytes memory option = OptionsBuilder.newOptions().addExecutorLzReceiveOption(200_000, 0);
+
+        string memory chainKey = _getChainKey(block.chainid);
+        string memory dstChainKey = _getChainKey(dstChainId);
+
+        address ethTokenPoolAddr =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.pool"));
+        address ethAdapterAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.sender"));
+        address nftReceiver = vm.parseJsonAddress(deploymentsJson, string.concat(dstChainKey, ".examples.nft"));
+
+        ethTokenPool = ETHTokenPool(payable(ethTokenPoolAddr));
+
+        bytes memory params = abi.encode(option, bytes(""));
+        bytes memory message = abi.encode(to);
+
+        EthAdapter ethAdapter = EthAdapter(payable(ethAdapterAddr));
+
+        uint256 fee = ethAdapter.estimateFee(broadcaster, dstChainId, nftReceiver, address(0), message, 0, params);
+
+        ethTokenPool.crossChainContractCall(dstChainId, nftReceiver, message, fee, params);
+    }
+
+    function crossChainETHBridge(uint256 dstChainId, address to, uint256 amount) public broadcast {
+        string memory chainKey = _getChainKey(block.chainid);
+        string memory dstChainKey = _getChainKey(dstChainId);
+
+        address ethTokenPoolAddr =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.pool"));
+        address ethAdapterAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.sender"));
+        address nftReceiver = vm.parseJsonAddress(deploymentsJson, string.concat(dstChainKey, ".examples.nft"));
+
+        ethTokenPool = ETHTokenPool(payable(ethTokenPoolAddr));
+
+        bytes memory message = abi.encode(to);
+
+        // EthAdapter ethAdapter = EthAdapter(payable(ethAdapterAddr));
+
+        uint256 fee = 1_000_000_000_000_000;
+
+        ethTokenPool.crossChainContractCallWithAsset(dstChainId, nftReceiver, message, fee, amount, bytes(""));
     }
 }

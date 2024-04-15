@@ -21,7 +21,8 @@ abstract contract BaseScript is Script {
 
     mapping(Chains chains => Network network) internal networks;
 
-    Chains[] internal deployedChains = [Chains.ArbitrumSepolia, Chains.OptimismSepolia, Chains.PolygonMumbai];
+    Chains[] internal deployedChains =
+        [Chains.ArbitrumSepolia, Chains.OptimismSepolia, Chains.PolygonMumbai, Chains.BaseSepolia];
 
     enum Chains {
         ArbitrumSepolia,

@@ -25,7 +25,7 @@ contract NFTReceiverScript is BaseScript {
             string memory chainKey = string.concat(".", network.name);
 
             address mikiReceiver =
-                vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.miki.receiver"));
+                vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.mikiReceiver"));
 
             _createSelectFork(deployForks[i]);
 
@@ -63,8 +63,9 @@ contract NFTReceiverScript is BaseScript {
 
     function deployNFTReceiver() public {
         string memory chainKey = _getChainKey(block.chainid);
-        address ethReceiver = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.receiver"));
-        _deployNFTReceiver(ethReceiver);
+        address mikiReceiver = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.mikiReceiver"));
+        _deployNFTReceiver(mikiReceiver);
+        vm.writeJson(vm.toString(address(nftReceiver)), deploymentPath, string.concat(chainKey, ".examples.nft"));
     }
 
     function _deployNFTReceiver(address mikiReceiver) internal broadcast {

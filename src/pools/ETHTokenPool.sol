@@ -117,7 +117,7 @@ contract ETHTokenPool is TokenPoolBase {
         _beforeBridge(user, dstChainId, recipient, fee, amount, data, bridgeAdapter, params);
 
         uint256 total = fee + amount;
-        bridgeAdapter.execCrossChainContractCallWithAsset{ value: totalAmount }(
+        bridgeAdapter.execCrossChainContractCallWithAsset{ value: total }(
             user, dstChainId, recipient, underlyingToken, data, fee, amount, params
         );
 
@@ -141,7 +141,7 @@ contract ETHTokenPool is TokenPoolBase {
 
         uint256 total = fee + amount;
 
-        bridgeAdapter.execCrossChainTransferAsset{ value: totalAmount }(
+        bridgeAdapter.execCrossChainTransferAsset{ value: total }(
             user, dstChainId, recipient, underlyingToken, fee, amount, params
         );
 

@@ -54,8 +54,9 @@ contract EthAdapterScript is BaseScript {
     function deployMikiRouterReceiver() public broadcast {
         string memory chainKey = _getChainKey(block.chainid);
         address router = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.router"));
-        // TODO: set miki receiver
-        mikiRouterReceiver = new MikiRouterReceiver(router, router, broadcaster);
+        address mikiReceiverAddr =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.mikiReceiver"));
+        mikiRouterReceiver = new MikiRouterReceiver(router, mikiReceiverAddr, broadcaster);
         vm.writeJson(
             vm.toString(address(mikiRouterReceiver)), deploymentPath, string.concat(chainKey, ".adapters.eth.receiver")
         );
@@ -63,8 +64,9 @@ contract EthAdapterScript is BaseScript {
 
     function bridgeETH(uint256 dstChainId, uint256 amount) public broadcast {
         string memory chainKey = _getChainKey(block.chainid);
+        string memory dstChainKey = _getChainKey(dstChainId);
         address ethAdapterAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.sender"));
-
+        address nftReceiver = vm.parseJsonAddress(deploymentsJson, string.concat(dstChainKey, ".examples.nft"));
         ethAdapter = EthAdapter(payable(ethAdapterAddr));
 
         // uint16 code = ethAdapter.getIdentificationCode(dstChainId);
@@ -77,14 +79,7 @@ contract EthAdapterScript is BaseScript {
         // );
 
         ethAdapter.execCrossChainContractCallWithAsset{ value: totalAmount }(
-            broadcaster,
-            dstChainId,
-            0xA5811C47cA1d3ebFFb9CFBfD0630700995AF1E33,
-            0xeeeEEeeEeee6B44087746554679424e322316869,
-            message,
-            0,
-            amount,
-            bytes("")
+            broadcaster, dstChainId, nftReceiver, address(0), message, 0, amount, bytes("")
         );
     }
 
