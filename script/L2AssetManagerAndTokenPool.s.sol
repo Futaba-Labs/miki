@@ -3,9 +3,11 @@ pragma solidity 0.8.23;
 
 import { BaseScript } from "./Base.s.sol";
 
-import { TransparentUpgradeableProxy } from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import {
+    TransparentUpgradeableProxy,
+    ITransparentUpgradeableProxy
+} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import { ProxyAdmin } from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
-
 import { L2AssetManager } from "../src/L2AssetManager.sol";
 import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
 import { ERC20TokenPool } from "../src/pools/ERC20TokenPool.sol";
@@ -13,6 +15,7 @@ import { MikiAdapter } from "../src/adapters/MikiAdapter.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { OptionsBuilder } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/libs/OptionsBuilder.sol";
 import { EthAdapter } from "../src/adapters/EthAdapter.sol";
+import { Upgrades } from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
 /// @dev See the Solidity Scripting tutorial: https://book.getfoundry.sh/tutorials/solidity-scripting
 
@@ -168,12 +171,29 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
         string memory chainKey = _getChainKey(block.chainid);
         address ethTokenPoolAddr =
             vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.pool"));
+        // address proxyAdminAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".proxyAdmin"));
 
         address weth = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.underlying"));
 
         ETHTokenPool ethTokenPoolImpl = new ETHTokenPool(address(l2AssetManager), weth, owner);
 
-        ethTokenPool.upgradeTo(ethTokenPoolImpl);
+        ethTokenPool = ETHTokenPool(payable(ethTokenPoolAddr));
+        // ITransparentUpgradeableProxy beforeETHTokenPool =
+        // ITransparentUpgradeableProxy(payable(address(ethTokenPool)));
+
+        // ProxyAdmin proxyAdmin = ProxyAdmin(proxyAdminAddr);
+
+        Upgrades.upgradeProxy(
+            payable(address(ethTokenPool)),
+            "ETHTokenPool.sol",
+            abi.encodeWithSelector(ETHTokenPool.initialize.selector, owner, weth)
+        );
+
+        // proxyAdmin.upgradeAndCall(
+        //     beforeETHTokenPool,
+        //     address(ethTokenPoolImpl),
+        //     abi.encodeWithSelector(ETHTokenPool.initialize.selector, owner, weth)
+        // );
     }
 
     function crossChainMint(uint256 dstChainId, address to) public broadcast {
