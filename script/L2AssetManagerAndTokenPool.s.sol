@@ -7,6 +7,7 @@ import {
     TransparentUpgradeableProxy,
     ITransparentUpgradeableProxy
 } from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import { ERC1967Utils } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
 import { ProxyAdmin } from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import { L2AssetManager } from "../src/L2AssetManager.sol";
 import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
@@ -15,7 +16,6 @@ import { MikiAdapter } from "../src/adapters/MikiAdapter.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { OptionsBuilder } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/libs/OptionsBuilder.sol";
 import { EthAdapter } from "../src/adapters/EthAdapter.sol";
-import { Upgrades } from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
 /// @dev See the Solidity Scripting tutorial: https://book.getfoundry.sh/tutorials/solidity-scripting
 
@@ -42,13 +42,13 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
         address usdc = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.usdcTokenPool.underlying"));
 
         owner = broadcaster;
-        mikiProxyAdmin = new ProxyAdmin(owner);
+        // mikiProxyAdmin = new ProxyAdmin(owner);
         L2AssetManager l2AssetManagerImplementation = new L2AssetManager();
         l2AssetManager = L2AssetManager(
             address(
                 new TransparentUpgradeableProxy(
                     address(l2AssetManagerImplementation),
-                    address(mikiProxyAdmin),
+                    owner,
                     abi.encodeWithSelector(L2AssetManager.initialize.selector, owner)
                 )
             )
@@ -59,7 +59,7 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
                 address(
                     new TransparentUpgradeableProxy(
                         address(ethTokenPoolImpl),
-                        address(mikiProxyAdmin),
+                        owner,
                         abi.encodeWithSelector(ETHTokenPool.initialize.selector, owner, weth)
                     )
                 )
@@ -72,7 +72,7 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
                 address(
                     new TransparentUpgradeableProxy(
                         address(erc20TokenPoolImpl),
-                        address(mikiProxyAdmin),
+                        owner,
                         abi.encodeWithSelector(ERC20TokenPool.initialize.selector, owner, mikiTokenAddr)
                     )
                 )
@@ -85,7 +85,7 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
                 address(
                     new TransparentUpgradeableProxy(
                         address(usdcTokenPoolImpl),
-                        address(mikiProxyAdmin),
+                        owner,
                         abi.encodeWithSelector(ERC20TokenPool.initialize.selector, owner, usdc)
                     )
                 )
@@ -171,29 +171,24 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
         string memory chainKey = _getChainKey(block.chainid);
         address ethTokenPoolAddr =
             vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.pool"));
-        // address proxyAdminAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".proxyAdmin"));
+        address l2AssetManagerAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".l2AssetManager"));
 
         address weth = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.underlying"));
 
-        ETHTokenPool ethTokenPoolImpl = new ETHTokenPool(address(l2AssetManager), weth, owner);
+        ETHTokenPool ethTokenPoolImpl = new ETHTokenPool(l2AssetManagerAddr, weth, owner);
 
         ethTokenPool = ETHTokenPool(payable(ethTokenPoolAddr));
-        // ITransparentUpgradeableProxy beforeETHTokenPool =
-        // ITransparentUpgradeableProxy(payable(address(ethTokenPool)));
 
-        // ProxyAdmin proxyAdmin = ProxyAdmin(proxyAdminAddr);
-
-        Upgrades.upgradeProxy(
-            payable(address(ethTokenPool)),
-            "ETHTokenPool.sol",
-            abi.encodeWithSelector(ETHTokenPool.initialize.selector, owner, weth)
-        );
-
-        // proxyAdmin.upgradeAndCall(
-        //     beforeETHTokenPool,
-        //     address(ethTokenPoolImpl),
-        //     abi.encodeWithSelector(ETHTokenPool.initialize.selector, owner, weth)
-        // );
+        bytes32 adminSlot = vm.load(address(ethTokenPool), ERC1967Utils.ADMIN_SLOT);
+        if (adminSlot == bytes32(0)) {
+            // No admin contract: upgrade directly using interface
+            ITransparentUpgradeableProxy(address(ethTokenPool)).upgradeToAndCall(
+                address(ethTokenPoolImpl), abi.encodeWithSelector(ETHTokenPool.initialize.selector, owner, weth)
+            );
+        } else {
+            ProxyAdmin admin = ProxyAdmin(address(uint160(uint256(adminSlot))));
+            admin.upgradeAndCall(ITransparentUpgradeableProxy(address(ethTokenPool)), address(ethTokenPoolImpl), "");
+        }
     }
 
     function crossChainMint(uint256 dstChainId, address to) public broadcast {
@@ -225,17 +220,12 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
 
         address ethTokenPoolAddr =
             vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.pool"));
-        address ethAdapterAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.sender"));
         address nftReceiver = vm.parseJsonAddress(deploymentsJson, string.concat(dstChainKey, ".examples.nft"));
 
         ethTokenPool = ETHTokenPool(payable(ethTokenPoolAddr));
 
         bytes memory message = abi.encode(to);
 
-        // EthAdapter ethAdapter = EthAdapter(payable(ethAdapterAddr));
-
-        uint256 fee = 1_000_000_000_000_000;
-
-        ethTokenPool.crossChainContractCallWithAsset(dstChainId, nftReceiver, message, fee, amount, bytes(""));
+        ethTokenPool.crossChainContractCallWithAsset(dstChainId, nftReceiver, message, 0, amount, bytes(""));
     }
 }
