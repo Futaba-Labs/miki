@@ -15,7 +15,7 @@ contract LZReceiverScript is BaseScript {
     function run() public {
         Chains[] memory deployForks = new Chains[](2);
         deployForks[0] = Chains.ArbitrumSepolia;
-        deployForks[1] = Chains.PolygonMumbai;
+        deployForks[1] = Chains.PolygonAmoy;
 
         for (uint256 i = 0; i < deployForks.length; i++) {
             string memory chainKey = _getChainKey(networks[deployForks[i]].chainId);
@@ -47,7 +47,7 @@ contract LZReceiverScript is BaseScript {
 
         Chains[] memory deployForks = new Chains[](2);
         deployForks[0] = Chains.ArbitrumSepolia;
-        deployForks[1] = Chains.PolygonMumbai;
+        deployForks[1] = Chains.PolygonAmoy;
 
         uint256[] memory chainIds = new uint256[](deployForks.length - 1);
         uint32[] memory eids = new uint32[](deployForks.length - 1);

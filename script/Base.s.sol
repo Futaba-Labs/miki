@@ -22,12 +22,12 @@ abstract contract BaseScript is Script {
     mapping(Chains chains => Network network) internal networks;
 
     Chains[] internal deployedChains =
-        [Chains.ArbitrumSepolia, Chains.OptimismSepolia, Chains.PolygonMumbai, Chains.BaseSepolia];
+        [Chains.ArbitrumSepolia, Chains.OptimismSepolia, Chains.PolygonAmoy, Chains.BaseSepolia];
 
     enum Chains {
         ArbitrumSepolia,
         OptimismSepolia,
-        PolygonMumbai,
+        PolygonAmoy,
         BaseSepolia
     }
 
@@ -55,7 +55,7 @@ abstract contract BaseScript is Script {
 
         networks[Chains.ArbitrumSepolia] = Network("arbitrum_sepolia", 421_614, 40_231);
         networks[Chains.OptimismSepolia] = Network("optimism_sepolia", 11_155_420, 40_232);
-        networks[Chains.PolygonMumbai] = Network("mumbai", 80_001, 40_109);
+        networks[Chains.PolygonAmoy] = Network("mumbai", 80_002, 40_109);
         networks[Chains.BaseSepolia] = Network("base_sepolia", 84_532, 40_245);
     }
 

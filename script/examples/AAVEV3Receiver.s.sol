@@ -16,7 +16,7 @@ contract AAVEV3ReceiverScript is BaseScript {
 
     function run() public {
         Chains[] memory deployForks = new Chains[](1);
-        deployForks[0] = Chains.PolygonMumbai;
+        deployForks[0] = Chains.PolygonAmoy;
 
         for (uint256 i = 0; i < deployForks.length; i++) {
             Network memory network = networks[deployForks[i]];
