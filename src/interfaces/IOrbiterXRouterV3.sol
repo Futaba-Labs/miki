@@ -2,5 +2,5 @@
 pragma solidity 0.8.23;
 
 interface IOrbiterXRouterV3 {
-    function transfers(address[] calldata tos, uint256[] memory values) external payable;
+    function transfer(address to, bytes calldata data) external payable;
 }

@@ -31,7 +31,7 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
     /* ----------------------------- Constructor -------------------------------- */
 
     constructor(
-        address payable _orbiterRouter,
+        address _orbiterRouter,
         address payable _mikiRouter,
         address _lzAdapter,
         address _initialOwner
@@ -89,22 +89,13 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         external
         payable
     {
-        // uint16 code = identificationCodes[dstChainId];
+        uint16 code = identificationCodes[dstChainId];
 
-        // if (code == 0) {
-        //     revert InvalidCode();
-        // }
+        if (code == 0) {
+            revert InvalidCode();
+        }
 
-        // uint256 totalAmount = amount + code;
-
-        // address[] memory recipients = new address[](1);
-        // recipients[0] = recipient;
-        // uint256[] memory amounts = new uint256[](1);
-        // amounts[0] = totalAmount;
-
-        payable(mikiRouter).transfer(amount + fee);
-
-        emit TransferMikiRouter(sender, dstChainId, recipient, amount, bytes(""));
+        IOrbiterXRouterV3(orbiterRouter).transfer{ value: amount + code + fee }(recipient, bytes(""));
     }
 
     function estimateFee(
