@@ -2,6 +2,7 @@
 pragma solidity 0.8.23;
 
 import { BaseScript } from "./Base.s.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { L2AssetManager } from "../src/L2AssetManager.sol";
 import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
 import { ERC20TokenPool } from "../src/pools/ERC20TokenPool.sol";
@@ -74,6 +75,17 @@ contract SendTransactionScript is BaseScript {
     //         dstChainId, aaveV3ReceiverAddr, message, fee * 120 / 100, amount, params
     //     );
     // }
+
+    function depositETH(uint256 amount) public broadcast {
+        _readAddresses();
+        l2AssetManager.depositETH{ value: amount }(amount);
+    }
+
+    function depositERC20(address token, address tokenPool, uint256 amount) public broadcast {
+        _readAddresses();
+        IERC20(token).approve(address(l2AssetManager), amount);
+        l2AssetManager.deposit(token, tokenPool, amount);
+    }
 
     function crossChainMint(uint256 dstChainId, address to) public broadcast {
         _readAddresses();
