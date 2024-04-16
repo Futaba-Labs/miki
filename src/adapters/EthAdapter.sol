@@ -13,6 +13,7 @@ import { ILayerZeroAdapter } from "../interfaces/ILayerZeroAdapter.sol";
 contract EthAdapter is IL2BridgeAdapter, Ownable {
     /* ----------------------------- Storage -------------------------------- */
     address public orbiterRouter;
+    address public orbiterMaker;
     address public mikiRouter;
     address public lzAdapter;
     address public receiver;
@@ -95,7 +96,9 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
             revert InvalidCode();
         }
 
-        IOrbiterXRouterV3(orbiterRouter).transfer{ value: amount + code + fee }(recipient, bytes(""));
+        IOrbiterXRouterV3(orbiterRouter).transfer{ value: amount + code + fee }(
+            orbiterMaker, abi.encodePacked(recipient)
+        );
     }
 
     function estimateFee(
