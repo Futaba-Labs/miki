@@ -78,7 +78,8 @@ contract Deploy is BaseScript {
             codes.push(code);
         }
 
-        mikiRouter = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.mikiRouter"));
+        mikiRouter =
+            vm.parseJsonAddress(deploymentsJson, string.concat(_getChainKey(hubChainId), ".adapters.eth.mikiRouter"));
 
         if (chainId == hubChainId) {
             _deployOnHubChain();

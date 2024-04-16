@@ -47,7 +47,7 @@
     "test": "forge test -vvvv --via-ir",
     "test:coverage": "forge coverage",
     "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage",
-    "set-peer:miki": "./bin/set_peer.sh 'setMikiPeer()'",
-    "set-peer:lz": "./bin/set_peer.sh 'setLzAdapterPeer()'"
+    "set-peer": "./bin/set_peer.sh",
+    "deploy": "./bin/deploy.sh"
   }
 }

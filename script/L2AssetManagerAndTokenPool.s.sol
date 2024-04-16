@@ -198,7 +198,7 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
         string memory dstChainKey = _getChainKey(dstChainId);
 
         address ethTokenPoolAddr =
-            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.pool"));
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.proxy"));
         address ethAdapterAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.sender"));
         address nftReceiver = vm.parseJsonAddress(deploymentsJson, string.concat(dstChainKey, ".examples.nft"));
 
