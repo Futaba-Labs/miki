@@ -25,16 +25,31 @@ contract AAVEV3ReceiverScript is BaseScript {
             address amm = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.amm.pool"));
             address permit2 = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.aave.permit2"));
             address mikiReceiver =
-                vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.miki.receiver"));
+                vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.mikiReceiver"));
+            address weth =
+                vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.aave.weth.underlying"));
 
             _createSelectFork(deployForks[i]);
 
-            _deployAAVEV3Receiver(permit2, amm, mikiReceiver);
+            _deployAAVEV3Receiver(permit2, amm, mikiReceiver, weth);
 
             vm.writeJson(
                 vm.toString(address(aaveV3Receiver)), deploymentPath, string.concat(chainKey, ".examples.aave.receiver")
             );
         }
+    }
+
+    function deployAAVEV3Receiver() public {
+        string memory chainKey = _getChainKey(block.chainid);
+        address amm = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.amm.pool"));
+        address permit2 = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.aave.permit2"));
+        address mikiReceiver = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.mikiReceiver"));
+        address weth = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.aave.weth.underlying"));
+        _deployAAVEV3Receiver(permit2, amm, mikiReceiver, weth);
+
+        vm.writeJson(
+            vm.toString(address(aaveV3Receiver)), deploymentPath, string.concat(chainKey, ".examples.aave.receiver")
+        );
     }
 
     function setTokenPool(string memory tokenName) public broadcast {
@@ -80,7 +95,15 @@ contract AAVEV3ReceiverScript is BaseScript {
         );
     }
 
-    function _deployAAVEV3Receiver(address permit2, address amm, address mikiReceiver) internal broadcast {
-        aaveV3Receiver = new AAVEV3Receiver(broadcaster, permit2, amm, mikiReceiver);
+    function _deployAAVEV3Receiver(
+        address permit2,
+        address amm,
+        address mikiReceiver,
+        address weth
+    )
+        internal
+        broadcast
+    {
+        aaveV3Receiver = new AAVEV3Receiver(broadcaster, permit2, amm, mikiReceiver, weth);
     }
 }

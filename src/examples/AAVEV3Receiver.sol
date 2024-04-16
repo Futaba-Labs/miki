@@ -9,13 +9,15 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { GelatoRelayContextERC2771 } from "@gelatonetwork/relay-context/contracts/GelatoRelayContextERC2771.sol";
 import { IAllowanceTransfer } from "../interfaces/IAllowanceTransfer.sol";
 import { ISampleAMM } from "../interfaces/ISampleAMM.sol";
+import { IWETH } from "../interfaces/IWETH.sol";
 
 contract AAVEV3Receiver is IMikiAppReceiver, Ownable, GelatoRelayContextERC2771 {
     /* ----------------------------- Storage -------------------------------- */
     IAllowanceTransfer public immutable permit2;
     ISampleAMM public immutable amm;
     address public immutable mikiReceiver;
-    mapping(address token => TokenPool pool) public tokenToPool;
+    address public weth;
+    mapping(address => TokenPool) public tokenToPool;
 
     /* ----------------------------- Struct -------------------------------- */
     struct TokenPool {
@@ -35,10 +37,19 @@ contract AAVEV3Receiver is IMikiAppReceiver, Ownable, GelatoRelayContextERC2771 
     error NotMikiReceiver();
 
     /* ----------------------------- Constructor -------------------------------- */
-    constructor(address _initialOwner, address _permit2, address _amm, address _mikiReceiver) Ownable(_initialOwner) {
+    constructor(
+        address _initialOwner,
+        address _permit2,
+        address _amm,
+        address _mikiReceiver,
+        address _weth
+    )
+        Ownable(_initialOwner)
+    {
         permit2 = IAllowanceTransfer(_permit2);
         amm = ISampleAMM(_amm);
         mikiReceiver = _mikiReceiver;
+        weth = _weth;
     }
 
     /* ----------------------------- Modifier -------------------------------- */
@@ -61,7 +72,7 @@ contract AAVEV3Receiver is IMikiAppReceiver, Ownable, GelatoRelayContextERC2771 
     {
         address underlyingToken = token;
         if (underlyingToken == address(0)) {
-            underlyingToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+            underlyingToken = weth;
         }
         if (message.length > 0) {
             underlyingToken = abi.decode(message, (address));
@@ -74,8 +85,12 @@ contract AAVEV3Receiver is IMikiAppReceiver, Ownable, GelatoRelayContextERC2771 
 
         uint256 amountIn = amount;
         if (underlyingToken != token) {
-            IERC20(token).approve(address(amm), amount);
-            amountIn = amm.swap(token, amount);
+            if (underlyingToken != weth) {
+                IERC20(token).approve(address(amm), amount);
+                amountIn = amm.swap(token, amount);
+            } else {
+                IWETH(payable(weth)).deposit{ value: amount }();
+            }
         }
 
         IERC20(underlyingToken).approve(tokenPool.pool, amountIn);

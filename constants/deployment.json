@@ -114,12 +114,16 @@
     "examples": {
       "aave": {
         "usdc": {
-          "underlying": "0x52D800ca262522580CeBAD275395ca6e7598C014",
-          "aToken": "0x4086fabeE92a080002eeBA1220B9025a27a40A49"
+          "underlying": "0x5fd84259d66Cd46123540766Be93DFE6D43130D7",
+          "aToken": "0xa818F1B57c201E092C4A2017A91815034326Efd1"
+        },
+        "weth": {
+          "underlying": "0x4200000000000000000000000000000000000006",
+          "aToken": "0x23e4E76D01B2002BE436CE8d6044b0aA2f68B68a"
         },
         "permit2": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
-        "pool": "0xcC6114B983E4Ed2737E9BD3961c9924e6216c704",
-        "receiver": "0xa238333Cc00E83C52eE701f54E9eECE57F5DD53e"
+        "pool": "0xb50201558B00496A145fE76f7424749556E326D8",
+        "receiver": "0xc46E50e046A3E4e9B281B4d765a3690723aBAc50"
       },
       "nft": "0x76F8fe77ad8CC686BfB9E3324b80c7F8700c97a0",
       "amm": {

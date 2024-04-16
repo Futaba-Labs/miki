@@ -221,11 +221,16 @@ contract L2AssetManagerAndTokenPoolScript is BaseScript {
         address ethTokenPoolAddr =
             vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.pool"));
         address nftReceiver = vm.parseJsonAddress(deploymentsJson, string.concat(dstChainKey, ".examples.nft"));
+        address aaveV3ReceiverAddr =
+            vm.parseJsonAddress(deploymentsJson, string.concat(dstChainKey, ".examples.aave.receiver"));
+        address weth =
+            vm.parseJsonAddress(deploymentsJson, string.concat(dstChainKey, ".examples.aave.weth.underlying"));
 
         ethTokenPool = ETHTokenPool(payable(ethTokenPoolAddr));
 
-        bytes memory message = abi.encode(to);
+        // bytes memory message = abi.encode(to);
+        bytes memory message = abi.encode(weth);
 
-        ethTokenPool.crossChainContractCallWithAsset(dstChainId, nftReceiver, message, 0, amount, bytes(""));
+        ethTokenPool.crossChainContractCallWithAsset(dstChainId, aaveV3ReceiverAddr, message, 0, amount, bytes(""));
     }
 }

@@ -50,7 +50,7 @@ contract AAVEV3ReceiverTest is PRBTest, StdCheats {
         amm = new SampleAMM(address(anotherErc20), address(erc20));
         aToken = new ATokenMock("aToken", "aToken");
         pool = new AAVEV3PoolMock(address(aToken));
-        aaveReceiver = new AAVEV3Receiver(owner, address(this), address(amm), address(mikiReceiver));
+        aaveReceiver = new AAVEV3Receiver(owner, address(this), address(amm), address(mikiReceiver), owner);
 
         erc20.mint(owner, 11_000 ether);
         anotherErc20.mint(owner, 11_000 ether);
