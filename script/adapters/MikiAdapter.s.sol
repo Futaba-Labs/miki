@@ -22,7 +22,7 @@ contract MikiAdapterScript is BaseScript {
     function run() public {
         Chains[] memory deployForks = new Chains[](2);
         deployForks[0] = Chains.ArbitrumSepolia;
-        deployForks[1] = Chains.PolygonMumbai;
+        deployForks[1] = Chains.PolygonAmoy;
 
         for (uint256 i = 0; i < deployForks.length; i++) {
             string memory chainKey = _getChainKey(networks[deployForks[i]].chainId);
@@ -44,7 +44,7 @@ contract MikiAdapterScript is BaseScript {
 
         Chains[] memory deployForks = new Chains[](2);
         deployForks[0] = Chains.ArbitrumSepolia;
-        deployForks[1] = Chains.PolygonMumbai;
+        deployForks[1] = Chains.PolygonAmoy;
 
         for (uint256 i = 0; i < deployForks.length; i++) {
             if (networks[deployForks[i]].chainId == block.chainid) {

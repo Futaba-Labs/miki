@@ -4,9 +4,10 @@ pragma solidity 0.8.23;
 import { ITokenPool } from "../interfaces/ITokenPool.sol";
 import { IL2BridgeAdapter } from "../interfaces/IL2BridgeAdapter.sol";
 import { IL2AssetManager } from "../interfaces/IL2AssetManager.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-abstract contract BaseTokenPool is ITokenPool, Ownable {
+abstract contract TokenPoolBase is ITokenPool, Initializable, OwnableUpgradeable {
     /* ----------------------------- Storage -------------------------------- */
     address public immutable l2AssetManager;
     address public immutable operator;
@@ -22,16 +23,20 @@ abstract contract BaseTokenPool is ITokenPool, Ownable {
     }
 
     /* ----------------------------- Constructor -------------------------------- */
-    constructor(
-        address _initialOwner,
-        address _l2AssetManager,
-        address _underlyingToken,
-        address _operator
-    )
-        Ownable(_initialOwner)
-    {
+    constructor(address _l2AssetManager, address _underlyingToken, address _operator) {
         l2AssetManager = _l2AssetManager;
         operator = _operator;
+        underlyingToken = _underlyingToken;
+    }
+
+    /* ----------------------------- Initializer -------------------------------- */
+
+    function initialize(address _initialOwner, address _underlyingToken) public virtual initializer {
+        _initializeTokenPoolBase(_initialOwner, _underlyingToken);
+    }
+
+    function _initializeTokenPoolBase(address _initialOwner, address _underlyingToken) internal onlyInitializing {
+        __Ownable_init(_initialOwner);
         underlyingToken = _underlyingToken;
     }
 
@@ -155,4 +160,11 @@ abstract contract BaseTokenPool is ITokenPool, Ownable {
     fallback() external payable { }
 
     receive() external payable { }
+
+    /**
+     * @dev This empty reserved space is put in place to allow future versions to add new
+     * variables without shifting down storage in the inheritance chain.
+     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
+     */
+    uint256[48] private __gap;
 }

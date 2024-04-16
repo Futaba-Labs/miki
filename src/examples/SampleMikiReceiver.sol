@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.23;
 
-import { IMikiReceiver } from "../interfaces/IMikiReceiver.sol";
+import { IMikiAppReceiver } from "../interfaces/IMikiAppReceiver.sol";
 
-contract SampleMikiReceiver is IMikiReceiver {
+contract SampleMikiReceiver is IMikiAppReceiver {
     event Received(address sender, address token, uint256 amount, bytes message);
     event Greeting(string greeting);
 

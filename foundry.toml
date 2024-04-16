@@ -36,6 +36,7 @@ sepolia = { key = "${API_KEY_ETHERSCAN}" }
 arbitrum_sepolia = { key = "${API_KEY_ARBISCAN}", url = "https://api-sepolia.arbiscan.io/api" }
 optimism_sepolia = { key = "${API_KEY_OPTIMISTIC_ETHERSCAN}", url = "https://api-sepolia-optimistic.etherscan.io/api" }
 mumbai = { key = "${API_KEY_POLYGONSCAN}", url = "https://api-testnet.polygonscan.com/api" }
+base_sepolia = { key = "${API_KEY_BASESCAN}", url = "https://api-sepolia.basescan.org/api" }
 
 
 [fmt]
@@ -62,3 +63,4 @@ arbitrum_sepolia = "https://arbitrum-sepolia.infura.io/v3/${API_KEY_INFURA}"
 optimism_sepolia = "https://optimism-sepolia.infura.io/v3/${API_KEY_INFURA}"
 sepolia = "https://sepolia.infura.io/v3/${API_KEY_INFURA}"
 mumbai = "https://polygon-mumbai.infura.io/v3/${API_KEY_INFURA}"
+base_sepolia = "https://base-sepolia.blockpi.network/v1/rpc/public"

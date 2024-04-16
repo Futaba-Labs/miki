@@ -2,22 +2,34 @@
   "arbitrum_sepolia": {
     "name": "arbitrum_sepolia",
     "chainId": 421614,
-    "l2AssetManager": "0x35E29cBEDe79A4b0279F7C55353e3D4a383Ef596",
+    "l2AssetManagerProxy": "0x03A200e00f32D2f1aeb3517F6650D7Ef07637279",
+    "l2AssetManagerImpl": "0x466Fa6d2b3Ceee4556496D257e60480F5612B4Fb",
     "pools": {
       "ethTokenPool": {
         "underlying": "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
-        "pool": "0xE4E5af463852944FB90807461F4bbef512CaCaA8"
+        "proxy": "0xe0F7410CD70538dBfBeDB1b841E632EcAB776ce6",
+        "impl": "0xe9dB3e83A53D0a63a47F07CFaE409570361cDfbD"
       },
       "mikiTokenPool": {
         "underlying": "0x9D2778CD4d232dC3e3f0C42caccA891D12EC9c8a",
-        "pool": "0xFbD2fDe2b50A0AE724765424578296A8d5fb2E73"
+        "pool": "0xEDdE6E7eb8C25A09aCd9E53f434BC8EC955Da77b"
+      },
+      "usdcTokenPool": {
+        "underlying": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+        "proxy": "0x2dc0Fc21403a81A643705466329D2178F924831e",
+        "impl": "0x2dc0Fc21403a81A643705466329D2178F924831e"
       }
     },
     "adapters": {
       "layerZero": {
         "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
-        "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
+        "sender": "0x2Ff2C94b5E375438A73225FB79D4A4230958C9C6",
         "receiver": "0x95Ce7A96fe31Cf92Aa554DD00403CA26cBb32069"
+      },
+      "eth": {
+        "mikiRouter": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
+        "orbiterRouter": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
+        "sender": "0x4f0b5D48E3a2FeC8fe65277a53dc0A12B15Db805"
       },
       "miki": {
         "token": "0x9D2778CD4d232dC3e3f0C42caccA891D12EC9c8a",
@@ -43,43 +55,11 @@
       }
     }
   },
-  "optimism_sepolia": {
-    "name": "optimism_sepolia",
-    "chainId": 11155420,
+  "amoy": {
+    "name": "amoy",
+    "chainId": 80002,
     "adapters": {
-      "layerZero": {
-        "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
-        "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-        "receiver": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
-      },
-      "miki": {
-        "token": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-        "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-        "receiver": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
-      }
-    },
-    "examples": {
-      "aave": {
-        "usdc": {
-          "underlying": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-          "aToken": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
-        },
-        "permit2": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
-        "pool": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-        "receiver": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
-      },
-      "nft": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-      "amm": {
-        "pool": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-        "token0": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-        "token1": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642"
-      }
-    }
-  },
-  "mumbai": {
-    "name": "mumbai",
-    "chainId": 80001,
-    "adapters": {
+      "mikiReceiver": "0x4F9221f2e4f83081a3b4f209EF1C9344D62405Eb",
       "layerZero": {
         "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
         "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
@@ -102,6 +82,102 @@
         "receiver": "0xa238333Cc00E83C52eE701f54E9eECE57F5DD53e"
       },
       "nft": "0x062b29298A670Ffc5a7F8b6030aF858E701Dd20f",
+      "amm": {
+        "pool": "0xBEDbD1d5b74202c9E7277FeE72b01c598e438fd9",
+        "token0": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
+        "token1": "0x52D800ca262522580CeBAD275395ca6e7598C014"
+      }
+    }
+  },
+  "optimism_sepolia": {
+    "name": "optimism_sepolia",
+    "chainId": 11155420,
+    "adapters": {
+      "mikiReceiver": "0x268c9B466812d438821101959C9cef1746D42D72",
+      "layerZero": {
+        "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
+        "sender": "0xd0B8D2E4CAa89603a7b05Ec7E14DEd55AeD3171e",
+        "receiver": "0xd0B8D2E4CAa89603a7b05Ec7E14DEd55AeD3171e"
+      },
+      "miki": {
+        "token": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
+        "sender": "0x5d3144125BE4b16e9e79c77E8F32b7D564dfa85a",
+        "receiver": "0x995B7Ca5b97A58DF26A431b6124618B8b9509534"
+      },
+      "orbiter": {
+        "router": "0x78606Ea26275F6180745480FaF74E311586EB652",
+        "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
+        "code": 9077
+      },
+      "eth": {
+        "router": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
+        "sender": "0x4f0b5D48E3a2FeC8fe65277a53dc0A12B15Db805",
+        "receiver": "0x58b5B0D75E6F32Fa0cA18e13A522334cD2c7D5Bb"
+      }
+    },
+    "examples": {
+      "aave": {
+        "usdc": {
+          "underlying": "0x5fd84259d66Cd46123540766Be93DFE6D43130D7",
+          "aToken": "0xa818F1B57c201E092C4A2017A91815034326Efd1"
+        },
+        "weth": {
+          "underlying": "0x4200000000000000000000000000000000000006",
+          "aToken": "0x23e4E76D01B2002BE436CE8d6044b0aA2f68B68a"
+        },
+        "permit2": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+        "pool": "0xb50201558B00496A145fE76f7424749556E326D8",
+        "receiver": "0xc46E50e046A3E4e9B281B4d765a3690723aBAc50"
+      },
+      "nft": "0x76F8fe77ad8CC686BfB9E3324b80c7F8700c97a0",
+      "amm": {
+        "pool": "0xBEDbD1d5b74202c9E7277FeE72b01c598e438fd9",
+        "token0": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
+        "token1": "0x52D800ca262522580CeBAD275395ca6e7598C014"
+      }
+    }
+  },
+  "base_sepolia": {
+    "name": "base_sepolia",
+    "chainId": 84532,
+    "adapters": {
+      "mikiReceiver": "0x7a0cF1c70bed9CDF3F44E134DFf78902be20a676",
+      "layerZero": {
+        "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
+        "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
+        "receiver": "0x3Dbe9766e83e52d92A571B71e5C04a2a4e9c660b"
+      },
+      "miki": {
+        "token": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
+        "sender": "0x5d3144125BE4b16e9e79c77E8F32b7D564dfa85a",
+        "receiver": "0x995B7Ca5b97A58DF26A431b6124618B8b9509534"
+      },
+      "orbiter": {
+        "router": "0x78606Ea26275F6180745480FaF74E311586EB652",
+        "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
+        "code": 9521
+      },
+      "eth": {
+        "router": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
+        "sender": "0xeb6E0FEB61D3a65FE2e94C9D1510184B7Adb064c",
+        "receiver": "0x1305db1229f635e87d7c3b9A8B68D8213cd76Eda"
+      }
+    },
+    "examples": {
+      "aave": {
+        "usdc": {
+          "underlying": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+          "aToken": "0xf53B60F4006cab2b3C4688ce41fD5362427A2A66"
+        },
+        "weth": {
+          "underlying": "0x4200000000000000000000000000000000000006",
+          "aToken": "0x96e32dE4B1d1617B8c2AE13a88B9cC287239b13f"
+        },
+        "permit2": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+        "pool": "0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b",
+        "receiver": "0x90B270fE5b2c06385c50Ffdf5Cc5b04Dbb4C934d"
+      },
+      "nft": "0xC2Fbe582651ABeA5ead6299848D5064AD963F623",
       "amm": {
         "pool": "0xBEDbD1d5b74202c9E7277FeE72b01c598e438fd9",
         "token0": "0x641A018F7670f68213b9c20323c12EC94a939AcE",

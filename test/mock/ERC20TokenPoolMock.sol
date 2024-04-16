@@ -1,24 +1,27 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.23;
 
-import { BaseTokenPool } from "../../src/pools/BaseTokenPool.sol";
+import { TokenPoolBase } from "../../src/pools/TokenPoolBase.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IL2BridgeAdapter } from "../../src/interfaces/IL2BridgeAdapter.sol";
 import { IL2AssetManager } from "../../src/interfaces/IL2AssetManager.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract ERC20TokenPoolMock is BaseTokenPool {
+contract ERC20TokenPoolMock is TokenPoolBase {
     using SafeERC20 for IERC20;
     /* ----------------------------- Constructor -------------------------------- */
 
     constructor(
-        address _initialOwner,
         address _l2AssetManager,
         address _underlyingToken,
         address _operator
     )
-        BaseTokenPool(_initialOwner, _l2AssetManager, _underlyingToken, _operator)
+        TokenPoolBase(_l2AssetManager, _underlyingToken, _operator)
     { }
+
+    function initialize(address _initialOwner, address _underlyingToken) public override initializer {
+        _initializeTokenPoolBase(_initialOwner, _underlyingToken);
+    }
 
     /* ----------------------------- External Functions -------------------------------- */
 

@@ -38,7 +38,7 @@ contract GaslessETHTokenPool is ETHTokenPool, GelatoRelayContextERC2771 {
         address _underlyingToken,
         address _operator
     )
-        ETHTokenPool(_initialOwner, _l2AssetManager, _underlyingToken, _operator)
+        ETHTokenPool(_l2AssetManager, _underlyingToken, _operator)
     { }
 
     /* ----------------------------- External Functions -------------------------------- */

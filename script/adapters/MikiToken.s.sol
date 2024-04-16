@@ -30,7 +30,7 @@ contract MikiTokenScript is BaseScript {
     function run() public {
         Chains[] memory deployForks = new Chains[](2);
         deployForks[0] = Chains.ArbitrumSepolia;
-        deployForks[1] = Chains.PolygonMumbai;
+        deployForks[1] = Chains.PolygonAmoy;
 
         for (uint256 i = 0; i < deployForks.length; i++) {
             string memory chainKey = string.concat(".", networks[deployForks[i]].name);

@@ -10,7 +10,8 @@ import { LayerZeroReceiver } from "../../src/adapters/LayerZeroReceiver.sol";
 
 /// @dev See the Solidity Scripting tutorial: https://book.getfoundry.sh/tutorials/solidity-scripting
 contract SetPeer is BaseScript {
-    Network[] public deployedNetworks = [networks[Chains.ArbitrumSepolia], networks[Chains.PolygonMumbai]];
+    Network[] public deployedNetworks =
+        [networks[Chains.ArbitrumSepolia], networks[Chains.OptimismSepolia], networks[Chains.BaseSepolia]];
 
     function setMikiPeer() public broadcast {
         for (uint256 i = 0; i < deployedNetworks.length; i++) {
@@ -29,18 +30,30 @@ contract SetPeer is BaseScript {
     }
 
     function setLzAdapterPeer() public broadcast {
-        for (uint256 i = 0; i < deployedNetworks.length; i++) {
-            if (deployedNetworks[i].chainId == block.chainid) continue;
-            string memory targetChainKey = _getChainKey(deployedNetworks[i].chainId);
-            address peerAddress =
-                vm.parseJsonAddress(deploymentsJson, string.concat(targetChainKey, ".adapters.layerZero.receiver"));
+        string memory srcChainKey = _getChainKey(block.chainid);
+        Network memory hubNetwork = networks[Chains.ArbitrumSepolia];
 
-            string memory srcChainKey = _getChainKey(block.chainid);
-            address lzAdapterAddress =
-                vm.parseJsonAddress(deploymentsJson, string.concat(srcChainKey, ".adapters.layerZero.sender"));
+        if (block.chainid == hubNetwork.chainId) {
+            for (uint256 i = 0; i < deployedNetworks.length; i++) {
+                if (deployedNetworks[i].chainId == block.chainid) continue;
+                string memory targetChainKey = _getChainKey(deployedNetworks[i].chainId);
+                address peerAddress =
+                    vm.parseJsonAddress(deploymentsJson, string.concat(targetChainKey, ".adapters.layerZero.receiver"));
 
-            LayerZeroAdapter lzAdapter = LayerZeroAdapter(lzAdapterAddress);
-            lzAdapter.setPeer(deployedNetworks[i].eid, bytes32(uint256(uint160(peerAddress))));
+                address lzAdapterAddress =
+                    vm.parseJsonAddress(deploymentsJson, string.concat(srcChainKey, ".adapters.layerZero.sender"));
+
+                LayerZeroAdapter lzAdapter = LayerZeroAdapter(lzAdapterAddress);
+                lzAdapter.setPeer(deployedNetworks[i].eid, bytes32(uint256(uint160(peerAddress))));
+            }
+        } else {
+            address peerAddress = vm.parseJsonAddress(deploymentsJson, ".arbitrum_sepolia.adapters.layerZero.sender");
+
+            address lzReceiverAddress =
+                vm.parseJsonAddress(deploymentsJson, string.concat(srcChainKey, ".adapters.layerZero.receiver"));
+
+            LayerZeroReceiver lzReceiver = LayerZeroReceiver(payable(lzReceiverAddress));
+            lzReceiver.setPeer(hubNetwork.eid, bytes32(uint256(uint160(peerAddress))));
         }
     }
 }

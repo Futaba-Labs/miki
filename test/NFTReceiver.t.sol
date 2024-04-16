@@ -6,19 +6,28 @@ import { console2 } from "forge-std/src/console2.sol";
 import { StdCheats } from "forge-std/src/StdCheats.sol";
 import { NFTReceiver } from "../src/examples/NFTReceiver.sol";
 import { BridgeReceiverMock } from "./mock/BridgeReceiverMock.sol";
+import { MikiReceiver } from "../src/adapters/MikiReceiver.sol";
 
 contract NFTReceiverTest is PRBTest, StdCheats {
     address public owner;
     string public tokenURI = "ipfs://QmeuC3tFtndSF1pBTzZxUmArWiBFv3ozNhEnAPFKJp9T1E/0";
     NFTReceiver public nftReceiver;
     BridgeReceiverMock public bridgeReceiver;
+    MikiReceiver public mikiReceiver;
 
     event MikiNFTMinted(address to, uint256 tokenId);
 
     function setUp() public virtual {
         owner = msg.sender;
-        bridgeReceiver = new BridgeReceiverMock();
-        nftReceiver = new NFTReceiver(tokenURI, address(bridgeReceiver));
+        mikiReceiver = new MikiReceiver(owner);
+        bridgeReceiver = new BridgeReceiverMock(address(mikiReceiver));
+        nftReceiver = new NFTReceiver(tokenURI, address(mikiReceiver));
+
+        // Set the miki receiver.
+        address[] memory adapters = new address[](1);
+        adapters[0] = address(mikiReceiver);
+        vm.prank(owner);
+        mikiReceiver.setAdapters(adapters);
     }
 
     function test_mikiReceiveMsg() public {

@@ -18,6 +18,7 @@ contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
     /* ----------------------------- Storage -------------------------------- */
 
     address public immutable stargateRouter;
+    address public immutable mikiReceiver;
     mapping(uint32 => uint256) public chainIdOf;
 
     /* ----------------------------- Events -------------------------------- */
@@ -50,6 +51,7 @@ contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
     /* ----------------------------- Constructor -------------------------------- */
     constructor(
         address _stargateRouter,
+        address _mikiReceiver,
         address _gateway,
         address _initialOwner
     )
@@ -57,6 +59,7 @@ contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
         Ownable(_initialOwner)
     {
         stargateRouter = _stargateRouter;
+        mikiReceiver = _mikiReceiver;
     }
 
     /**
@@ -97,10 +100,10 @@ contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
 
     function _lzReceive(
         Origin calldata _origin, // struct containing info about the message sender
-        bytes32 _guid, // global packet identifier
+        bytes32, // global packet identifier
         bytes calldata payload, // encoded message payload being received
-        address _executor, // the Executor address.
-        bytes calldata _extraData // arbitrary data appended by the Executor
+        address, // the Executor address.
+        bytes calldata // arbitrary data appended by the Executor
     )
         internal
         override
@@ -108,13 +111,7 @@ contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
         uint256 chainId = chainIdOf[_origin.srcEid];
         (address sender, address receiver, bytes memory message) = abi.decode(payload, (address, address, bytes));
 
-        try IMikiReceiver(receiver).mikiReceiveMsg(chainId, sender, message) {
-            emit SentMsg(chainId, sender, receiver, message);
-        } catch Error(string memory reason) {
-            emit FailedMsg(chainId, sender, receiver, message, reason);
-        } catch {
-            emit FailedMsg(chainId, sender, receiver, message, "Unknown error");
-        }
+        IMikiReceiver(mikiReceiver).mikiReceive(chainId, sender, receiver, address(0), 0, message);
     }
 
     function lzCompose(
@@ -132,20 +129,14 @@ contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
         bytes memory composeMsg = _message.composeMsg();
         (address sender, address receiver, bytes memory message) = abi.decode(composeMsg, (address, address, bytes));
 
-        bool success = IERC20(_from).transfer(receiver, amountLD);
+        bool success = IERC20(_from).transfer(mikiReceiver, amountLD);
         if (!success) {
             revert TransferFailed();
         }
 
         uint256 chainId = chainIdOf[srcEid];
 
-        try IMikiReceiver(receiver).mikiReceive(chainId, sender, _from, amountLD, message) {
-            emit SentMsgAndToken(chainId, sender, _from, receiver, amountLD, message);
-        } catch Error(string memory reason) {
-            emit FailedMsgAndToken(chainId, sender, _from, receiver, amountLD, message, reason);
-        } catch {
-            emit FailedMsgAndToken(chainId, sender, _from, receiver, amountLD, message, "Unknown error");
-        }
+        IMikiReceiver(mikiReceiver).mikiReceive(chainId, sender, receiver, _from, amountLD, message);
     }
 
     function setChainIds(uint32[] calldata _eids, uint256[] calldata _chainIds) external {

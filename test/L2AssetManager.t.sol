@@ -38,12 +38,36 @@ contract L2AssetManagerTest is PRBTest, StdCheats {
                 )
             )
         );
-        ethTokenPool = new ETHTokenPool(owner, address(l2AssetManager), owner, weth);
 
         ERC20Mock erc20 = new ERC20Mock("Test", "TEST");
         erc20.mint(address(this), 100 ether);
         underlyingToken = address(erc20);
-        erc20TokenPool = new ERC20TokenPoolMock(owner, address(l2AssetManager), underlyingToken, owner);
+
+        ETHTokenPool ethTokenPoolImpl = new ETHTokenPool(address(l2AssetManager), weth, owner);
+        ethTokenPool = ETHTokenPool(
+            payable(
+                address(
+                    new TransparentUpgradeableProxy(
+                        address(ethTokenPoolImpl),
+                        address(mikiProxyAdmin),
+                        abi.encodeWithSelector(ETHTokenPool.initialize.selector, owner, weth)
+                    )
+                )
+            )
+        );
+
+        ERC20TokenPoolMock erc20TokenPoolImpl = new ERC20TokenPoolMock(address(l2AssetManager), underlyingToken, owner);
+        erc20TokenPool = ERC20TokenPoolMock(
+            payable(
+                address(
+                    new TransparentUpgradeableProxy(
+                        address(erc20TokenPoolImpl),
+                        address(mikiProxyAdmin),
+                        abi.encodeWithSelector(ERC20TokenPoolMock.initialize.selector, owner, underlyingToken)
+                    )
+                )
+            )
+        );
 
         // Set the native token pool.
         vm.prank(owner);

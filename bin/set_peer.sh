@@ -1,15 +1,12 @@
 #!/bin/sh
 
-name=$1
+source ./.env
 
-echo Funtion: ${name}
-
-shift
-array=("$@")
+forge script script/adapters/SetPeer.s.sol -s "setLzAdapterPeer()" --rpc-url arbitrum_sepolia --broadcast --verify -vvvv --via-ir --ffi --private-key ${PRIVATE_KEY}
 
 for item in "${array[@]}"
 do
   echo Chain: ${item}
-  forge script script/adapters/SetPeer.s.sol $1 -s $name --rpc-url $item --broadcast --verify -vvvv --via-ir --ffi
+  forge script script/adapters/SetPeer.s.sol -s "setLzAdapterPeer()" --rpc-url $item --broadcast --verify -vvvv --via-ir --ffi --private-key ${PRIVATE_KEY}
 done
 

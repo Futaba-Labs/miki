@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.23;
 
-import { IMikiReceiver } from "../interfaces/IMikiReceiver.sol";
+import { IMikiAppReceiver } from "../interfaces/IMikiAppReceiver.sol";
 import { ERC721URIStorage } from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-contract NFTReceiver is IMikiReceiver, ERC721URIStorage {
+contract NFTReceiver is IMikiAppReceiver, ERC721URIStorage {
     uint256 private _nextTokenId;
     string private _tokenURI;
 
