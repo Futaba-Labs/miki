@@ -96,8 +96,9 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
             revert InvalidCode();
         }
 
-        IOrbiterXRouterV3(orbiterRouter).transfer{ value: amount + code + fee }(
-            orbiterMaker, abi.encodePacked(recipient)
+        // Decoding results in "t={recipient}"
+        IOrbiterXRouterV3(orbiterRouter).transfer{ value: amount }(
+            orbiterMaker, abi.encodePacked(string.concat("t=0x", _stringToHex(string(abi.encodePacked(recipient)))))
         );
     }
 
@@ -145,6 +146,26 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
 
     function getIdentificationCode(uint256 chainId) external view returns (uint16) {
         return identificationCodes[chainId];
+    }
+
+    function _stringToHex(string memory str) internal pure returns (string memory) {
+        bytes memory strBytes = bytes(str);
+        bytes memory hexBytes = new bytes(strBytes.length * 2);
+        uint256 j = 0;
+        for (uint256 i = 0; i < strBytes.length; i++) {
+            uint256 hexValue = uint8(strBytes[i]);
+            hexBytes[j++] = _nibbleToHex(uint8(hexValue >> 4));
+            hexBytes[j++] = _nibbleToHex(uint8(hexValue & 0x0f));
+        }
+        return string(hexBytes);
+    }
+
+    function _nibbleToHex(uint8 nibble) private pure returns (bytes1) {
+        if (nibble < 10) {
+            return bytes1(nibble + 48); // 0-9 の ASCII コード
+        } else {
+            return bytes1(nibble + 87); // a-f の ASCII コード
+        }
     }
 
     receive() external payable { }

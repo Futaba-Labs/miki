@@ -11,6 +11,7 @@ import { ERC1967Utils } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils
 import { ProxyAdmin } from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import { L2AssetManager } from "../src/L2AssetManager.sol";
 import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
+import { GaslessETHTokenPool } from "../src/pools/GaslessETHTokenPool.sol";
 import { ERC20TokenPool } from "../src/pools/ERC20TokenPool.sol";
 import { EthAdapter } from "../src/adapters/EthAdapter.sol";
 import { LayerZeroAdapter } from "../src/adapters/LayerZeroAdapter.sol";
@@ -43,6 +44,7 @@ contract Deploy is BaseScript {
     SampleAMM public sampleAMM;
 
     // Other params
+    uint256 private chainId;
     string private chainKey;
     address private owner;
     uint256 private hubChainId = networks[Chains.ArbitrumSepolia].chainId;
@@ -55,7 +57,7 @@ contract Deploy is BaseScript {
     string public uri = "ipfs://QmeuC3tFtndSF1pBTzZxUmArWiBFv3ozNhEnAPFKJp9T1E/0";
 
     function run() public broadcast {
-        uint256 chainId = block.chainid;
+        chainId = block.chainid;
         console2.log("ChainId: %s", chainId);
         chainKey = _getChainKey(chainId);
 
@@ -115,8 +117,8 @@ contract Deploy is BaseScript {
         address weth = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.underlying"));
         address usdc = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.usdcTokenPool.underlying"));
 
-        ethTokenPoolImpl = new ETHTokenPool(address(l2AssetManager), weth, owner);
-        ethTokenPool = ETHTokenPool(
+        ethTokenPoolImpl = new GaslessETHTokenPool(address(l2AssetManager), weth, owner);
+        ethTokenPool = GaslessETHTokenPool(
             payable(
                 address(
                     new TransparentUpgradeableProxy(
@@ -150,6 +152,14 @@ contract Deploy is BaseScript {
         bool[] memory tokenPoolWhitelists = new bool[](1);
         tokenPoolWhitelists[0] = true;
         l2AssetManager.setTokenPoolWhitelists(tokenPools, tokenPoolWhitelists);
+
+        // Set chain ids
+        lzAdapter.setEids(chainIds, eids);
+
+        // Set adapter
+        for (uint256 i = 0; i < chainIds.length; i++) {
+            ethTokenPool.setBridgeAdapter(chainIds[i], address(ethAdapter));
+        }
 
         // write json
         vm.writeJson(vm.toString(address(ethAdapter)), deploymentPath, string.concat(chainKey, ".adapters.eth.sender"));

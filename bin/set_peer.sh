@@ -2,6 +2,8 @@
 
 source ./.env
 
+array=("$@")
+
 forge script script/adapters/SetPeer.s.sol -s "setLzAdapterPeer()" --rpc-url arbitrum_sepolia --broadcast --verify -vvvv --via-ir --ffi --private-key ${PRIVATE_KEY}
 
 for item in "${array[@]}"
