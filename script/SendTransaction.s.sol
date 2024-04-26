@@ -33,53 +33,14 @@ contract SendTransactionScript is BaseScript {
     // Other params
     string public chainKey;
 
-    // function crossChainDepositFromTokenPool(
-    //     uint256 dstChainId,
-    //     string memory tokenName,
-    //     uint256 amount
-    // )
-    //     public
-    //     broadcast
-    // {
-    //     string memory chainKey = _getChainKey(block.chainid);
-    //     string memory targetChainKey = _getChainKey(dstChainId);
-    //     string memory tokenKey = string.concat(targetChainKey, ".examples.aave.", tokenName);
-
-    //     address underlyingToken = vm.parseJsonAddress(deploymentsJson, string.concat(tokenKey, ".underlying"));
-    //     address aaveV3ReceiverAddr =
-    //         vm.parseJsonAddress(deploymentsJson, string.concat(targetChainKey, ".examples.aave.receiver"));
-    //     address mikiAdapterAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey,
-    // ".adapters.miki.sender"));
-    //     address mikiTokenAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey,
-    // ".adapters.miki.token"));
-    //     address mikiTokenPoolAddr =
-    //         vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.mikiTokenPool.pool"));
-
-    //     MikiAdapter mikiAdapter = MikiAdapter(mikiAdapterAddr);
-
-    //     bytes memory option =
-    //         OptionsBuilder.newOptions().addExecutorLzReceiveOption(200_000, 0).addExecutorLzComposeOption(0, 200_000,
-    // 0);
-
-    //     bytes memory params = abi.encode(amount, option);
-    //     bytes memory message = abi.encode(underlyingToken);
-
-    //     uint256 fee =
-    //         mikiAdapter.estimateFee(broadcaster, dstChainId, aaveV3ReceiverAddr, mikiTokenAddr, message, amount,
-    // params);
-
-    //     IERC20(mikiTokenAddr).approve(mikiAdapterAddr, amount);
-
-    //     ERC20TokenPool tokenPool = ERC20TokenPool(payable(mikiTokenPoolAddr));
-
-    //     tokenPool.crossChainContractCallWithAsset{ value: fee * 120 / 100 }(
-    //         dstChainId, aaveV3ReceiverAddr, message, fee * 120 / 100, amount, params
-    //     );
-    // }
-
     function depositETH(uint256 amount) public broadcast {
         _readAddresses();
         l2AssetManager.depositETH{ value: amount }(amount);
+    }
+
+    function withdrawETH(uint256 amount) public broadcast {
+        _readAddresses();
+        l2AssetManager.withdrawETH(amount, broadcaster);
     }
 
     function depositERC20(address token, address tokenPool, uint256 amount) public broadcast {

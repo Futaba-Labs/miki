@@ -11,16 +11,11 @@ contract ERC20TokenPoolMock is TokenPoolBase {
     using SafeERC20 for IERC20;
     /* ----------------------------- Constructor -------------------------------- */
 
-    constructor(
-        address _l2AssetManager,
-        address _underlyingToken,
-        address _operator
-    )
-        TokenPoolBase(_l2AssetManager, _underlyingToken, _operator)
-    { }
+    constructor(address _l2AssetManager, address _operator) TokenPoolBase(_l2AssetManager, _operator) { }
 
     function initialize(address _initialOwner, address _underlyingToken) public override initializer {
-        _initializeTokenPoolBase(_initialOwner, _underlyingToken);
+        __Ownable_init(_initialOwner);
+        underlyingToken = _underlyingToken;
     }
 
     /* ----------------------------- External Functions -------------------------------- */

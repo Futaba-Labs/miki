@@ -1,13 +1,19 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.23;
 
-import { TransparentUpgradeableProxy } from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import {
+    TransparentUpgradeableProxy,
+    ITransparentUpgradeableProxy
+} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import { ERC1967Utils } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
 import { ProxyAdmin } from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import { PRBTest } from "@prb/test/src/PRBTest.sol";
 import { console2 } from "forge-std/src/console2.sol";
 import { StdCheats } from "forge-std/src/StdCheats.sol";
 import { L2AssetManager } from "../src/L2AssetManager.sol";
 import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
+import { TokenPoolBase } from "../src/pools/TokenPoolBase.sol";
+
 import { ERC20TokenPoolMock } from "./mock/ERC20TokenPoolMock.sol";
 import { ERC20Mock } from "./mock/ERC20Mock.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -33,7 +39,7 @@ contract L2AssetManagerTest is PRBTest, StdCheats {
             address(
                 new TransparentUpgradeableProxy(
                     address(l2AssetManagerImplementation),
-                    address(mikiProxyAdmin),
+                    owner,
                     abi.encodeWithSelector(L2AssetManager.initialize.selector, owner)
                 )
             )
@@ -43,26 +49,26 @@ contract L2AssetManagerTest is PRBTest, StdCheats {
         erc20.mint(address(this), 100 ether);
         underlyingToken = address(erc20);
 
-        ETHTokenPool ethTokenPoolImpl = new ETHTokenPool(address(l2AssetManager), weth, owner);
+        ETHTokenPool ethTokenPoolImpl = new ETHTokenPool(address(l2AssetManager), owner);
         ethTokenPool = ETHTokenPool(
             payable(
                 address(
                     new TransparentUpgradeableProxy(
                         address(ethTokenPoolImpl),
-                        address(mikiProxyAdmin),
-                        abi.encodeWithSelector(ETHTokenPool.initialize.selector, owner, weth)
+                        owner,
+                        abi.encodeWithSelector(TokenPoolBase.initialize.selector, owner, weth)
                     )
                 )
             )
         );
 
-        ERC20TokenPoolMock erc20TokenPoolImpl = new ERC20TokenPoolMock(address(l2AssetManager), underlyingToken, owner);
+        ERC20TokenPoolMock erc20TokenPoolImpl = new ERC20TokenPoolMock(address(l2AssetManager), owner);
         erc20TokenPool = ERC20TokenPoolMock(
             payable(
                 address(
                     new TransparentUpgradeableProxy(
                         address(erc20TokenPoolImpl),
-                        address(mikiProxyAdmin),
+                        owner,
                         abi.encodeWithSelector(ERC20TokenPoolMock.initialize.selector, owner, underlyingToken)
                     )
                 )
@@ -77,6 +83,28 @@ contract L2AssetManagerTest is PRBTest, StdCheats {
         vm.prank(owner);
         tokenPools.push(address(erc20TokenPool));
         l2AssetManager.setTokenPoolWhitelists(tokenPools, whitelists);
+    }
+
+    function test_UpgradeContract() external {
+        owner = msg.sender;
+        L2AssetManager l2AssetManagerImpl = new L2AssetManager();
+        bytes memory selector = abi.encodeWithSelector(L2AssetManager.initialize.selector, owner);
+        bytes32 adminSlot = vm.load(address(l2AssetManager), ERC1967Utils.ADMIN_SLOT);
+        if (adminSlot == bytes32(0)) {
+            // No admin contract: upgrade directly using interface
+            ITransparentUpgradeableProxy(address(l2AssetManager)).upgradeToAndCall(
+                address(l2AssetManagerImpl), selector
+            );
+        } else {
+            console2.log(address(uint160(uint256(adminSlot))));
+            ProxyAdmin admin = ProxyAdmin(address(uint160(uint256(adminSlot))));
+
+            vm.startPrank(owner);
+            admin.upgradeAndCall(
+                ITransparentUpgradeableProxy(address(l2AssetManager)), address(l2AssetManagerImpl), selector
+            );
+            vm.stopPrank();
+        }
     }
 
     function test_Deposit() external {

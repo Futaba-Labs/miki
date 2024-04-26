@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.23;
 
-import { TransparentUpgradeableProxy } from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import {
+    TransparentUpgradeableProxy,
+    ITransparentUpgradeableProxy
+} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import { ERC1967Utils } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
 import { ProxyAdmin } from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import { PRBTest } from "@prb/test/src/PRBTest.sol";
 import { console2 } from "forge-std/src/console2.sol";
 import { StdCheats } from "forge-std/src/StdCheats.sol";
 import { L2AssetManager } from "../src/L2AssetManager.sol";
 import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
+import { TokenPoolBase } from "../src/pools/TokenPoolBase.sol";
 import { BridgeAdapterMock } from "./mock/BridgeAdapterMock.sol";
 import { BridgeReceiverMock } from "./mock/BridgeReceiverMock.sol";
 import { SampleMikiReceiver } from "../src/examples/SampleMikiReceiver.sol";
@@ -32,26 +37,27 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
     function setUp() public virtual {
         // Instantiate the contract-under-test.
         owner = msg.sender;
+        console2.log(owner);
+
         underlyingToken = address(this);
-        mikiProxyAdmin = new ProxyAdmin(owner);
         L2AssetManager l2AssetManagerImplementation = new L2AssetManager();
         l2AssetManager = L2AssetManager(
             address(
                 new TransparentUpgradeableProxy(
                     address(l2AssetManagerImplementation),
-                    address(mikiProxyAdmin),
+                    owner,
                     abi.encodeWithSelector(L2AssetManager.initialize.selector, owner)
                 )
             )
         );
-        ETHTokenPool ethTokenPoolImpl = new ETHTokenPool(address(l2AssetManager), underlyingToken, owner);
+        ETHTokenPool ethTokenPoolImpl = new ETHTokenPool(address(l2AssetManager), owner);
         ethTokenPool = ETHTokenPool(
             payable(
                 address(
                     new TransparentUpgradeableProxy(
                         address(ethTokenPoolImpl),
-                        address(mikiProxyAdmin),
-                        abi.encodeWithSelector(ETHTokenPool.initialize.selector, owner, underlyingToken)
+                        owner,
+                        abi.encodeWithSelector(TokenPoolBase.initialize.selector, owner, underlyingToken)
                     )
                 )
             )
@@ -82,6 +88,24 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
         adapters[0] = address(mikiReceiver);
         vm.prank(owner);
         mikiReceiver.setAdapters(adapters);
+    }
+
+    function test_UpgradeContract() external {
+        owner = msg.sender;
+        console2.log(owner);
+        ETHTokenPool ethTokenPoolImpl = new ETHTokenPool(address(l2AssetManager), owner);
+        bytes memory selector = abi.encodeWithSelector(TokenPoolBase.initialize.selector, owner, address(this));
+        bytes32 adminSlot = vm.load(address(ethTokenPool), ERC1967Utils.ADMIN_SLOT);
+        if (adminSlot == bytes32(0)) {
+            // No admin contract: upgrade directly using interface
+            ITransparentUpgradeableProxy(address(ethTokenPool)).upgradeToAndCall(address(ethTokenPoolImpl), selector);
+        } else {
+            ProxyAdmin admin = ProxyAdmin(address(uint160(uint256(adminSlot))));
+            vm.prank(owner);
+            admin.upgradeAndCall(
+                ITransparentUpgradeableProxy(address(ethTokenPool)), address(ethTokenPoolImpl), selector
+            );
+        }
     }
 
     function test_CrossChainContractCall() external {

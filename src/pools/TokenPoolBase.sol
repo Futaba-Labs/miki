@@ -9,6 +9,7 @@ import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/O
 
 abstract contract TokenPoolBase is ITokenPool, Initializable, OwnableUpgradeable {
     /* ----------------------------- Storage -------------------------------- */
+    uint256 private _nonce;
     address public immutable l2AssetManager;
     address public immutable operator;
     uint256 public totalAmount;
@@ -23,22 +24,23 @@ abstract contract TokenPoolBase is ITokenPool, Initializable, OwnableUpgradeable
     }
 
     /* ----------------------------- Constructor -------------------------------- */
-    constructor(address _l2AssetManager, address _underlyingToken, address _operator) {
+    constructor(address _l2AssetManager, address _operator) {
         l2AssetManager = _l2AssetManager;
         operator = _operator;
-        underlyingToken = _underlyingToken;
+        _disableInitializers();
     }
 
     /* ----------------------------- Initializer -------------------------------- */
 
     function initialize(address _initialOwner, address _underlyingToken) public virtual initializer {
-        _initializeTokenPoolBase(_initialOwner, _underlyingToken);
-    }
-
-    function _initializeTokenPoolBase(address _initialOwner, address _underlyingToken) internal onlyInitializing {
         __Ownable_init(_initialOwner);
         underlyingToken = _underlyingToken;
     }
+
+    // function _initializeTokenPoolBase(address _initialOwner, address _underlyingToken) internal onlyInitializing {
+    //     __Ownable_init(_initialOwner);
+    //     underlyingToken = _underlyingToken;
+    // }
 
     /* ----------------------------- Modifier -------------------------------- */
 
@@ -155,6 +157,20 @@ abstract contract TokenPoolBase is ITokenPool, Initializable, OwnableUpgradeable
 
     function _afterBridge(address user, uint256 amount) internal virtual {
         IL2AssetManager(l2AssetManager).removeDeposits(address(this), user, amount);
+        ++_nonce;
+    }
+
+    function _extractId(
+        address sender,
+        uint256 dstChainId,
+        address recipient,
+        bytes memory data
+    )
+        internal
+        view
+        returns (bytes32)
+    {
+        return keccak256(abi.encodePacked(_nonce, sender, dstChainId, recipient, data));
     }
 
     fallback() external payable { }

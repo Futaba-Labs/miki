@@ -8,6 +8,7 @@ interface ITokenPool {
         address sender, uint256 dstChainId, address recipient, bytes data, uint256 fee, uint256 amount
     );
     event CrossChainTransferAsset(address sender, uint256 dstChainId, address recipient, uint256 amount);
+    event CrossChainExecId(bytes32 id);
     event SetBridgeAdapter(uint256 dstChainId, address bridgeAdapter);
     event AddBatch(address user, uint256 amount);
     /* ----------------------------- Erorrs -------------------------------- */

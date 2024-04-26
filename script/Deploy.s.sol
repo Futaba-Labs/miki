@@ -10,6 +10,7 @@ import {
 import { ERC1967Utils } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
 import { ProxyAdmin } from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import { L2AssetManager } from "../src/L2AssetManager.sol";
+import { TokenPoolBase } from "../src/pools/TokenPoolBase.sol";
 import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
 import { GaslessETHTokenPool } from "../src/pools/GaslessETHTokenPool.sol";
 import { ERC20TokenPool } from "../src/pools/ERC20TokenPool.sol";
@@ -65,8 +66,9 @@ contract Deploy is BaseScript {
         console2.log("Owner: %s", owner);
 
         // Set configuration
-        Chains[] memory chains = new Chains[](1);
+        Chains[] memory chains = new Chains[](2);
         chains[0] = Chains.OptimismSepolia;
+        chains[1] = Chains.BaseSepolia;
 
         for (uint256 i = 0; i < chains.length; i++) {
             Chains chain = chains[i];
@@ -117,27 +119,27 @@ contract Deploy is BaseScript {
         address weth = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.underlying"));
         address usdc = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.usdcTokenPool.underlying"));
 
-        ethTokenPoolImpl = new GaslessETHTokenPool(address(l2AssetManager), weth, owner);
+        ethTokenPoolImpl = new GaslessETHTokenPool(address(l2AssetManager), owner);
         ethTokenPool = GaslessETHTokenPool(
             payable(
                 address(
                     new TransparentUpgradeableProxy(
                         address(ethTokenPoolImpl),
                         owner,
-                        abi.encodeWithSelector(ETHTokenPool.initialize.selector, owner, weth)
+                        abi.encodeWithSelector(TokenPoolBase.initialize.selector, owner, weth)
                     )
                 )
             )
         );
 
-        usdcTokenPoolImpl = new ERC20TokenPool(address(l2AssetManager), usdc, owner);
+        usdcTokenPoolImpl = new ERC20TokenPool(address(l2AssetManager), owner);
         usdcTokenPool = ERC20TokenPool(
             payable(
                 address(
                     new TransparentUpgradeableProxy(
                         address(usdcTokenPoolImpl),
                         owner,
-                        abi.encodeWithSelector(ERC20TokenPool.initialize.selector, owner, usdc)
+                        abi.encodeWithSelector(TokenPoolBase.initialize.selector, owner, usdc)
                     )
                 )
             )
@@ -253,31 +255,21 @@ contract Deploy is BaseScript {
         console2.log("Owner: %s", owner);
 
         address ethTokenPoolAddr =
-            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.pool"));
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.proxy"));
         address usdcTokenPoolAddr =
-            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.usdcTokenPool.pool"));
-        address l2AssetManagerAddr = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".l2AssetManager"));
-
-        address weth = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.underlying"));
-        address usdc = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.usdcTokenPool.underlying"));
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.usdcTokenPool.proxy"));
+        address l2AssetManagerAddr =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".l2AssetManagerProxy"));
 
         // deploy impls
         l2AssetManagerImpl = new L2AssetManager();
-        ethTokenPoolImpl = new ETHTokenPool(l2AssetManagerAddr, weth, owner);
-        usdcTokenPoolImpl = new ERC20TokenPool(l2AssetManagerAddr, usdc, owner);
+        ethTokenPoolImpl = new GaslessETHTokenPool(l2AssetManagerAddr, owner);
+        usdcTokenPoolImpl = new ERC20TokenPool(l2AssetManagerAddr, owner);
 
         // upgrade contracts
         _upgrade(l2AssetManagerAddr, address(l2AssetManagerImpl), "");
-        _upgrade(
-            ethTokenPoolAddr,
-            address(ethTokenPoolImpl),
-            abi.encodeWithSelector(ETHTokenPool.initialize.selector, owner, weth)
-        );
-        _upgrade(
-            usdcTokenPoolAddr,
-            address(usdcTokenPoolImpl),
-            abi.encodeWithSelector(ERC20TokenPool.initialize.selector, owner, usdc)
-        );
+        _upgrade(ethTokenPoolAddr, address(ethTokenPoolImpl), "");
+        _upgrade(usdcTokenPoolAddr, address(usdcTokenPoolImpl), "");
 
         // write json
         vm.writeJson(
@@ -297,7 +289,7 @@ contract Deploy is BaseScript {
         bytes32 adminSlot = vm.load(proxy, ERC1967Utils.ADMIN_SLOT);
         if (adminSlot == bytes32(0)) {
             // No admin contract: upgrade directly using interface
-            ITransparentUpgradeableProxy(proxy).upgradeToAndCall(address(ethTokenPoolImpl), data);
+            ITransparentUpgradeableProxy(proxy).upgradeToAndCall(impl, data);
         } else {
             ProxyAdmin admin = ProxyAdmin(address(uint160(uint256(adminSlot))));
             admin.upgradeAndCall(ITransparentUpgradeableProxy(proxy), impl, data);

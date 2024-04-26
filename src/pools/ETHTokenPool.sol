@@ -7,17 +7,7 @@ import { TokenPoolBase } from "./TokenPoolBase.sol";
 
 contract ETHTokenPool is TokenPoolBase {
     /* ----------------------------- Constructor -------------------------------- */
-    constructor(
-        address _l2AssetManager,
-        address _underlyingToken,
-        address _operator
-    )
-        TokenPoolBase(_l2AssetManager, _underlyingToken, _operator)
-    { }
-
-    function initialize(address _initialOwner, address _underlyingToken) public override initializer {
-        _initializeTokenPoolBase(_initialOwner, _underlyingToken);
-    }
+    constructor(address _l2AssetManager, address _operator) TokenPoolBase(_l2AssetManager, _operator) { }
 
     /* ----------------------------- External Functions -------------------------------- */
 
@@ -97,8 +87,10 @@ contract ETHTokenPool is TokenPoolBase {
         bridgeAdapter.execCrossChainContractCall{ value: fee }(user, dstChainId, recipient, data, fee, params);
 
         _afterBridge(user, fee);
+        bytes32 id = _extractId(user, dstChainId, recipient, data);
 
         emit CrossChainContractCall(user, dstChainId, recipient, data, fee);
+        emit CrossChainExecId(id);
     }
 
     function _crossChainContractCallWithAsset(
@@ -122,7 +114,10 @@ contract ETHTokenPool is TokenPoolBase {
         );
 
         _afterBridge(user, total);
+        bytes32 id = _extractId(user, dstChainId, recipient, data);
+
         emit CrossChainContractCallWithAsset(user, dstChainId, recipient, data, fee, amount);
+        emit CrossChainExecId(id);
     }
 
     function _crossChainTransferAsset(
@@ -146,6 +141,9 @@ contract ETHTokenPool is TokenPoolBase {
         );
 
         _afterBridge(user, total);
+        bytes32 id = _extractId(user, dstChainId, recipient, bytes(""));
+
         emit CrossChainTransferAsset(user, dstChainId, recipient, amount);
+        emit CrossChainExecId(id);
     }
 }
