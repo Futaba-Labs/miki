@@ -109,9 +109,10 @@ contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
         override
     {
         uint256 chainId = chainIdOf[_origin.srcEid];
-        (address sender, address receiver, bytes memory message) = abi.decode(payload, (address, address, bytes));
+        (bytes32 id, address sender, address receiver, bytes memory message) =
+            abi.decode(payload, (bytes32, address, address, bytes));
 
-        IMikiReceiver(mikiReceiver).mikiReceive(chainId, sender, receiver, address(0), 0, message);
+        IMikiReceiver(mikiReceiver).mikiReceive(chainId, sender, receiver, address(0), 0, message, id);
     }
 
     function lzCompose(
@@ -127,7 +128,8 @@ contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
         uint32 srcEid = _message.srcEid();
         uint256 amountLD = _message.amountLD();
         bytes memory composeMsg = _message.composeMsg();
-        (address sender, address receiver, bytes memory message) = abi.decode(composeMsg, (address, address, bytes));
+        (bytes32 id, address sender, address receiver, bytes memory message) =
+            abi.decode(composeMsg, (bytes32, address, address, bytes));
 
         bool success = IERC20(_from).transfer(mikiReceiver, amountLD);
         if (!success) {
@@ -136,7 +138,7 @@ contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
 
         uint256 chainId = chainIdOf[srcEid];
 
-        IMikiReceiver(mikiReceiver).mikiReceive(chainId, sender, receiver, _from, amountLD, message);
+        IMikiReceiver(mikiReceiver).mikiReceive(chainId, sender, receiver, _from, amountLD, message, id);
     }
 
     function setChainIds(uint32[] calldata _eids, uint256[] calldata _chainIds) external {

@@ -106,8 +106,10 @@ contract ERC20TokenPool is PRBTest, StdCheats {
         uint256 balance = l2AssetManager.getDeposit(address(erc20TokenPool), address(this));
         assertEq(balance, 1 ether - amount);
 
+        bytes32 id = keccak256(abi.encodePacked(msg.sender, dstChainId, recipient, MESSAGE));
+
         // receive the msg and asset
-        bytes memory payload = abi.encode(address(erc20TokenPool), recipient, false, MESSAGE);
+        bytes memory payload = abi.encode(id, address(erc20TokenPool), recipient, false, MESSAGE);
         IERC20(underlyingToken).transfer(address(bridgeReceiverMock), amount);
         vm.expectEmit(true, true, true, true);
         emit Greeting("Hello, world!");

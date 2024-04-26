@@ -42,23 +42,24 @@ contract BridgeReceiverMock {
         external
         payable
     {
-        (address sender, address receiver, bool isNative, bytes memory message) =
-            abi.decode(_payload, (address, address, bool, bytes));
+        (bytes32 id, address sender, address receiver, bool isNative, bytes memory message) =
+            abi.decode(_payload, (bytes32, address, address, bool, bytes));
 
         if (isNative) {
             IMikiReceiver(mikiReceiver).mikiReceive{ value: _amountLD }(
-                _srcChainId, sender, receiver, address(0), _amountLD, message
+                _srcChainId, sender, receiver, address(0), _amountLD, message, id
             );
         } else {
             IERC20(_token).transfer(mikiReceiver, _amountLD);
-            IMikiReceiver(mikiReceiver).mikiReceive(_srcChainId, sender, receiver, _token, _amountLD, message);
+            IMikiReceiver(mikiReceiver).mikiReceive(_srcChainId, sender, receiver, _token, _amountLD, message, id);
         }
     }
 
     function receiveMsg(uint256 _srcChainId, address _srcAddress, bytes memory _payload) external {
-        (address sender, address receiver, bytes memory message) = abi.decode(_payload, (address, address, bytes));
+        (bytes32 id, address sender, address receiver, bytes memory message) =
+            abi.decode(_payload, (bytes32, address, address, bytes));
 
-        IMikiReceiver(mikiReceiver).mikiReceive(_srcChainId, sender, receiver, address(0), 0, message);
+        IMikiReceiver(mikiReceiver).mikiReceive(_srcChainId, sender, receiver, address(0), 0, message, id);
     }
 
     fallback() external payable { }

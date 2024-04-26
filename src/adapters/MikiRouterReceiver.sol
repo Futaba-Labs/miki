@@ -23,10 +23,11 @@ contract MikiRouterReceiver is Ownable {
             revert InvalidRouter();
         }
 
-        (address sender, address receiver, bytes memory message) = abi.decode(payload, (address, address, bytes));
+        (bytes32 id, address sender, address receiver, bytes memory message) =
+            abi.decode(payload, (bytes32, address, address, bytes));
 
         IMikiReceiver(mikiReceiver).mikiReceive{ value: amount }(
-            srcChainId, sender, receiver, address(0), amount, message
+            srcChainId, sender, receiver, address(0), amount, message, id
         );
     }
 

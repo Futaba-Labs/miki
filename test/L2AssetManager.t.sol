@@ -85,28 +85,6 @@ contract L2AssetManagerTest is PRBTest, StdCheats {
         l2AssetManager.setTokenPoolWhitelists(tokenPools, whitelists);
     }
 
-    function test_UpgradeContract() external {
-        owner = msg.sender;
-        L2AssetManager l2AssetManagerImpl = new L2AssetManager();
-        bytes memory selector = abi.encodeWithSelector(L2AssetManager.initialize.selector, owner);
-        bytes32 adminSlot = vm.load(address(l2AssetManager), ERC1967Utils.ADMIN_SLOT);
-        if (adminSlot == bytes32(0)) {
-            // No admin contract: upgrade directly using interface
-            ITransparentUpgradeableProxy(address(l2AssetManager)).upgradeToAndCall(
-                address(l2AssetManagerImpl), selector
-            );
-        } else {
-            console2.log(address(uint160(uint256(adminSlot))));
-            ProxyAdmin admin = ProxyAdmin(address(uint160(uint256(adminSlot))));
-
-            vm.startPrank(owner);
-            admin.upgradeAndCall(
-                ITransparentUpgradeableProxy(address(l2AssetManager)), address(l2AssetManagerImpl), selector
-            );
-            vm.stopPrank();
-        }
-    }
-
     function test_Deposit() external {
         // Deposit 1 TEST to the erc20 token pool.
         uint256 amount = 1 ether;

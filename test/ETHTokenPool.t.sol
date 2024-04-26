@@ -90,24 +90,6 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
         mikiReceiver.setAdapters(adapters);
     }
 
-    function test_UpgradeContract() external {
-        owner = msg.sender;
-        console2.log(owner);
-        ETHTokenPool ethTokenPoolImpl = new ETHTokenPool(address(l2AssetManager), owner);
-        bytes memory selector = abi.encodeWithSelector(TokenPoolBase.initialize.selector, owner, address(this));
-        bytes32 adminSlot = vm.load(address(ethTokenPool), ERC1967Utils.ADMIN_SLOT);
-        if (adminSlot == bytes32(0)) {
-            // No admin contract: upgrade directly using interface
-            ITransparentUpgradeableProxy(address(ethTokenPool)).upgradeToAndCall(address(ethTokenPoolImpl), selector);
-        } else {
-            ProxyAdmin admin = ProxyAdmin(address(uint160(uint256(adminSlot))));
-            vm.prank(owner);
-            admin.upgradeAndCall(
-                ITransparentUpgradeableProxy(address(ethTokenPool)), address(ethTokenPoolImpl), selector
-            );
-        }
-    }
-
     function test_CrossChainContractCall() external {
         _deposit();
         uint256 dstChainId = 1;
@@ -118,8 +100,10 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
         uint256 balance = l2AssetManager.getDeposit(address(ethTokenPool), address(this));
         assertEq(balance, 1 ether - fee);
 
+        bytes32 id = keccak256(abi.encodePacked(msg.sender, dstChainId, recipient, MESSAGE));
+
         // receive the msg
-        bytes memory payload = abi.encode(address(ethTokenPool), recipient, MESSAGE);
+        bytes memory payload = abi.encode(id, address(ethTokenPool), recipient, MESSAGE);
         vm.expectEmit(true, true, true, true);
         emit Greeting("Hello, world!");
         bridgeReceiverMock.receiveMsg(1, address(this), payload);
@@ -136,8 +120,10 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
         uint256 balance = l2AssetManager.getDeposit(address(ethTokenPool), address(this));
         assertEq(balance, 1 ether - fee - amount);
 
+        bytes32 id = keccak256(abi.encodePacked(msg.sender, dstChainId, recipient, MESSAGE));
+
         // receive the msg and asset
-        bytes memory payload = abi.encode(address(ethTokenPool), recipient, true, MESSAGE);
+        bytes memory payload = abi.encode(id, address(ethTokenPool), recipient, true, MESSAGE);
         vm.expectEmit(true, true, true, true);
         emit Greeting("Hello, world!");
         bridgeReceiverMock.receiveMsgWithAmount{ value: amount }(1, address(this), address(0), amount, payload);

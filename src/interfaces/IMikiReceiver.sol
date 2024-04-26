@@ -8,7 +8,8 @@ interface IMikiReceiver {
         address receiver,
         address token,
         uint256 amount,
-        bytes calldata message
+        bytes calldata message,
+        bytes32 id
     )
         external
         payable;

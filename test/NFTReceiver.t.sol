@@ -31,7 +31,10 @@ contract NFTReceiverTest is PRBTest, StdCheats {
     }
 
     function test_mikiReceiveMsg() public {
-        bytes memory message = abi.encode(msg.sender, address(nftReceiver), abi.encode(msg.sender));
+        bytes32 id =
+            keccak256(abi.encodePacked(msg.sender, uint256(80_001), address(nftReceiver), abi.encode(msg.sender)));
+
+        bytes memory message = abi.encode(id, msg.sender, address(nftReceiver), abi.encode(msg.sender));
         vm.expectEmit(true, true, true, true);
         emit MikiNFTMinted(msg.sender, 0);
         bridgeReceiver.receiveMsg(1, msg.sender, message);

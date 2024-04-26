@@ -11,12 +11,19 @@ contract MikiReceiver is Ownable, IMikiReceiver {
     /* ----------------------------- Events -------------------------------- */
 
     event SentMsgAndToken(
-        uint256 _srcChainId, address _srcAddress, address _token, address _receiver, uint256 _amountLD, bytes _message
+        bytes32 id,
+        uint256 _srcChainId,
+        address _srcAddress,
+        address _token,
+        address _receiver,
+        uint256 _amountLD,
+        bytes _message
     );
 
-    event SentMsg(uint256 _srcChainId, address _srcAddress, address _receiver, bytes _message);
+    event SentMsg(bytes32 id, uint256 _srcChainId, address _srcAddress, address _receiver, bytes _message);
 
     event FailedMsgAndToken(
+        bytes32 id,
         uint256 _srcChainId,
         address _srcAddress,
         address _token,
@@ -26,7 +33,9 @@ contract MikiReceiver is Ownable, IMikiReceiver {
         string _reason
     );
 
-    event FailedMsg(uint256 _srcChainId, address _srcAddress, address _receiver, bytes _message, string _reason);
+    event FailedMsg(
+        bytes32 id, uint256 _srcChainId, address _srcAddress, address _receiver, bytes _message, string _reason
+    );
 
     event SetAdapter(address _adapter);
 
@@ -48,7 +57,8 @@ contract MikiReceiver is Ownable, IMikiReceiver {
         address receiver,
         address token,
         uint256 amount,
-        bytes calldata message
+        bytes calldata message,
+        bytes32 id
     )
         external
         payable
@@ -64,32 +74,34 @@ contract MikiReceiver is Ownable, IMikiReceiver {
                 }
 
                 try IMikiAppReceiver(receiver).mikiReceive(srcChainId, srcAddress, token, amount, message) {
-                    emit SentMsgAndToken(srcChainId, srcAddress, token, receiver, amount, message);
+                    emit SentMsgAndToken(id, srcChainId, srcAddress, token, receiver, amount, message);
                 } catch Error(string memory reason) {
-                    emit FailedMsgAndToken(srcChainId, srcAddress, token, receiver, amount, message, reason);
+                    emit FailedMsgAndToken(id, srcChainId, srcAddress, token, receiver, amount, message, reason);
                 } catch {
-                    emit FailedMsgAndToken(srcChainId, srcAddress, token, receiver, amount, message, "Unknown error");
+                    emit FailedMsgAndToken(
+                        id, srcChainId, srcAddress, token, receiver, amount, message, "Unknown error"
+                    );
                 }
             } else {
                 try IMikiAppReceiver(receiver).mikiReceive{ value: amount }(
                     srcChainId, srcAddress, token, amount, message
                 ) {
-                    emit SentMsgAndToken(srcChainId, srcAddress, address(0), receiver, amount, message);
+                    emit SentMsgAndToken(id, srcChainId, srcAddress, address(0), receiver, amount, message);
                 } catch Error(string memory reason) {
-                    emit FailedMsgAndToken(srcChainId, srcAddress, address(0), receiver, amount, message, reason);
+                    emit FailedMsgAndToken(id, srcChainId, srcAddress, address(0), receiver, amount, message, reason);
                 } catch {
                     emit FailedMsgAndToken(
-                        srcChainId, srcAddress, address(0), receiver, amount, message, "Unknown error"
+                        id, srcChainId, srcAddress, address(0), receiver, amount, message, "Unknown error"
                     );
                 }
             }
         } else {
             try IMikiAppReceiver(receiver).mikiReceiveMsg(srcChainId, srcAddress, message) {
-                emit SentMsg(srcChainId, srcAddress, receiver, message);
+                emit SentMsg(id, srcChainId, srcAddress, receiver, message);
             } catch Error(string memory reason) {
-                emit FailedMsg(srcChainId, srcAddress, receiver, message, reason);
+                emit FailedMsg(id, srcChainId, srcAddress, receiver, message, reason);
             } catch {
-                emit FailedMsg(srcChainId, srcAddress, receiver, message, "Unknown error");
+                emit FailedMsg(id, srcChainId, srcAddress, receiver, message, "Unknown error");
             }
         }
     }
