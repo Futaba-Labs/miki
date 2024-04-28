@@ -83,14 +83,13 @@ contract ETHTokenPool is TokenPoolBase {
         IL2BridgeAdapter bridgeAdapter = IL2BridgeAdapter(bridgeAdapters[dstChainId]);
 
         _beforeBridge(user, dstChainId, recipient, fee, 0, data, bridgeAdapter, params);
-
-        bridgeAdapter.execCrossChainContractCall{ value: fee }(user, dstChainId, recipient, data, fee, params);
+        bytes32 id = _extractId(user, dstChainId, recipient, data);
+        bytes memory payload = _buildPayload(id, data);
+        bridgeAdapter.execCrossChainContractCall{ value: fee }(user, dstChainId, recipient, payload, fee, params);
 
         _afterBridge(user, fee);
-        bytes32 id = _extractId(user, dstChainId, recipient, data);
 
-        emit CrossChainContractCall(user, dstChainId, recipient, data, fee);
-        emit CrossChainExecId(id);
+        emit CrossChainContractCall(id, user, dstChainId, recipient, data, fee);
     }
 
     function _crossChainContractCallWithAsset(
@@ -109,15 +108,16 @@ contract ETHTokenPool is TokenPoolBase {
         _beforeBridge(user, dstChainId, recipient, fee, amount, data, bridgeAdapter, params);
 
         uint256 total = fee + amount;
+        bytes32 id = _extractId(user, dstChainId, recipient, data);
+        bytes memory payload = _buildPayload(id, data);
+
         bridgeAdapter.execCrossChainContractCallWithAsset{ value: total }(
-            user, dstChainId, recipient, underlyingToken, data, fee, amount, params
+            user, dstChainId, recipient, underlyingToken, payload, fee, amount, params
         );
 
         _afterBridge(user, total);
-        bytes32 id = _extractId(user, dstChainId, recipient, data);
 
-        emit CrossChainContractCallWithAsset(user, dstChainId, recipient, data, fee, amount);
-        emit CrossChainExecId(id);
+        emit CrossChainContractCallWithAsset(id, user, dstChainId, recipient, data, fee, amount);
     }
 
     function _crossChainTransferAsset(
@@ -143,7 +143,6 @@ contract ETHTokenPool is TokenPoolBase {
         _afterBridge(user, total);
         bytes32 id = _extractId(user, dstChainId, recipient, bytes(""));
 
-        emit CrossChainTransferAsset(user, dstChainId, recipient, amount);
-        emit CrossChainExecId(id);
+        emit CrossChainTransferAsset(id, user, dstChainId, recipient, amount);
     }
 }

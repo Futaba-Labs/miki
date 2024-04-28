@@ -7,10 +7,18 @@ import { GelatoRelayContextERC2771 } from "@gelatonetwork/relay-context/contract
 contract GaslessETHTokenPool is ETHTokenPool, GelatoRelayContextERC2771 {
     /* ----------------------------- Events -------------------------------- */
     event CrossChainContractCallRelay(
-        address sender, uint256 dstChainId, address recipient, bytes data, uint256 fee, uint256 relayFee, bytes params
+        bytes32 id,
+        address sender,
+        uint256 dstChainId,
+        address recipient,
+        bytes data,
+        uint256 fee,
+        uint256 relayFee,
+        bytes params
     );
 
     event CrossChainContractCallWithAssetRelay(
+        bytes32 id,
         address sender,
         uint256 dstChainId,
         address recipient,
@@ -22,6 +30,7 @@ contract GaslessETHTokenPool is ETHTokenPool, GelatoRelayContextERC2771 {
     );
 
     event CrossChainTransferAssetRelay(
+        bytes32 id,
         address sender,
         uint256 dstChainId,
         address recipient,
@@ -55,9 +64,7 @@ contract GaslessETHTokenPool is ETHTokenPool, GelatoRelayContextERC2771 {
         uint256 relayFee = _getFee();
         _afterBridge(sender, relayFee);
         bytes32 id = _extractId(sender, dstChainId, recipient, data);
-
-        emit CrossChainContractCallRelay(sender, dstChainId, recipient, data, fee, relayFee, params);
-        emit CrossChainExecId(id);
+        emit CrossChainContractCallRelay(id, sender, dstChainId, recipient, data, fee, relayFee, params);
     }
 
     function crossChainContractCallWithAssetRelay(
@@ -81,8 +88,9 @@ contract GaslessETHTokenPool is ETHTokenPool, GelatoRelayContextERC2771 {
         _afterBridge(sender, relayFee);
         bytes32 id = _extractId(sender, dstChainId, recipient, data);
 
-        emit CrossChainContractCallWithAssetRelay(sender, dstChainId, recipient, data, fee, relayFee, amount, params);
-        emit CrossChainExecId(id);
+        emit CrossChainContractCallWithAssetRelay(
+            id, sender, dstChainId, recipient, data, fee, relayFee, amount, params
+        );
     }
 
     function crossChainTransferAssetRelay(
@@ -105,7 +113,6 @@ contract GaslessETHTokenPool is ETHTokenPool, GelatoRelayContextERC2771 {
         _afterBridge(sender, relayFee);
         bytes32 id = _extractId(sender, dstChainId, recipient, bytes(""));
 
-        emit CrossChainTransferAssetRelay(sender, dstChainId, recipient, fee, relayFee, amount, params);
-        emit CrossChainExecId(id);
+        emit CrossChainTransferAssetRelay(id, sender, dstChainId, recipient, fee, relayFee, amount, params);
     }
 }

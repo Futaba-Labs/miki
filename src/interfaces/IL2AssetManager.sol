@@ -10,6 +10,9 @@ interface IL2AssetManager {
     /// @notice Remove deposits from the user
     event RemoveDeposits(address tokenPool, address user, uint256 amount);
 
+    /// @notice Withdraw ETH from the user
+    event Withdraw(address tokenPool, address user, address recipient, uint256 amount);
+
     /// @notice Update the token pool whitelist status
     event TokenPoolWhitelistUpdated(address tokenPool, bool isWhitelisted);
 

@@ -46,11 +46,13 @@ contract L2AssetManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         _checkTokenPoolIsWhitelisted(tokenPool);
         ITokenPool(tokenPool).withdraw(recipient, amount);
         _removeDeposits(tokenPool, msg.sender, amount);
+        emit Withdraw(tokenPool, msg.sender, recipient, amount);
     }
 
     function withdrawETH(uint256 amount, address recipient) external {
         ITokenPool(nativeTokenPool).withdraw(recipient, amount);
         _removeDeposits(nativeTokenPool, msg.sender, amount);
+        emit Withdraw(nativeTokenPool, msg.sender, recipient, amount);
     }
 
     function addDeposits(address tokenPool, address user, uint256 amount) external onlyWhitelistedTokenPool {

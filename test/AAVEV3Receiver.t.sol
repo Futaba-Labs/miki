@@ -76,7 +76,8 @@ contract AAVEV3ReceiverTest is PRBTest, StdCheats {
         emit Supply(owner, address(erc20), 1000 ether, address(aToken), 1000 ether);
 
         bytes32 id = keccak256(abi.encodePacked(msg.sender, uint256(80_001), address(aaveReceiver), bytes("")));
-        bytes memory payload = abi.encode(id, owner, address(aaveReceiver), false, bytes(""));
+        bytes memory messageWithId = abi.encode(id, bytes(""));
+        bytes memory payload = abi.encode(owner, address(aaveReceiver), false, messageWithId);
 
         bridgeReceiver.receiveMsgWithAmount(1, owner, address(erc20), 1000 ether, payload);
 
@@ -89,8 +90,8 @@ contract AAVEV3ReceiverTest is PRBTest, StdCheats {
         IERC20(anotherErc20).transfer(address(bridgeReceiver), 1000 ether);
 
         bytes32 id = keccak256(abi.encodePacked(msg.sender, uint256(80_001), address(aaveReceiver), bytes("")));
-
-        bytes memory payload = abi.encode(id, owner, address(aaveReceiver), false, abi.encode(address(erc20)));
+        bytes memory messageWithId = abi.encode(id, bytes(""));
+        bytes memory payload = abi.encode(owner, address(aaveReceiver), false, messageWithId);
 
         bridgeReceiver.receiveMsgWithAmount(1, owner, address(anotherErc20), 1000 ether, payload);
 
@@ -108,8 +109,8 @@ contract AAVEV3ReceiverTest is PRBTest, StdCheats {
         IERC20(anotherErc20).transfer(address(bridgeReceiver), 100 ether);
 
         bytes32 id = keccak256(abi.encodePacked(msg.sender, uint256(80_001), address(aaveReceiver), bytes("")));
-
-        bytes memory payload = abi.encode(id, owner, address(aaveReceiver), false, bytes(""));
+        bytes memory messageWithId = abi.encode(id, bytes(""));
+        bytes memory payload = abi.encode(owner, address(aaveReceiver), false, messageWithId);
 
         vm.expectEmit(true, true, true, true);
         emit FailedMsgAndToken(
@@ -124,8 +125,8 @@ contract AAVEV3ReceiverTest is PRBTest, StdCheats {
         IERC20(erc20).transfer(address(bridgeReceiver), 1000 ether);
         bytes32 id = keccak256(abi.encodePacked(msg.sender, uint256(80_001), address(aaveReceiver), bytes("")));
 
-        bytes memory payload = abi.encode(id, owner, address(aaveReceiver), false, bytes(""));
-
+        bytes memory messageWithId = abi.encode(id, bytes(""));
+        bytes memory payload = abi.encode(owner, address(aaveReceiver), false, messageWithId);
         bridgeReceiver.receiveMsgWithAmount(1, owner, address(erc20), 1000 ether, payload);
 
         IATokenMock(aToken).approve(address(aaveReceiver), 500 ether);

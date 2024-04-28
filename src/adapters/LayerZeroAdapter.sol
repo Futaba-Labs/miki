@@ -53,7 +53,6 @@ contract LayerZeroAdapter is OAppSender, ILayerZeroAdapter {
         }
 
         (bytes memory options, bytes memory sgParams) = abi.decode(params, (bytes, bytes));
-
         bytes memory _payload = abi.encode(sender, recipient, message);
 
         _lzSend(
@@ -80,8 +79,7 @@ contract LayerZeroAdapter is OAppSender, ILayerZeroAdapter {
     {
         (bytes memory options, bytes memory sgParams) = abi.decode(params, (bytes, bytes));
 
-        uint32 eid = eidOf[dstChainId];
-        return _estimateLZFee(eid, sender, recipient, message, options);
+        return _estimateLZFee(dstChainId, sender, recipient, message, options);
     }
 
     function setEids(uint256[] memory _chainIds, uint32[] memory _eids) public onlyOwner {
@@ -108,7 +106,7 @@ contract LayerZeroAdapter is OAppSender, ILayerZeroAdapter {
 
     /* ----------------------------- Internal functions -------------------------------- */
     function _estimateLZFee(
-        uint32 eid,
+        uint256 dstChainId,
         address sender,
         address recipient,
         bytes memory message,
@@ -118,7 +116,10 @@ contract LayerZeroAdapter is OAppSender, ILayerZeroAdapter {
         view
         returns (uint256)
     {
-        bytes memory _payload = abi.encode(sender, recipient, message);
+        bytes32 id = keccak256(abi.encodePacked(sender, dstChainId, recipient, message));
+        bytes memory messageWithId = abi.encode(id, message);
+        bytes memory _payload = abi.encode(sender, recipient, messageWithId);
+        uint32 eid = eidOf[dstChainId];
         MessagingFee memory fee = _quote(eid, _payload, options, false);
 
         return fee.nativeFee;

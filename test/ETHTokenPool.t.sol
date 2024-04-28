@@ -101,9 +101,10 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
         assertEq(balance, 1 ether - fee);
 
         bytes32 id = keccak256(abi.encodePacked(msg.sender, dstChainId, recipient, MESSAGE));
+        bytes memory messageWithId = abi.encode(id, MESSAGE);
 
         // receive the msg
-        bytes memory payload = abi.encode(id, address(ethTokenPool), recipient, MESSAGE);
+        bytes memory payload = abi.encode(address(ethTokenPool), recipient, messageWithId);
         vm.expectEmit(true, true, true, true);
         emit Greeting("Hello, world!");
         bridgeReceiverMock.receiveMsg(1, address(this), payload);
@@ -121,9 +122,10 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
         assertEq(balance, 1 ether - fee - amount);
 
         bytes32 id = keccak256(abi.encodePacked(msg.sender, dstChainId, recipient, MESSAGE));
+        bytes memory messageWithId = abi.encode(id, MESSAGE);
 
         // receive the msg and asset
-        bytes memory payload = abi.encode(id, address(ethTokenPool), recipient, true, MESSAGE);
+        bytes memory payload = abi.encode(address(ethTokenPool), recipient, true, messageWithId);
         vm.expectEmit(true, true, true, true);
         emit Greeting("Hello, world!");
         bridgeReceiverMock.receiveMsgWithAmount{ value: amount }(1, address(this), address(0), amount, payload);

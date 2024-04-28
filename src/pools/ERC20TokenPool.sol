@@ -88,12 +88,17 @@ contract ERC20TokenPool is TokenPoolBase {
         _beforeBridge(user, dstChainId, recipient, fee, amount, data, bridgeAdapter, params);
 
         IERC20(underlyingToken).approve(address(bridgeAdapter), amount);
+
+        bytes32 id = _extractId(user, dstChainId, recipient, data);
+        bytes memory payload = _buildPayload(id, data);
+
         bridgeAdapter.execCrossChainContractCallWithAsset{ value: fee }(
-            user, dstChainId, recipient, underlyingToken, data, fee, amount, params
+            user, dstChainId, recipient, underlyingToken, payload, fee, amount, params
         );
 
         _afterBridge(user, amount);
-        emit CrossChainContractCallWithAsset(user, dstChainId, recipient, data, fee, amount);
+
+        emit CrossChainContractCallWithAsset(id, user, dstChainId, recipient, data, fee, amount);
     }
 
     function _crossChainTransferAsset(
@@ -111,12 +116,14 @@ contract ERC20TokenPool is TokenPoolBase {
         _beforeBridge(user, dstChainId, recipient, fee, amount, bytes(""), bridgeAdapter, params);
 
         IERC20(underlyingToken).approve(address(bridgeAdapter), amount);
+        bytes32 id = _extractId(user, dstChainId, recipient, bytes(""));
         bridgeAdapter.execCrossChainTransferAsset{ value: fee }(
             user, dstChainId, recipient, underlyingToken, fee, amount, params
         );
 
         _afterBridge(user, amount);
-        emit CrossChainTransferAsset(user, dstChainId, recipient, amount);
+
+        emit CrossChainTransferAsset(id, user, dstChainId, recipient, amount);
     }
 
     function _beforeBridge(

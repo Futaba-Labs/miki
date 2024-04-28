@@ -3,12 +3,13 @@ pragma solidity 0.8.23;
 
 interface ITokenPool {
     /* ----------------------------- Events -------------------------------- */
-    event CrossChainContractCall(address sender, uint256 dstChainId, address recipient, bytes data, uint256 fee);
-    event CrossChainContractCallWithAsset(
-        address sender, uint256 dstChainId, address recipient, bytes data, uint256 fee, uint256 amount
+    event CrossChainContractCall(
+        bytes32 id, address sender, uint256 dstChainId, address recipient, bytes data, uint256 fee
     );
-    event CrossChainTransferAsset(address sender, uint256 dstChainId, address recipient, uint256 amount);
-    event CrossChainExecId(bytes32 id);
+    event CrossChainContractCallWithAsset(
+        bytes32 id, address sender, uint256 dstChainId, address recipient, bytes data, uint256 fee, uint256 amount
+    );
+    event CrossChainTransferAsset(bytes32 id, address sender, uint256 dstChainId, address recipient, uint256 amount);
     event SetBridgeAdapter(uint256 dstChainId, address bridgeAdapter);
     event AddBatch(address user, uint256 amount);
     /* ----------------------------- Erorrs -------------------------------- */

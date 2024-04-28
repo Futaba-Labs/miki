@@ -42,8 +42,10 @@ contract BridgeReceiverMock {
         external
         payable
     {
-        (bytes32 id, address sender, address receiver, bool isNative, bytes memory message) =
-            abi.decode(_payload, (bytes32, address, address, bool, bytes));
+        (address sender, address receiver, bool isNative, bytes memory messageWithId) =
+            abi.decode(_payload, (address, address, bool, bytes));
+
+        (bytes32 id, bytes memory message) = abi.decode(messageWithId, (bytes32, bytes));
 
         if (isNative) {
             IMikiReceiver(mikiReceiver).mikiReceive{ value: _amountLD }(
@@ -56,8 +58,10 @@ contract BridgeReceiverMock {
     }
 
     function receiveMsg(uint256 _srcChainId, address _srcAddress, bytes memory _payload) external {
-        (bytes32 id, address sender, address receiver, bytes memory message) =
-            abi.decode(_payload, (bytes32, address, address, bytes));
+        (address sender, address receiver, bytes memory messageWithId) =
+            abi.decode(_payload, (address, address, bytes));
+
+        (bytes32 id, bytes memory message) = abi.decode(messageWithId, (bytes32, bytes));
 
         IMikiReceiver(mikiReceiver).mikiReceive(_srcChainId, sender, receiver, address(0), 0, message, id);
     }

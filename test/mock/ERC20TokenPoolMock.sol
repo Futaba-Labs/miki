@@ -97,7 +97,8 @@ contract ERC20TokenPoolMock is TokenPoolBase {
         );
 
         _afterBridge(user, amount);
-        emit CrossChainContractCallWithAsset(user, dstChainId, recipient, data, fee, amount);
+        bytes32 id = _extractId(user, dstChainId, recipient, data);
+        emit CrossChainContractCallWithAsset(id, user, dstChainId, recipient, data, fee, amount);
     }
 
     function _crossChainTransferAsset(
@@ -121,7 +122,8 @@ contract ERC20TokenPoolMock is TokenPoolBase {
         );
 
         _afterBridge(user, amount);
-        emit CrossChainTransferAsset(user, dstChainId, recipient, amount);
+        bytes32 id = _extractId(user, dstChainId, recipient, bytes(""));
+        emit CrossChainTransferAsset(id, user, dstChainId, recipient, amount);
     }
 
     function _beforeBridge(

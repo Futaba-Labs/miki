@@ -61,7 +61,7 @@ contract SendTransactionScript is BaseScript {
 
         uint256 fee = ethAdapter.estimateFee(broadcaster, dstChainId, nftReceiver, address(0), message, 0, params);
 
-        ethTokenPool.crossChainContractCall(dstChainId, nftReceiver, message, fee, params);
+        ethTokenPool.crossChainContractCall(dstChainId, nftReceiver, message, fee * 120 / 100, params);
     }
 
     function crossChainETHComposableBridge(
