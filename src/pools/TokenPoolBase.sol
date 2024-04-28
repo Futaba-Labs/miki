@@ -173,14 +173,7 @@ abstract contract TokenPoolBase is ITokenPool, Initializable, OwnableUpgradeable
         return keccak256(abi.encodePacked(_nonce, sender, dstChainId, recipient, data));
     }
 
-    function _buildPayload(
-        bytes32 id,
-        bytes memory data
-    )
-        internal
-        view
-        returns (bytes memory)
-    {
+    function _buildPayload(bytes32 id, bytes memory data) internal view returns (bytes memory) {
         return abi.encode(id, data);
     }
 

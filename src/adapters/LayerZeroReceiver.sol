@@ -109,8 +109,7 @@ contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
         override
     {
         uint256 chainId = chainIdOf[_origin.srcEid];
-        (address sender, address receiver, bytes memory messageWithId) =
-            abi.decode(payload, (address, address, bytes));
+        (address sender, address receiver, bytes memory messageWithId) = abi.decode(payload, (address, address, bytes));
         (bytes32 id, bytes memory message) = abi.decode(messageWithId, (bytes32, bytes));
         IMikiReceiver(mikiReceiver).mikiReceive(chainId, sender, receiver, address(0), 0, message, id);
     }
@@ -129,7 +128,7 @@ contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
         uint256 amountLD = _message.amountLD();
         bytes memory composeMsg = _message.composeMsg();
         (address sender, address receiver, bytes memory messageWithId) =
-                    abi.decode(composeMsg, (address, address, bytes));
+            abi.decode(composeMsg, (address, address, bytes));
         (bytes32 id, bytes memory message) = abi.decode(messageWithId, (bytes32, bytes));
 
         bool success = IERC20(_from).transfer(mikiReceiver, amountLD);
