@@ -98,7 +98,7 @@ contract Deploy is BaseScript {
         lzGateway = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.layerZero.gateway"));
 
         lzAdapter = new LayerZeroAdapter(broadcaster, lzGateway, chainIds, eids);
-        ethAdapter = new EthAdapter(payable(mikiRouter), payable(orbiterRouter), address(lzAdapter), broadcaster);
+        ethAdapter = new EthAdapter(payable(orbiterRouter), payable(mikiRouter), address(lzAdapter), broadcaster);
 
         // set identification codes for orbiter
         ethAdapter.setIdentificationCodes(chainIds, codes);

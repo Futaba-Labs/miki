@@ -2,13 +2,13 @@
   "arbitrum_sepolia": {
     "name": "arbitrum_sepolia",
     "chainId": 421614,
-    "l2AssetManagerProxy": "0x3D55f245D4c1b0515b902ed6765e01aF59bD4d99",
-    "l2AssetManagerImpl": "0x223Fb27845d2E3b7493c10fF8260c06276976ffE",
+    "l2AssetManagerProxy": "0xCE18358DaE886C8c8a8697712Af35fA7bF6227CF",
+    "l2AssetManagerImpl": "0x147DA240A6A0e0785Cee81bE9522FA5799014c6C",
     "pools": {
       "ethTokenPool": {
         "underlying": "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
-        "proxy": "0x94693a510afdeA0724301A25a5dA0f350AB4F91e",
-        "impl": "0x6f825EBAC65A7CD6DeA9fc8C7d6A27013e276314"
+        "proxy": "0x6a509D7d555d041E606F6ff8b90f371c9a03Bfca",
+        "impl": "0xc10913d651832734cB3f56A27A613D68d03233Eb"
       },
       "mikiTokenPool": {
         "underlying": "0x9D2778CD4d232dC3e3f0C42caccA891D12EC9c8a",
@@ -16,20 +16,20 @@
       },
       "usdcTokenPool": {
         "underlying": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
-        "proxy": "0x6DeE12c72dC510d2d1C6891A6E75875914549477",
-        "impl": "0x3b1fBAEc42388eE8785E60CAd1CC2b52A1cD375d"
+        "proxy": "0xd4dBE3f0C4351623f0802d1482F0336C89652F1d",
+        "impl": "0x21a52E4403ccB839fF3c50727cFB0296bBB0FB93"
       }
     },
     "adapters": {
       "layerZero": {
         "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
-        "sender": "0x61C675F4aDcaDb253e123E6eFfe11F7ca42Fa1ca",
+        "sender": "0xD6eA668c8baEa417c1E5465e9E016A4a1Ad2399A",
         "receiver": "0x95Ce7A96fe31Cf92Aa554DD00403CA26cBb32069"
       },
       "eth": {
         "mikiRouter": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
         "orbiterRouter": "0x78606Ea26275F6180745480FaF74E311586EB652",
-        "sender": "0x9c038E27df858F38aC307bd28C40D54b40A33D3d"
+        "sender": "0x9B20e595ee83dc514A8cE4be885ceCE14957E78C"
       },
       "miki": {
         "token": "0x9D2778CD4d232dC3e3f0C42caccA891D12EC9c8a",
@@ -141,11 +141,11 @@
     "name": "base_sepolia",
     "chainId": 84532,
     "adapters": {
-      "mikiReceiver": "0x75AB531ef3Fa35d52Ce7c2369b4381A62D90298d",
+      "mikiReceiver": "0x3063E6ed87eE62337ca7c976EF4B6c4d941D013C",
       "layerZero": {
         "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
         "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-        "receiver": "0x3063E6ed87eE62337ca7c976EF4B6c4d941D013C"
+        "receiver": "0xBC5053295C99039140B0d305f82DEef13a98D43f"
       },
       "miki": {
         "token": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
@@ -160,7 +160,7 @@
       "eth": {
         "router": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
         "sender": "0xeb6E0FEB61D3a65FE2e94C9D1510184B7Adb064c",
-        "receiver": "0x03d69ab61d2c4659938226D2516d603d6D5a4c03"
+        "receiver": "0xFD5A025424686D654FAa99AFB53F2f966fd5ABB3"
       }
     },
     "examples": {
@@ -175,9 +175,9 @@
         },
         "permit2": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
         "pool": "0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b",
-        "receiver": "0xBC5053295C99039140B0d305f82DEef13a98D43f"
+        "receiver": "0xb49D3728F8C069866260B682941F57Bd389669f7"
       },
-      "nft": "0x240D84Cb03174c47b775eB82Ede6a133d9A27CE9",
+      "nft": "0x6a7A87ae550dD0190f7c844a51a7F9f258EFBdA5",
       "amm": {
         "pool": "0xBEDbD1d5b74202c9E7277FeE72b01c598e438fd9",
         "token0": "0x641A018F7670f68213b9c20323c12EC94a939AcE",

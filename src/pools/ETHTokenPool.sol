@@ -117,7 +117,7 @@ contract ETHTokenPool is TokenPoolBase {
 
         _afterBridge(user, total);
 
-        emit CrossChainContractCallWithAsset(id, user, dstChainId, recipient, data, fee, amount);
+        emit CrossChainContractCallWithAsset(id, user, dstChainId, recipient, data, underlyingToken, fee, amount);
     }
 
     function _crossChainTransferAsset(
@@ -143,6 +143,6 @@ contract ETHTokenPool is TokenPoolBase {
         _afterBridge(user, total);
         bytes32 id = _extractId(user, dstChainId, recipient, bytes(""));
 
-        emit CrossChainTransferAsset(id, user, dstChainId, recipient, amount);
+        emit CrossChainTransferAsset(id, user, dstChainId, recipient, underlyingToken, fee, amount);
     }
 }

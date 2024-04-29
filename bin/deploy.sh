@@ -4,8 +4,8 @@ source ./.env
 
 array=("$@")
 
-echo Chain: arbitrum_sepolia
-forge script script/Deploy.s.sol --rpc-url arbitrum_sepolia --broadcast --verify -vvvv --via-ir --ffi --private-key ${PRIVATE_KEY}
+# echo Chain: arbitrum_sepolia
+# forge script script/Deploy.s.sol --rpc-url arbitrum_sepolia --broadcast --verify -vvvv --via-ir --ffi --private-key ${PRIVATE_KEY}
 
 for item in "${array[@]}"
 do
