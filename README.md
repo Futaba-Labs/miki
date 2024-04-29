@@ -119,4 +119,8 @@ yarn cross-chain-mint <Dstination chain id> <Recipient address>
 
 ### Cross-chain Deposit to AAVE
 
-TBD
+You can execute cross-chain deposit to aave lending pool with any chain id and any amount;
+
+```sh
+yarn cross-chain-deposit <Dstination chain id> <Amount>
+```
