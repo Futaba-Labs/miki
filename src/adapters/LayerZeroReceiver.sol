@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.23;
 
-import { IStargateReceiver } from "../interfaces/IStargateReceiver.sol";
 import { IOAppComposer } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/interfaces/IOAppComposer.sol";
 import { OAppReceiver } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/OAppReceiver.sol";
 import { Origin } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/interfaces/IOAppReceiver.sol";
@@ -12,43 +11,50 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IMikiReceiver } from "../interfaces/IMikiReceiver.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
+/**
+ * @title LayerZeroReceiver
+ * @notice This contract is the receiver of the messages from the LayerZero network
+ */
+contract LayerZeroReceiver is IOAppComposer, OAppReceiver {
     using Address for address;
     using OFTComposeMsgCodec for bytes;
     /* ----------------------------- Storage -------------------------------- */
+    /// @notice The stargate router address
+    /// @dev Not currently in use
 
-    address public immutable stargateRouter;
-    address public immutable mikiReceiver;
+    address public immutable STARGATE_ROUTER;
+
+    /// @notice The miki receiver address
+    address public immutable MIKI_RECEIVER;
+
+    /// @notice Mapping: Endpoint ID to Chain ID
     mapping(uint32 => uint256) public chainIdOf;
-
-    /* ----------------------------- Events -------------------------------- */
-    event SentMsgAndToken(
-        uint256 _srcChainId, address _srcAddress, address _token, address _receiver, uint256 _amountLD, bytes _message
-    );
-
-    event SentMsg(uint256 _srcChainId, address _srcAddress, address _receiver, bytes _message);
-
-    event FailedMsgAndToken(
-        uint256 _srcChainId,
-        address _srcAddress,
-        address _token,
-        address _receiver,
-        uint256 _amountLD,
-        bytes _message,
-        string _reason
-    );
-
-    event FailedMsg(uint256 _srcChainId, address _srcAddress, address _receiver, bytes _message, string _reason);
 
     /* ----------------------------- Erorrs -------------------------------- */
 
+    /// @notice Error emitted when the router is invalid
     error InvalidRouter();
+
+    /// @notice Error emitted when the call data is invalid
     error InvalidCall(bytes data);
+
+    /// @notice Error emitted when the length of the arrays is mismatching
     error MismatchLength();
+
+    /// @notice Error emitted when the length of the arrays is invalid
     error InvalidLength();
+
+    /// @notice Error emitted when the transfer failed
     error TransferFailed();
 
     /* ----------------------------- Constructor -------------------------------- */
+    /**
+     * @notice Constructor
+     * @param _stargateRouter The stargate router address
+     * @param _mikiReceiver The miki receiver address
+     * @param _gateway The gateway address
+     * @param _initialOwner The initial owner address
+     */
     constructor(
         address _stargateRouter,
         address _mikiReceiver,
@@ -58,46 +64,15 @@ contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
         OAppCore(_gateway, _initialOwner)
         Ownable(_initialOwner)
     {
-        stargateRouter = _stargateRouter;
-        mikiReceiver = _mikiReceiver;
+        STARGATE_ROUTER = _stargateRouter;
+        MIKI_RECEIVER = _mikiReceiver;
     }
 
     /**
-     * @param _srcChainId - source chain identifier
-     * @param _srcAddress - source address identifier
-     * @param _nonce - message ordering nonce
-     * @param _token - token contract
-     * @param _amountLD - amount (local decimals) to recieve
-     * @param _payload - bytes containing the toAddress
+     * @notice This function is the receiver of the messages from the LayerZero network
+     * @param _origin The origin of the message
+     * @param payload The payload of the message
      */
-    function sgReceive(
-        uint16 _srcChainId,
-        bytes memory _srcAddress,
-        uint256 _nonce,
-        address _token,
-        uint256 _amountLD,
-        bytes memory _payload
-    )
-        external
-        override
-    {
-        if (msg.sender != stargateRouter) {
-            revert InvalidRouter();
-        }
-
-        (address receiver, bool isNative, bytes memory encodedSelector) = abi.decode(_payload, (address, bool, bytes));
-
-        if (isNative) {
-            receiver.call{ value: _amountLD }("");
-            receiver.functionCall(encodedSelector);
-            (encodedSelector);
-        } else {
-            IERC20(_token).transfer(receiver, _amountLD);
-            receiver.functionCall(encodedSelector);
-            (encodedSelector);
-        }
-    }
-
     function _lzReceive(
         Origin calldata _origin, // struct containing info about the message sender
         bytes32, // global packet identifier
@@ -111,9 +86,15 @@ contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
         uint256 chainId = chainIdOf[_origin.srcEid];
         (address sender, address receiver, bytes memory messageWithId) = abi.decode(payload, (address, address, bytes));
         (bytes32 id, bytes memory message) = abi.decode(messageWithId, (bytes32, bytes));
-        IMikiReceiver(mikiReceiver).mikiReceive(chainId, sender, receiver, address(0), 0, message, id);
+        IMikiReceiver(MIKI_RECEIVER).mikiReceive(chainId, sender, receiver, address(0), 0, message, id);
     }
 
+    /**
+     * @notice This function is the receiver of the messages and OFT from the LayerZero network
+     * @dev Not currently in use
+     * @param _from The sender address
+     * @param _message The message
+     */
     function lzCompose(
         address _from,
         bytes32,
@@ -131,16 +112,21 @@ contract LayerZeroReceiver is IStargateReceiver, IOAppComposer, OAppReceiver {
             abi.decode(composeMsg, (address, address, bytes));
         (bytes32 id, bytes memory message) = abi.decode(messageWithId, (bytes32, bytes));
 
-        bool success = IERC20(_from).transfer(mikiReceiver, amountLD);
+        bool success = IERC20(_from).transfer(MIKI_RECEIVER, amountLD);
         if (!success) {
             revert TransferFailed();
         }
 
         uint256 chainId = chainIdOf[srcEid];
 
-        IMikiReceiver(mikiReceiver).mikiReceive(chainId, sender, receiver, _from, amountLD, message, id);
+        IMikiReceiver(MIKI_RECEIVER).mikiReceive(chainId, sender, receiver, _from, amountLD, message, id);
     }
 
+    /**
+     * @notice This function is the receiver of the messages from the Stargate network
+     * @param _eids The endpoint ids
+     * @param _chainIds The chain ids
+     */
     function setChainIds(uint32[] calldata _eids, uint256[] calldata _chainIds) external {
         uint256 eidsLen = _eids.length;
         uint256 chainIdsLen = _chainIds.length;

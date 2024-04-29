@@ -12,25 +12,61 @@ import { ILayerZeroAdapter } from "../interfaces/ILayerZeroAdapter.sol";
  */
 contract EthAdapter is IL2BridgeAdapter, Ownable {
     /* ----------------------------- Storage -------------------------------- */
+    /// @dev The address of the orbiter router
     address public orbiterRouter;
+    /// @dev The address of the orbiter maker
     address public orbiterMaker;
+
+    /// @dev The address of the miki router
     address public mikiRouter;
+
+    /// @dev The address of the layer zero adapter
     address public lzAdapter;
+
+    /// @dev The address of the receiver
     address public receiver;
 
+    /// @notice Mapping: chainId => identification code in Orbiter
+    /// @notice ref: https://docs.orbiter.finance/orbiterfinancesbridgeprotocol#workflow
     mapping(uint256 chainId => uint16 code) public identificationCodes;
 
     /* ----------------------------- Events -------------------------------- */
+    /**
+     * @notice Event: Set identification code
+     * @param chainId The chain id
+     * @param code The identification code
+     */
     event SetIdentificationCode(uint256 chainId, uint16 code);
+
+    /**
+     * @notice Event: Transfer miki router
+     * @param sender The sender address
+     * @param dstChainId The destination chain id
+     * @param recipient The recipient address
+     * @param amount The amount of the asset
+     * @param message The message of the cross chain contract call
+     */
     event TransferMikiRouter(address sender, uint256 dstChainId, address recipient, uint256 amount, bytes message);
 
     /* ----------------------------- Errors -------------------------------- */
+    /// @notice Error: Invalid length
     error InvalidLength();
+
+    /// @notice Error: Mismatch length
     error MismatchLength();
+
+    /// @notice Error: Invalid code
     error InvalidCode();
 
     /* ----------------------------- Constructor -------------------------------- */
 
+    /**
+     * @notice Constructor
+     * @param _orbiterRouter The address of the orbiter router
+     * @param _mikiRouter The address of the miki router
+     * @param _lzAdapter The address of the layer zero adapter
+     * @param _initialOwner The address of the initial owner
+     */
     constructor(
         address _orbiterRouter,
         address payable _mikiRouter,
@@ -44,6 +80,17 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         lzAdapter = _lzAdapter;
     }
 
+    /* ----------------------------- External Functions -------------------------------- */
+    /**
+     * @notice Execute a cross chain contract call
+     * @dev Execute cross-chain contract call via LayerZero's Adapter
+     * @param sender The sender address
+     * @param dstChainId The destination chain id
+     * @param recipient The recipient address
+     * @param message The message of the cross chain contract call
+     * @param fee The fee of the cross chain contract call
+     * @param params The parameters of the cross chain contract call
+     */
     function execCrossChainContractCall(
         address sender,
         uint256 dstChainId,
@@ -58,15 +105,25 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         ILayerZeroAdapter(lzAdapter).lzSend{ value: fee }(sender, dstChainId, recipient, message, fee, params);
     }
 
+    /**
+     * @notice Execute a cross chain contract call with asset
+     * @dev Send ETH to Relayer operating in Gelato to run ETH composable bridge
+     * @param sender The sender address
+     * @param dstChainId The destination chain id
+     * @param recipient The recipient address
+     * @param message The message of the cross chain contract call
+     * @param fee The fee of the cross chain contract call
+     * @param amount The amount of the asset
+     */
     function execCrossChainContractCallWithAsset(
         address sender,
         uint256 dstChainId,
         address recipient,
-        address asset,
+        address,
         bytes calldata message,
         uint256 fee,
         uint256 amount,
-        bytes calldata params
+        bytes calldata
     )
         external
         payable
@@ -78,14 +135,21 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         emit TransferMikiRouter(sender, dstChainId, recipient, amount, _payload);
     }
 
+    /**
+     * @notice Execute a cross chain transfer asset
+     * @dev Send ETH to Orbiter's Maker via Orbiter Router
+     * @param dstChainId The destination chain id
+     * @param recipient The recipient address
+     * @param amount The amount of the asset
+     */
     function execCrossChainTransferAsset(
-        address sender,
+        address,
         uint256 dstChainId,
         address recipient,
-        address asset,
-        uint256 fee,
+        address,
+        uint256,
         uint256 amount,
-        bytes calldata params
+        bytes calldata
     )
         external
         payable
@@ -102,6 +166,18 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         );
     }
 
+    /**
+     * @notice Estimate fee
+     * @dev Estimate fee of the cross chain contract call via LayerZero's Adapter
+     * @dev If LayerZero is not used, return fee as 0
+     * @param sender The sender address
+     * @param dstChainId The destination chain id
+     * @param recipient The recipient address
+     * @param asset The asset address
+     * @param message The message of the cross chain contract call
+     * @param amount The amount of the asset
+     * @param params The parameters of the cross chain contract call
+     */
     function estimateFee(
         address sender,
         uint256 dstChainId,
@@ -123,6 +199,11 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         return 0;
     }
 
+    /**
+     * @notice Set identification code
+     * @param chainIds The chain ids
+     * @param codes The identification codes
+     */
     function setIdentificationCodes(uint256[] memory chainIds, uint16[] memory codes) external onlyOwner {
         uint256 chainIdLength = chainIds.length;
         if (chainIdLength != codes.length) {
@@ -144,11 +225,20 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         }
     }
 
+    /**
+     * @notice Get identification code
+     * @param chainId The chain id
+     */
     function getIdentificationCode(uint256 chainId) external view returns (uint16) {
         return identificationCodes[chainId];
     }
 
-    function _stringToHex(string memory str) internal pure returns (string memory) {
+    /* ----------------------------- Private Functions -------------------------------- */
+    /**
+     * @notice Convert string to hex
+     * @param str The string
+     */
+    function _stringToHex(string memory str) private pure returns (string memory) {
         bytes memory strBytes = bytes(str);
         bytes memory hexBytes = new bytes(strBytes.length * 2);
         uint256 j = 0;
@@ -160,11 +250,15 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         return string(hexBytes);
     }
 
+    /**
+     * @notice Convert nibble to hex
+     * @param nibble The nibble
+     */
     function _nibbleToHex(uint8 nibble) private pure returns (bytes1) {
         if (nibble < 10) {
-            return bytes1(nibble + 48); // 0-9 の ASCII コード
+            return bytes1(nibble + 48);
         } else {
-            return bytes1(nibble + 87); // a-f の ASCII コード
+            return bytes1(nibble + 87);
         }
     }
 
