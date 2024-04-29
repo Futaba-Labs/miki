@@ -29,22 +29,41 @@ contract SendTransactionScript is BaseScript {
     // Other params
     string public chainKey;
 
+    /**
+     * @notice This function is used to deposit ETH
+     * @param amount The amount of ETH to deposit
+     */
     function depositETH(uint256 amount) public broadcast {
         _readAddresses();
         l2AssetManager.depositETH{ value: amount }(amount);
     }
 
+    /**
+     * @notice This function is used to withdraw ETH
+     * @param amount The amount of ETH to withdraw
+     */
     function withdrawETH(uint256 amount) public broadcast {
         _readAddresses();
         l2AssetManager.withdrawETH(amount, broadcaster);
     }
 
+    /**
+     * @notice This function is used to deposit ERC20 tokens
+     * @param token The token to deposit
+     * @param tokenPool The token pool to deposit to
+     * @param amount The amount of the token to deposit
+     */
     function depositERC20(address token, address tokenPool, uint256 amount) public broadcast {
         _readAddresses();
         IERC20(token).approve(address(l2AssetManager), amount);
         l2AssetManager.deposit(token, tokenPool, amount);
     }
 
+    /**
+     * @notice This function is used to mint NFTs on the destination chain
+     * @param dstChainId The destination chain id
+     * @param to The address to receive the NFT
+     */
     function crossChainMint(uint256 dstChainId, address to) public broadcast {
         _readAddresses();
         bytes memory option = OptionsBuilder.newOptions().addExecutorLzReceiveOption(200_000, 0);
@@ -60,6 +79,13 @@ contract SendTransactionScript is BaseScript {
         ethTokenPool.crossChainContractCall(dstChainId, nftReceiver, message, fee * 120 / 100, params);
     }
 
+    /**
+     * @notice This function is used to send ETH and execute the message on the destination chain
+     * @param dstChainId The destination chain id
+     * @param to The address to receive the NFT
+     * @param amount The amount of the token to deposit
+     * @param name The name of the method (NFT or AAVE)
+     */
     function crossChainETHComposableBridge(
         uint256 dstChainId,
         address to,
@@ -87,6 +113,9 @@ contract SendTransactionScript is BaseScript {
         }
     }
 
+    /**
+     * @notice This function is used to read the addresses from the deployments json
+     */
     function _readAddresses() internal {
         chainKey = _getChainKey(block.chainid);
         address l2AssetManagerAddr =
