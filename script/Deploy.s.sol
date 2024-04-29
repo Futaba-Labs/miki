@@ -247,7 +247,7 @@ contract Deploy is BaseScript {
     }
 
     function upgrade() public broadcast {
-        uint256 chainId = block.chainid;
+        chainId = block.chainid;
         console2.log("ChainId: %s", chainId);
         chainKey = _getChainKey(chainId);
 

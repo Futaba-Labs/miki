@@ -26,10 +26,6 @@ contract SendTransactionScript is BaseScript {
     // Miki Adapters
     EthAdapter public ethAdapter;
 
-    // Miki Examples
-    NFTReceiver public nftReceiver;
-    AAVEV3Receiver public aaveV3Receiver;
-
     // Other params
     string public chainKey;
 
