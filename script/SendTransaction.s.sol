@@ -8,11 +8,6 @@ import { ETHTokenPool } from "../src/pools/ETHTokenPool.sol";
 import { ERC20TokenPool } from "../src/pools/ERC20TokenPool.sol";
 import { OptionsBuilder } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/libs/OptionsBuilder.sol";
 import { EthAdapter } from "../src/adapters/EthAdapter.sol";
-import { NFTReceiver } from "../src/examples/NFTReceiver.sol";
-import { AAVEV3Receiver } from "../src/examples/AAVEV3Receiver.sol";
-import { console2 } from "forge-std/src/console2.sol";
-
-/// @dev See the Solidity Scripting tutorial: https://book.getfoundry.sh/tutorials/solidity-scripting
 
 contract SendTransactionScript is BaseScript {
     using OptionsBuilder for bytes;

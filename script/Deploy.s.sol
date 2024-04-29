@@ -246,6 +246,7 @@ contract Deploy is BaseScript {
         vm.writeJson(vm.toString(address(nftReceiver)), deploymentPath, string.concat(chainKey, ".examples.nft"));
     }
 
+    // upgrade contracts (L2AssetManager, ETHTokenPool, ERC20TokenPool)
     function upgrade() public broadcast {
         chainId = block.chainid;
         console2.log("ChainId: %s", chainId);
