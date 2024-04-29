@@ -9,6 +9,10 @@ import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/I
 import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
+/**
+ * @title L2AssetManager
+ * @notice This contract manages the deposits and withdrawals of the user
+ */
 contract L2AssetManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgradeable, L2AssetManagerStorage {
     using SafeERC20 for IERC20;
     /* ----------------------------- Modifier -------------------------------- */
@@ -28,6 +32,12 @@ contract L2AssetManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         __ReentrancyGuard_init();
     }
 
+    /**
+     * @notice Deposit the token to the token pool
+     * @param token The token to deposit
+     * @param tokenPool The token pool to deposit to
+     * @param amount The amount to deposit
+     */
     function deposit(address token, address tokenPool, uint256 amount) external nonReentrant {
         _checkTokenPoolIsWhitelisted(tokenPool);
         IERC20(token).safeTransferFrom(msg.sender, address(tokenPool), amount);
@@ -36,12 +46,22 @@ contract L2AssetManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         _addDeposits(tokenPool, msg.sender, amount);
     }
 
+    /**
+     * @notice Deposit the ETH to the token pool
+     * @param amount The amount to deposit
+     */
     function depositETH(uint256 amount) external payable {
         ITokenPool(nativeTokenPool).deposit{ value: amount }(amount);
         ITokenPool(nativeTokenPool).addBatches(msg.sender, amount);
         _addDeposits(nativeTokenPool, msg.sender, amount);
     }
 
+    /**
+     * @notice Withdraw the token from the token pool
+     * @param tokenPool The token pool to withdraw from
+     * @param amount The amount to withdraw
+     * @param recipient The recipient of the token
+     */
     function withdraw(address tokenPool, uint256 amount, address recipient) external {
         _checkTokenPoolIsWhitelisted(tokenPool);
         ITokenPool(tokenPool).withdraw(recipient, amount);
@@ -49,16 +69,33 @@ contract L2AssetManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         emit Withdraw(tokenPool, msg.sender, recipient, amount);
     }
 
+    /**
+     * @notice Withdraw the ETH from the token pool
+     * @param amount The amount to withdraw
+     * @param recipient The recipient of the token
+     */
     function withdrawETH(uint256 amount, address recipient) external {
         ITokenPool(nativeTokenPool).withdraw(recipient, amount);
         _removeDeposits(nativeTokenPool, msg.sender, amount);
         emit Withdraw(nativeTokenPool, msg.sender, recipient, amount);
     }
 
+    /**
+     * @notice Add deposits to the user
+     * @param tokenPool The token pool to deposit to
+     * @param user The user to add the deposits to
+     * @param amount The amount to add
+     */
     function addDeposits(address tokenPool, address user, uint256 amount) external onlyWhitelistedTokenPool {
         _addDeposits(tokenPool, user, amount);
     }
 
+    /**
+     * @notice Remove deposits from the user
+     * @param tokenPool The token pool to remove from
+     * @param user The user to remove the deposits from
+     * @param amount The amount to remove
+     */
     function removeDeposits(address tokenPool, address user, uint256 amount) external onlyWhitelistedTokenPool {
         _removeDeposits(tokenPool, user, amount);
     }
@@ -107,6 +144,12 @@ contract L2AssetManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
         return nativeTokenPool;
     }
 
+    /**
+     * @notice Get the deposit for the user
+     * @param tokenPool The token pool address
+     * @param user The user address
+     * @return The deposit amount
+     */
     function getDeposit(address tokenPool, address user) external view returns (uint256) {
         return balances[tokenPool][user];
     }
@@ -129,6 +172,7 @@ contract L2AssetManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpg
 
         return (userTokenPools[user], amounts);
     }
+
     /* ----------------------------- Internal Functions -------------------------------- */
 
     /**

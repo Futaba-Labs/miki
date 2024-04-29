@@ -11,11 +11,22 @@ contract ETHTokenPool is TokenPoolBase {
 
     /* ----------------------------- External Functions -------------------------------- */
 
+    /**
+     * @notice Deposit the amount of ETH to the token pool
+     * @dev Reverts if the amount is less than or equal to 0
+     * @param amount The amount of ETH to deposit
+     */
     function deposit(uint256 amount) external payable override onlyL2AssetManager {
         if (msg.value <= 0) revert InsufficientAmount();
         totalAmount += amount;
     }
 
+    /**
+     * @notice Withdraw the amount of ETH from the token pool
+     * @dev Reverts if the amount is less than or equal to 0
+     * @param user The user address
+     * @param amount The amount of ETH to withdraw
+     */
     function withdraw(address user, uint256 amount) external override onlyL2AssetManager {
         if (amount <= 0) revert InsufficientAmount();
         totalAmount -= amount;
@@ -23,6 +34,14 @@ contract ETHTokenPool is TokenPoolBase {
         if (!success) revert InvalidTransfer();
     }
 
+    /**
+     * @notice Make a cross chain contract call
+     * @param dstChainId The destination chain id
+     * @param recipient The recipient address
+     * @param data The message of the cross chain contract call
+     * @param fee The fee of the cross chain contract call
+     * @param params The parameters of the cross chain contract call
+     */
     function crossChainContractCall(
         uint256 dstChainId,
         address recipient,
@@ -37,6 +56,15 @@ contract ETHTokenPool is TokenPoolBase {
         _crossChainContractCall(msg.sender, dstChainId, recipient, data, fee, params);
     }
 
+    /**
+     * @notice Make a cross chain contract call with asset
+     * @param dstChainId The destination chain id
+     * @param recipient The recipient address
+     * @param data The message of the cross chain contract call
+     * @param fee The fee of the cross chain contract call
+     * @param amount The amount of the asset
+     * @param params The parameters of the cross chain contract call
+     */
     function crossChainContractCallWithAsset(
         uint256 dstChainId,
         address recipient,
@@ -52,6 +80,14 @@ contract ETHTokenPool is TokenPoolBase {
         _crossChainContractCallWithAsset(msg.sender, dstChainId, recipient, data, fee, amount, params);
     }
 
+    /**
+     * @notice Make a cross chain transfer asset
+     * @param dstChainId The destination chain id
+     * @param recipient The recipient address
+     * @param fee The fee of the cross chain transfer asset
+     * @param amount The amount of the asset
+     * @param params The parameters of the cross chain transfer asset
+     */
     function crossChainTransferAsset(
         uint256 dstChainId,
         address recipient,
@@ -66,10 +102,19 @@ contract ETHTokenPool is TokenPoolBase {
         _crossChainTransferAsset(msg.sender, dstChainId, recipient, fee, amount, params);
     }
 
-    function crossChainContractCallWithAssetToL1(uint256 fee, bytes calldata params) external payable override { }
+    function crossChainContractCallWithAssetToL1(uint256 fee, bytes calldata params) external payable { }
 
     /* ----------------------------- Internal Functions -------------------------------- */
 
+    /**
+     * @notice Make a cross chain contract call
+     * @param user The user address
+     * @param dstChainId The destination chain id
+     * @param recipient The recipient address
+     * @param data The message of the cross chain contract call
+     * @param fee The fee of the cross chain contract call
+     * @param params The parameters of the cross chain contract call
+     */
     function _crossChainContractCall(
         address user,
         uint256 dstChainId,
@@ -92,6 +137,16 @@ contract ETHTokenPool is TokenPoolBase {
         emit CrossChainContractCall(id, user, dstChainId, recipient, data, fee);
     }
 
+    /**
+     * @notice Make a cross chain contract call with asset
+     * @param user The user address
+     * @param dstChainId The destination chain id
+     * @param recipient The recipient address
+     * @param data The message of the cross chain contract call
+     * @param fee The fee of the cross chain contract call
+     * @param amount The amount of the asset
+     * @param params The parameters of the cross chain contract call
+     */
     function _crossChainContractCallWithAsset(
         address user,
         uint256 dstChainId,
@@ -120,6 +175,15 @@ contract ETHTokenPool is TokenPoolBase {
         emit CrossChainContractCallWithAsset(id, user, dstChainId, recipient, data, underlyingToken, fee, amount);
     }
 
+    /**
+     * @notice Make a cross chain transfer asset
+     * @param user The user address
+     * @param dstChainId The destination chain id
+     * @param recipient The recipient address
+     * @param fee The fee of the cross chain transfer asset
+     * @param amount The amount of the asset
+     * @param params The parameters of the cross chain transfer asset
+     */
     function _crossChainTransferAsset(
         address user,
         uint256 dstChainId,
