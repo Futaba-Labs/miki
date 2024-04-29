@@ -6,44 +6,97 @@ import { IMikiReceiver } from "../interfaces/IMikiReceiver.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+/**
+ * @title MikiReceiver
+ * @notice This contract is used to receive messages from Adapters
+ */
 contract MikiReceiver is Ownable, IMikiReceiver {
+    /* ----------------------------- Storage -------------------------------- */
+    /// @notice Mapping: bridge receiver -> whether the adapter is registered or not
     mapping(address adapter => bool isAdapter) public adapters;
+
     /* ----------------------------- Events -------------------------------- */
 
+    /**
+     * @notice This event is emitted when a message is sent and a token is transferred
+     * @param id The id of the message
+     * @param srcChainId The source chain id
+     * @param srcAddress The source address
+     * @param token The token address
+     * @param receiver The receiver address
+     * @param amountLD The amount of the token
+     * @param message The message
+     */
     event SentMsgAndToken(
         bytes32 id,
-        uint256 _srcChainId,
-        address _srcAddress,
-        address _token,
-        address _receiver,
-        uint256 _amountLD,
-        bytes _message
+        uint256 srcChainId,
+        address srcAddress,
+        address token,
+        address receiver,
+        uint256 amountLD,
+        bytes message
     );
 
-    event SentMsg(bytes32 id, uint256 _srcChainId, address _srcAddress, address _receiver, bytes _message);
+    /**
+     * @notice This event is emitted when a message is sent and no token is transferred
+     * @param id The id of the message
+     * @param srcChainId The source chain id
+     * @param srcAddress The source address
+     * @param receiver The receiver address
+     * @param message The message
+     */
+    event SentMsg(bytes32 id, uint256 srcChainId, address srcAddress, address receiver, bytes message);
 
+    /**
+     * @notice This event is emitted when a message is sent and a token is transferred
+     * @param id The id of the message
+     * @param srcChainId The source chain id
+     * @param srcAddress The source address
+     * @param token The token address
+     * @param receiver The receiver address
+     * @param amountLD The amount of the token
+     * @param message The message
+     * @param reason The reason of the failure
+     */
     event FailedMsgAndToken(
         bytes32 id,
-        uint256 _srcChainId,
-        address _srcAddress,
-        address _token,
-        address _receiver,
-        uint256 _amountLD,
-        bytes _message,
-        string _reason
+        uint256 srcChainId,
+        address srcAddress,
+        address token,
+        address receiver,
+        uint256 amountLD,
+        bytes message,
+        string reason
     );
 
-    event FailedMsg(
-        bytes32 id, uint256 _srcChainId, address _srcAddress, address _receiver, bytes _message, string _reason
-    );
+    /**
+     * @notice This event is emitted when a message is sent and no token is transferred
+     * @param id The id of the message
+     * @param srcChainId The source chain id
+     * @param srcAddress The source address
+     * @param receiver The receiver address
+     * @param message The message
+     * @param reason The reason of the failure
+     */
+    event FailedMsg(bytes32 id, uint256 srcChainId, address srcAddress, address receiver, bytes message, string reason);
 
-    event SetAdapter(address _adapter);
+    /**
+     * @notice This event is emitted when an adapter is set
+     * @param adapter The adapter address
+     */
+    event SetAdapter(address adapter);
 
-    event RemoveAdapter(address _adapter);
+    /**
+     * @notice This event is emitted when an adapter is removed
+     * @param adapter The adapter address
+     */
+    event RemoveAdapter(address adapter);
 
     /* ----------------------------- Erorrs -------------------------------- */
 
+    /// @notice This error is emitted when the transfer of the token fails
     error TransferFailed();
+    /// @notice This error is emitted when the adapter is invalid
     error InvalidAdapter();
 
     /* ----------------------------- Constructor -------------------------------- */
@@ -51,6 +104,17 @@ contract MikiReceiver is Ownable, IMikiReceiver {
 
     /* ----------------------------- External Functions ----------------------------- */
 
+    /**
+     * @notice This function is used to receive a message from Adapters
+     * @dev Revert if the adapter is not registered
+     * @param srcChainId The source chain id
+     * @param srcAddress The source address
+     * @param receiver The receiver address
+     * @param token The token address
+     * @param amount The amount of the token
+     * @param message The message
+     * @param id The id of the message
+     */
     function mikiReceive(
         uint256 srcChainId,
         address srcAddress,
@@ -66,6 +130,9 @@ contract MikiReceiver is Ownable, IMikiReceiver {
         if (adapters[receiver]) {
             revert InvalidAdapter();
         }
+
+        /// @dev If the amount is 0, only the message is sent.
+        /// @dev If the amount is greater than 0, the condition is divided again when handling ERC20 or Native tokens.
         if (amount > 0) {
             if (token != address(0)) {
                 bool success = IERC20(token).transfer(receiver, amount);
@@ -106,6 +173,10 @@ contract MikiReceiver is Ownable, IMikiReceiver {
         }
     }
 
+    /**
+     * @notice This function is used to set adapters
+     * @param _adapters The adapters to set
+     */
     function setAdapters(address[] memory _adapters) public onlyOwner {
         for (uint256 i = 0; i < _adapters.length; i++) {
             adapters[_adapters[i]] = true;
@@ -113,6 +184,10 @@ contract MikiReceiver is Ownable, IMikiReceiver {
         }
     }
 
+    /**
+     * @notice This function is used to remove adapters
+     * @param _adapters The adapters to remove
+     */
     function removeAdapters(address[] calldata _adapters) external onlyOwner {
         for (uint256 i = 0; i < _adapters.length; i++) {
             adapters[_adapters[i]] = false;
