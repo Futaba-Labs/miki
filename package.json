@@ -6,6 +6,9 @@
     "name": "Futaba-Labs",
     "url": "https://github.com/Futaba-Labs"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.1"
   },
