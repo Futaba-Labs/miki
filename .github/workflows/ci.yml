@@ -61,7 +61,7 @@ jobs:
           cmd: install
 
       - name: "Build the contracts and print their size"
-        run: "forge build --sizes"
+        run: "forge build --sizes --via-ir"
 
       - name: "Add build summary"
         run: |
