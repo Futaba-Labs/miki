@@ -6,6 +6,9 @@
     "name": "Futaba-Labs",
     "url": "https://github.com/Futaba-Labs"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.1"
   },
@@ -13,7 +16,7 @@
     "@aave/core-v3": "^1.19.3",
     "@axelar-network/axelar-gmp-sdk-solidity": "^5.6.4",
     "@axelar-network/axelarjs-sdk": "^0.14.2",
-    "@gelatonetwork/relay-context": "^3.2.0",
+    "@miki/gelato-relay-context": "github:Futaba-Labs/relay-context-contracts",
     "@gelatonetwork/relay-sdk": "^5.5.6",
     "@layerzerolabs/devtools": "LayerZero-Labs/devtools",
     "@layerzerolabs/lz-evm-messagelib-v2": "^2.1.18",

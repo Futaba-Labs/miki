@@ -21,14 +21,20 @@ jobs:
       - name: "Install Foundry"
         uses: "foundry-rs/foundry-toolchain@v1"
 
-      - name: "Install Bun"
-        uses: "oven-sh/setup-bun@v1"
+      - name: Set Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
 
-      - name: "Install the Node.js dependencies"
-        run: "bun install"
+      - name: "Run install"
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
 
       - name: "Lint the code"
-        run: "bun run lint"
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: lint
 
       - name: "Add lint summary"
         run: |
@@ -44,14 +50,18 @@ jobs:
       - name: "Install Foundry"
         uses: "foundry-rs/foundry-toolchain@v1"
 
-      - name: "Install Bun"
-        uses: "oven-sh/setup-bun@v1"
+      - name: Set Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
 
-      - name: "Install the Node.js dependencies"
-        run: "bun install"
+      - name: "Run install"
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
 
       - name: "Build the contracts and print their size"
-        run: "forge build --sizes"
+        run: "forge build --sizes --via-ir"
 
       - name: "Add build summary"
         run: |
@@ -68,11 +78,15 @@ jobs:
       - name: "Install Foundry"
         uses: "foundry-rs/foundry-toolchain@v1"
 
-      - name: "Install Bun"
-        uses: "oven-sh/setup-bun@v1"
+      - name: Set Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
 
-      - name: "Install the Node.js dependencies"
-        run: "bun install"
+      - name: "Run install"
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
 
       - name: "Show the Foundry config"
         run: "forge config"
@@ -84,7 +98,9 @@ jobs:
           )" >> $GITHUB_ENV
 
       - name: "Run the tests"
-        run: "forge test"
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: test
 
       - name: "Add test summary"
         run: |

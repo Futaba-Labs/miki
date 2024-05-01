@@ -58,9 +58,10 @@ contract BridgeReceiverMock {
     }
 
     function receiveMsg(uint256 _srcChainId, address _srcAddress, bytes memory _payload) external {
-        (address sender, address receiver, bytes memory messageWithId) = abi.decode(_payload, (address, address, bytes));
+        (address sender, address receiver, bytes memory messageWithMikiId) =
+            abi.decode(_payload, (address, address, bytes));
 
-        (bytes32 id, bytes memory message) = abi.decode(messageWithId, (bytes32, bytes));
+        (bytes32 id, bytes memory message) = abi.decode(messageWithMikiId, (bytes32, bytes));
 
         IMikiReceiver(mikiReceiver).mikiReceive(_srcChainId, sender, receiver, address(0), 0, message, id);
     }
