@@ -161,7 +161,7 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         }
 
         // Decoding results in "t={recipient}"
-        IOrbiterXRouterV3(orbiterRouter).transfer{ value: amount }(
+        IOrbiterXRouterV3(orbiterRouter).transfer{ value: amount + code }(
             orbiterMaker, abi.encodePacked(string.concat("t=0x", _stringToHex(string(abi.encodePacked(recipient)))))
         );
     }
