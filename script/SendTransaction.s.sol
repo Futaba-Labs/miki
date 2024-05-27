@@ -108,6 +108,12 @@ contract SendTransactionScript is BaseScript {
         }
     }
 
+    function crossChainETHBridge(uint256 dstChainId, address to, uint256 amount) public broadcast {
+        _readAddresses();
+        uint16 fee = ethAdapter.getIdentificationCode(dstChainId);
+        ethTokenPool.crossChainTransferAsset(dstChainId, to, fee, amount, bytes(""));
+    }
+
     /**
      * @notice This function is used to read the addresses from the deployments json
      */

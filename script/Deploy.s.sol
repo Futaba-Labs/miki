@@ -51,6 +51,7 @@ contract Deploy is BaseScript {
     uint256 private hubChainId = networks[Chains.ArbitrumSepolia].chainId;
     address private mikiRouter;
     address private orbiterRouter;
+    address private orbiterMaker;
     address private lzGateway;
     uint256[] private chainIds;
     uint32[] private eids;
@@ -58,29 +59,7 @@ contract Deploy is BaseScript {
     string public uri = "ipfs://QmeuC3tFtndSF1pBTzZxUmArWiBFv3ozNhEnAPFKJp9T1E/0";
 
     function run() public broadcast {
-        chainId = block.chainid;
-        console2.log("ChainId: %s", chainId);
-        chainKey = _getChainKey(chainId);
-
-        owner = broadcaster;
-        console2.log("Owner: %s", owner);
-
-        // Set configuration
-        Chains[] memory chains = new Chains[](2);
-        chains[0] = Chains.OptimismSepolia;
-        chains[1] = Chains.BaseSepolia;
-
-        for (uint256 i = 0; i < chains.length; i++) {
-            Chains chain = chains[i];
-            string memory targetChainKey = _getChainKey(uint256(networks[chain].chainId));
-            uint16 code =
-                uint16(vm.parseJsonUint(deploymentsJson, string.concat(targetChainKey, ".adapters.orbiter.code")));
-            uint256 id = networks[chain].chainId;
-            uint32 eid = networks[chain].eid;
-            chainIds.push(id);
-            eids.push(eid);
-            codes.push(code);
-        }
+        _setup();
 
         mikiRouter =
             vm.parseJsonAddress(deploymentsJson, string.concat(_getChainKey(hubChainId), ".adapters.eth.mikiRouter"));
@@ -95,10 +74,12 @@ contract Deploy is BaseScript {
     function _deployOnHubChain() internal {
         // deploy adapters
         orbiterRouter = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.orbiterRouter"));
+        orbiterMaker = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.orbiterMaker"));
         lzGateway = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.layerZero.gateway"));
 
         lzAdapter = new LayerZeroAdapter(broadcaster, lzGateway, chainIds, eids);
-        ethAdapter = new EthAdapter(payable(orbiterRouter), payable(mikiRouter), address(lzAdapter), broadcaster);
+        ethAdapter =
+            new EthAdapter(payable(orbiterRouter), orbiterMaker, payable(mikiRouter), address(lzAdapter), broadcaster);
 
         // set identification codes for orbiter
         ethAdapter.setIdentificationCodes(chainIds, codes);
@@ -284,6 +265,62 @@ contract Deploy is BaseScript {
             deploymentPath,
             string.concat(chainKey, ".pools.usdcTokenPool.impl")
         );
+    }
+
+    function deployEthAdapter() public broadcast {
+        // Set configuration
+        _setup();
+
+        // Get routers
+        mikiRouter =
+            vm.parseJsonAddress(deploymentsJson, string.concat(_getChainKey(hubChainId), ".adapters.eth.mikiRouter"));
+        orbiterRouter = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.orbiterRouter"));
+        orbiterMaker = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.orbiterMaker"));
+        lzGateway = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.layerZero.gateway"));
+
+        address lzAdapterAddr =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.layerZero.sender"));
+
+        // Deploy adapter
+        ethAdapter = new EthAdapter(orbiterRouter, orbiterMaker, payable(mikiRouter), lzAdapterAddr, broadcaster);
+
+        // Get ETH Token Pool
+        address ethTokenPoolAddr =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.proxy"));
+
+        // Set adapter
+        for (uint256 i = 0; i < chainIds.length; i++) {
+            GaslessETHTokenPool(payable(ethTokenPoolAddr)).setBridgeAdapter(chainIds[i], address(ethAdapter));
+        }
+
+        // Set identification codes for orbiter
+        ethAdapter.setIdentificationCodes(chainIds, codes);
+    }
+
+    function _setup() internal {
+        // Set configuration
+        chainId = block.chainid;
+        console2.log("ChainId: %s", chainId);
+        chainKey = _getChainKey(chainId);
+
+        owner = broadcaster;
+        console2.log("Owner: %s", owner);
+
+        Chains[] memory chains = new Chains[](2);
+        chains[0] = Chains.OptimismSepolia;
+        chains[1] = Chains.BaseSepolia;
+
+        for (uint256 i = 0; i < chains.length; i++) {
+            Chains chain = chains[i];
+            string memory targetChainKey = _getChainKey(uint256(networks[chain].chainId));
+            uint16 code =
+                uint16(vm.parseJsonUint(deploymentsJson, string.concat(targetChainKey, ".adapters.orbiter.code")));
+            uint256 id = networks[chain].chainId;
+            uint32 eid = networks[chain].eid;
+            chainIds.push(id);
+            eids.push(eid);
+            codes.push(code);
+        }
     }
 
     function _upgrade(address proxy, address impl, bytes memory data) internal {
