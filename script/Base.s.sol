@@ -21,14 +21,34 @@ abstract contract BaseScript is Script {
 
     mapping(Chains chains => Network network) internal networks;
 
-    Chains[] internal deployedChains =
-        [Chains.ArbitrumSepolia, Chains.OptimismSepolia, Chains.PolygonAmoy, Chains.BaseSepolia];
+    Chains[] internal deployedChains = [
+        Chains.ArbitrumSepolia,
+        Chains.OptimismSepolia,
+        Chains.PolygonAmoy,
+        Chains.BaseSepolia,
+        Chains.MantleSepolia,
+        Chains.ScrollSepolia,
+        Chains.AstarZkyoto,
+        Chains.AvalancheFuji,
+        Chains.BNBTestnet,
+        Chains.BlastSepolia,
+        Chains.ZkSyncSepolia,
+        Chains.PolygonCardona
+    ];
 
     enum Chains {
         ArbitrumSepolia,
         OptimismSepolia,
         PolygonAmoy,
-        BaseSepolia
+        BaseSepolia,
+        MantleSepolia,
+        ScrollSepolia,
+        AstarZkyoto,
+        AvalancheFuji,
+        BNBTestnet,
+        BlastSepolia,
+        ZkSyncSepolia,
+        PolygonCardona
     }
 
     struct Network {
@@ -55,8 +75,16 @@ abstract contract BaseScript is Script {
 
         networks[Chains.ArbitrumSepolia] = Network("arbitrum_sepolia", 421_614, 40_231);
         networks[Chains.OptimismSepolia] = Network("optimism_sepolia", 11_155_420, 40_232);
-        networks[Chains.PolygonAmoy] = Network("mumbai", 80_002, 40_109);
+        networks[Chains.PolygonAmoy] = Network("amoy", 80_002, 40_109);
         networks[Chains.BaseSepolia] = Network("base_sepolia", 84_532, 40_245);
+        networks[Chains.MantleSepolia] = Network("mantle_sepolia", 5003, 0);
+        networks[Chains.ScrollSepolia] = Network("scroll_sepolia", 534351, 40170);
+        networks[Chains.AstarZkyoto] = Network("astar_zkyoto", 6038361, 40210);
+        networks[Chains.AvalancheFuji] = Network("avalanche_fuji", 43113, 40106);
+        networks[Chains.BNBTestnet] = Network("bnb_testnet", 97, 40102);
+        networks[Chains.BlastSepolia] = Network("blast_sepolia", 168587773, 40243);
+        networks[Chains.ZkSyncSepolia] = Network("zksync_sepolia", 300, 0);
+        networks[Chains.PolygonCardona] = Network("polygon_cardona", 2442, 40247);
     }
 
     modifier broadcast() {
