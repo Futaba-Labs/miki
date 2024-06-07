@@ -65,26 +65,21 @@ abstract contract BaseScript is Script {
     ///
     /// The use case for $ETH_FROM is to specify the broadcaster key and its address via the command line.
     constructor() {
-        address from = vm.envOr({ name: "ETH_FROM", defaultValue: address(0) });
-        if (from != address(0)) {
-            broadcaster = from;
-        } else {
-            mnemonic = vm.envOr({ name: "MNEMONIC", defaultValue: TEST_MNEMONIC });
-            (broadcaster,) = deriveRememberKey({ mnemonic: mnemonic, index: 0 });
-        }
+        uint256 privateKey = vm.envUint("PRIVATE_KEY");
+        broadcaster = vm.addr(privateKey);
 
         networks[Chains.ArbitrumSepolia] = Network("arbitrum_sepolia", 421_614, 40_231);
         networks[Chains.OptimismSepolia] = Network("optimism_sepolia", 11_155_420, 40_232);
         networks[Chains.PolygonAmoy] = Network("amoy", 80_002, 40_109);
         networks[Chains.BaseSepolia] = Network("base_sepolia", 84_532, 40_245);
         networks[Chains.MantleSepolia] = Network("mantle_sepolia", 5003, 0);
-        networks[Chains.ScrollSepolia] = Network("scroll_sepolia", 534351, 40170);
-        networks[Chains.AstarZkyoto] = Network("astar_zkyoto", 6038361, 40210);
-        networks[Chains.AvalancheFuji] = Network("avalanche_fuji", 43113, 40106);
-        networks[Chains.BNBTestnet] = Network("bnb_testnet", 97, 40102);
-        networks[Chains.BlastSepolia] = Network("blast_sepolia", 168587773, 40243);
+        networks[Chains.ScrollSepolia] = Network("scroll_sepolia", 534_351, 40_170);
+        networks[Chains.AstarZkyoto] = Network("astar_zkyoto", 6_038_361, 40_210);
+        networks[Chains.AvalancheFuji] = Network("avalanche_fuji", 43_113, 40_106);
+        networks[Chains.BNBTestnet] = Network("bnb_testnet", 97, 40_102);
+        networks[Chains.BlastSepolia] = Network("blast_sepolia", 168_587_773, 40_243);
         networks[Chains.ZkSyncSepolia] = Network("zksync_sepolia", 300, 0);
-        networks[Chains.PolygonCardona] = Network("polygon_cardona", 2442, 40247);
+        networks[Chains.PolygonCardona] = Network("polygon_cardona", 2442, 40_247);
     }
 
     modifier broadcast() {

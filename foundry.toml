@@ -41,6 +41,7 @@ scroll_sepolia = { key = "${API_KEY_SCROLLSCAN}", url = "https://api-sepolia.scr
 blast_sepolia = { key = "${API_KEY_BLASTSCAN}", url = "https://api-sepolia.blastscan.io/api" }
 polygon_cardona = { key = "${API_KEY_POLYGON_ZKEVM}", url = "https://api-testnet-zkevm.polygonscan.com/api" }
 bnb_testnet = { key = "${API_KEY_BSCSCAN}", url = "https://api-testnet.bscscan.com/api" }
+mantle_sepolia = { key = "", url = "https://api-sepolia.mantle.xyz/api" }
 
 [fmt]
 bracket_spacing = true

@@ -3,31 +3,61 @@ pragma solidity 0.8.23;
 
 import { AxelarExecutable } from "@axelar-network/axelar-gmp-sdk-solidity/contracts/executable/AxelarExecutable.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { IMikiReceiver } from "../interfaces/IMikiReceiver.sol";
 
-contract AxelarReceiver is AxelarExecutable {
+contract AxelarReceiver is AxelarExecutable, Ownable {
     using Address for address;
 
+    /// @notice The miki receiver address
+    address public immutable MIKI_RECEIVER;
+
+    mapping(string chainName => uint256 chainId) public chainIdOf;
+
     event ExecutedFunctionCall(address sender, address receiver, bytes encodedSelector, bytes data);
+    event SetChainId(string chainName, uint256 chainId);
+
+    error NoChainId(string chainName);
     /* ----------------------------- Constructor -------------------------------- */
 
-    constructor(address _axelarGateway) AxelarExecutable(_axelarGateway) { }
+    constructor(
+        address _axelarGateway,
+        address _mikiReceiver,
+        address _initialOwner
+    )
+        AxelarExecutable(_axelarGateway)
+        Ownable(_initialOwner)
+    {
+        MIKI_RECEIVER = _mikiReceiver;
+    }
 
     function _execute(
         string calldata _sourceChain,
-        string calldata _sourceAddress,
+        string calldata,
         bytes calldata _payload
     )
         internal
         virtual
         override
     {
-        // Decode the payload
-        (address sender, address receiver, bytes memory encodedSelector) =
-            abi.decode(_payload, (address, address, bytes));
+        uint256 chainId = chainIdOf[_sourceChain];
 
-        // Call the receiver
-        bytes memory data = receiver.functionCall(encodedSelector);
+        if (chainId == 0) revert NoChainId(_sourceChain);
 
-        emit ExecutedFunctionCall(sender, receiver, encodedSelector, data);
+        (address sender, address receiver, bytes memory messageWithId) = abi.decode(_payload, (address, address, bytes));
+        (bytes32 id, bytes memory message) = abi.decode(messageWithId, (bytes32, bytes));
+
+        IMikiReceiver(MIKI_RECEIVER).mikiReceive(chainId, sender, receiver, address(0), 0, message, id);
+    }
+
+    function setChainIds(string[] calldata chainNames, uint256[] calldata chainIds) external {
+        for (uint256 i; i < chainNames.length; i++) {
+            setChainId(chainNames[i], chainIds[i]);
+        }
+    }
+
+    function setChainId(string calldata chainName, uint256 chainId) public onlyOwner {
+        chainIdOf[chainName] = chainId;
+        emit SetChainId(chainName, chainId);
     }
 }

@@ -16,6 +16,8 @@ import { GaslessETHTokenPool } from "../src/pools/GaslessETHTokenPool.sol";
 import { ERC20TokenPool } from "../src/pools/ERC20TokenPool.sol";
 import { EthAdapter } from "../src/adapters/EthAdapter.sol";
 import { LayerZeroAdapter } from "../src/adapters/LayerZeroAdapter.sol";
+import { AxelarAdapter } from "../src/adapters/AxelarAdapter.sol";
+import { AxelarReceiver } from "../src/adapters/AxelarReceiver.sol";
 import { MikiRouterReceiver } from "../src/adapters/MikiRouterReceiver.sol";
 import { MikiReceiver } from "../src/adapters/MikiReceiver.sol";
 import { LayerZeroReceiver } from "../src/adapters/LayerZeroReceiver.sol";
@@ -36,6 +38,8 @@ contract Deploy is BaseScript {
     EthAdapter public ethAdapter;
     LayerZeroAdapter public lzAdapter;
     LayerZeroReceiver public lzReceiver;
+    AxelarReceiver public axelarReceiver;
+    AxelarAdapter public axelarAdapter;
     MikiRouterReceiver public mikiRouterReceiver;
     MikiReceiver public mikiReceiver;
 
@@ -176,53 +180,79 @@ contract Deploy is BaseScript {
         // deploy receiver
         mikiReceiver = new MikiReceiver(owner);
 
-        // deploy miki router receiver
-        mikiRouterReceiver = new MikiRouterReceiver(mikiRouter, address(mikiReceiver), owner);
-
         // deploy lz receiver
-        address gateway = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.layerZero.gateway"));
-        lzReceiver = new LayerZeroReceiver(gateway, address(mikiReceiver), gateway, owner);
+        address receiver;
+        if (chainId != networks[Chains.MantleSepolia].chainId) {
+            address gateway =
+                vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.layerZero.gateway"));
+            lzReceiver = new LayerZeroReceiver(gateway, address(mikiReceiver), gateway, owner);
 
-        // deploy examples
-        address permit2 = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.aave.permit2"));
-        address weth = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.aave.weth.underlying"));
-        address token0 = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.amm.token0"));
-        address token1 = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.amm.token1"));
+            vm.writeJson(
+                vm.toString(address(lzReceiver)),
+                deploymentPath,
+                string.concat(chainKey, ".adapters.layerZero.receiver")
+            );
+            receiver = address(lzReceiver);
 
-        sampleAMM = new SampleAMM(token0, token1);
-        aaveV3Receiver = new AAVEV3Receiver(owner, permit2, address(sampleAMM), address(mikiReceiver), weth);
-        nftReceiver = new NFTReceiver(uri, address(mikiReceiver));
+            // Set chainIds
+            lzReceiver.setChainIds(eids, chainIds);
+        } else {
+            _deployAxelarReceiver();
+            receiver = address(axelarReceiver);
+        }
 
         // Set adapters
-        address[] memory adapters = new address[](2);
-        adapters[0] = address(lzAdapter);
-        adapters[1] = address(mikiRouterReceiver);
+        address[] memory adapters = new address[](1);
+        adapters[0] = address(receiver);
         mikiReceiver.setAdapters(adapters);
 
-        // Set chainIds
-        lzReceiver.setChainIds(eids, chainIds);
+        if (
+            chainId == networks[Chains.BaseSepolia].chainId || chainId == networks[Chains.OptimismSepolia].chainId
+                || chainId == networks[Chains.ScrollSepolia].chainId
+        ) {
+            // deploy miki router receiver
+            mikiRouterReceiver = new MikiRouterReceiver(mikiRouter, address(mikiReceiver), owner);
 
-        // Set weth token pools
-        string memory tokenKey = string.concat(chainKey, ".examples.aave.weth");
+            // deploy examples
+            address permit2 = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.aave.permit2"));
+            address weth =
+                vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.aave.weth.underlying"));
+            address token0 = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.amm.token0"));
+            address token1 = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.amm.token1"));
 
-        address underlyingToken = vm.parseJsonAddress(deploymentsJson, string.concat(tokenKey, ".underlying"));
-        address aToken = vm.parseJsonAddress(deploymentsJson, string.concat(tokenKey, ".aToken"));
-        address pool = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.aave.pool"));
+            sampleAMM = new SampleAMM(token0, token1);
+            aaveV3Receiver = new AAVEV3Receiver(owner, permit2, address(sampleAMM), address(mikiReceiver), weth);
 
-        AAVEV3Receiver(payable(address(aaveV3Receiver))).setTokenPool(underlyingToken, aToken, pool);
+            // Set weth token pools
+            string memory tokenKey = string.concat(chainKey, ".examples.aave.weth");
+
+            address underlyingToken = vm.parseJsonAddress(deploymentsJson, string.concat(tokenKey, ".underlying"));
+            address aToken = vm.parseJsonAddress(deploymentsJson, string.concat(tokenKey, ".aToken"));
+            address pool = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".examples.aave.pool"));
+
+            AAVEV3Receiver(payable(address(aaveV3Receiver))).setTokenPool(underlyingToken, aToken, pool);
+
+            // set adapters
+            adapters = new address[](1);
+            adapters[0] = address(mikiRouterReceiver);
+            mikiReceiver.setAdapters(adapters);
+
+            // write json
+            vm.writeJson(
+                vm.toString(address(mikiRouterReceiver)),
+                deploymentPath,
+                string.concat(chainKey, ".adapters.eth.receiver")
+            );
+            vm.writeJson(
+                vm.toString(address(aaveV3Receiver)), deploymentPath, string.concat(chainKey, ".examples.aave.receiver")
+            );
+        }
+
+        nftReceiver = new NFTReceiver(uri, address(mikiReceiver));
 
         // write json
         vm.writeJson(
             vm.toString(address(mikiReceiver)), deploymentPath, string.concat(chainKey, ".adapters.mikiReceiver")
-        );
-        vm.writeJson(
-            vm.toString(address(mikiRouterReceiver)), deploymentPath, string.concat(chainKey, ".adapters.eth.receiver")
-        );
-        vm.writeJson(
-            vm.toString(address(lzReceiver)), deploymentPath, string.concat(chainKey, ".adapters.layerZero.receiver")
-        );
-        vm.writeJson(
-            vm.toString(address(aaveV3Receiver)), deploymentPath, string.concat(chainKey, ".examples.aave.receiver")
         );
         vm.writeJson(vm.toString(address(nftReceiver)), deploymentPath, string.concat(chainKey, ".examples.nft"));
     }
@@ -233,7 +263,7 @@ contract Deploy is BaseScript {
         console2.log("ChainId: %s", chainId);
         chainKey = _getChainKey(chainId);
 
-        owner = broadcaster;
+        owner = 0x609b8fc63842ECB8635FCFAe7e6040416A6D2dFb;
         console2.log("Owner: %s", owner);
 
         address ethTokenPoolAddr =
@@ -295,6 +325,69 @@ contract Deploy is BaseScript {
 
         // Set identification codes for orbiter
         ethAdapter.setIdentificationCodes(chainIds, codes);
+    }
+
+    function deployAxelarAdapter() public broadcast {
+        _deployAxelarAdapter();
+    }
+
+    function _deployAxelarAdapter() internal {
+        // Set configuration
+        _setup();
+
+        // Get routers
+        address axelarGateway =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.axelar.gateway"));
+        address axelarGasService =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.axelar.gasService"));
+
+        // deploy axelar adapter
+        axelarAdapter = new AxelarAdapter(owner, axelarGateway, axelarGasService);
+
+        // write json
+        vm.writeJson(
+            vm.toString(address(axelarAdapter)), deploymentPath, string.concat(chainKey, ".adapters.axelar.sender")
+        );
+
+        // set chain name
+        uint256[] memory chainIdsForAxelar = new uint256[](1);
+        string[] memory chainNames = new string[](1);
+        chainIdsForAxelar[0] = networks[Chains.MantleSepolia].chainId;
+        chainNames[0] = "mantle-sepolia";
+        axelarAdapter.setChainIdToDomains(chainIdsForAxelar, chainNames);
+
+        // set bridge adapter
+        address ethTokenPoolAddr =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.proxy"));
+
+        ethTokenPool = GaslessETHTokenPool(payable(ethTokenPoolAddr));
+        ethTokenPool.setBridgeAdapter(networks[Chains.MantleSepolia].chainId, address(axelarAdapter));
+    }
+
+    function deployAxelarReceiver() public broadcast {
+        _deployAxelarReceiver();
+    }
+
+    function _deployAxelarReceiver() internal {
+        // Set configuration
+        _setup();
+
+        // Get routers
+        address mikiReceiverAddr =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.mikiReceiver"));
+        address axelarGateway =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.axelar.gateway"));
+
+        // deploy axelar receiver
+        axelarReceiver = new AxelarReceiver(axelarGateway, mikiReceiverAddr, owner);
+
+        // write json
+        vm.writeJson(
+            vm.toString(address(axelarReceiver)), deploymentPath, string.concat(chainKey, ".adapters.axelar.receiver")
+        );
+
+        // set chain id
+        axelarReceiver.setChainId("arbitrum-sepolia", networks[Chains.ArbitrumSepolia].chainId);
     }
 
     function _setup() internal {

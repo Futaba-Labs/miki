@@ -4,12 +4,12 @@
     "chainId": 421614,
     "eid": 40231,
     "l2AssetManagerProxy": "0xCE18358DaE886C8c8a8697712Af35fA7bF6227CF",
-    "l2AssetManagerImpl": "0x147DA240A6A0e0785Cee81bE9522FA5799014c6C",
+    "l2AssetManagerImpl": "0x881c31cD8e9DA73AA8f8b9f292fbD7eFDb34a6de",
     "pools": {
       "ethTokenPool": {
         "underlying": "0x980B62Da83eFf3D4576C647993b0c1D7faf17c73",
         "proxy": "0x6a509D7d555d041E606F6ff8b90f371c9a03Bfca",
-        "impl": "0xc10913d651832734cB3f56A27A613D68d03233Eb"
+        "impl": "0x5E59e7524296eb7aA1f90F4C461cBF6B78618C14"
       },
       "mikiTokenPool": {
         "underlying": "0x9D2778CD4d232dC3e3f0C42caccA891D12EC9c8a",
@@ -18,7 +18,7 @@
       "usdcTokenPool": {
         "underlying": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
         "proxy": "0xd4dBE3f0C4351623f0802d1482F0336C89652F1d",
-        "impl": "0x21a52E4403ccB839fF3c50727cFB0296bBB0FB93"
+        "impl": "0x4AC6152E7bF0d4Ee8d4a6A38DfD50E98D13c658c"
       }
     },
     "adapters": {
@@ -26,6 +26,11 @@
         "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
         "sender": "0xD6eA668c8baEa417c1E5465e9E016A4a1Ad2399A",
         "receiver": "0x95Ce7A96fe31Cf92Aa554DD00403CA26cBb32069"
+      },
+      "axelar": {
+        "gateway": "0xe1cE95479C84e9809269227C7F8524aE051Ae77a",
+        "gasService": "0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6",
+        "sender": "0x5a4Ae660c4efA96D4565cdBDD6B14Dfd643DE471"
       },
       "eth": {
         "mikiRouter": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
@@ -293,11 +298,15 @@
     "chainId": 5003,
     "eid": 0,
     "adapters": {
-      "mikiReceiver": "0x3063E6ed87eE62337ca7c976EF4B6c4d941D013C",
+      "mikiReceiver": "0x5a4Ae660c4efA96D4565cdBDD6B14Dfd643DE471",
       "layerZero": {
         "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
         "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
         "receiver": "0xBC5053295C99039140B0d305f82DEef13a98D43f"
+      },
+      "axelar": {
+        "gateway": "0xC8D18F85cB0Cee5C95eC29c69DeaF6cea972349c",
+        "receiver": "0x3b36b03F94362e660919a2761774dacfc61DB7E1"
       },
       "miki": {
         "token": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
@@ -329,7 +338,7 @@
         "pool": "0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b",
         "receiver": "0xb49D3728F8C069866260B682941F57Bd389669f7"
       },
-      "nft": "0x6a7A87ae550dD0190f7c844a51a7F9f258EFBdA5",
+      "nft": "0xAEe4c88c930447e1c8eD0D170cfC828475b89ade",
       "amm": {
         "pool": "0xBEDbD1d5b74202c9E7277FeE72b01c598e438fd9",
         "token0": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
