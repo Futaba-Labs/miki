@@ -69,7 +69,17 @@ contract SendTransactionScript is BaseScript {
         bytes memory params = abi.encode(option, bytes(""));
         bytes memory message = abi.encode(to);
 
-        uint256 fee = ethAdapter.estimateFee(broadcaster, dstChainId, nftReceiver, address(0), message, 0, params);
+        uint256 fee = 0;
+        if (dstChainId == networks[Chains.MantleSepolia].chainId) {
+            // calc fee by Axelar
+            string[] memory inputs = new string[](2);
+            inputs[0] = "node";
+            inputs[1] = "./helpers/fetch_axelar_fee.js";
+            bytes memory encodedFee = vm.ffi(inputs);
+            fee = abi.decode(encodedFee, (uint256));
+        } else {
+            fee = ethAdapter.estimateFee(broadcaster, dstChainId, nftReceiver, address(0), message, 0, params);
+        }
 
         ethTokenPool.crossChainContractCall(dstChainId, nftReceiver, message, fee * 120 / 100, params);
     }

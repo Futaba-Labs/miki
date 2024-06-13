@@ -15,7 +15,7 @@ async function main() {
 
   const fee = await sdk.estimateGasFee(
     "arbitrum-sepolia",
-    "optimism-sepolia",
+    "mantle-sepolia",
     GasToken.ETH,
     500000
   );
