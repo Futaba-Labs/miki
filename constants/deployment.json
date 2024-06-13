@@ -249,11 +249,11 @@
     "chainId": 534351,
     "eid": 40170,
     "adapters": {
-      "mikiReceiver": "0x3063E6ed87eE62337ca7c976EF4B6c4d941D013C",
+      "mikiReceiver": "0xb8459636a5d82e68D0562E8EDa9c86195E573300",
       "layerZero": {
         "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
         "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-        "receiver": "0xBC5053295C99039140B0d305f82DEef13a98D43f"
+        "receiver": "0x8a83608d66894839C76c78674Ee96e430e6eF298"
       },
       "miki": {
         "token": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
@@ -268,7 +268,7 @@
       "eth": {
         "router": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
         "sender": "0xeb6E0FEB61D3a65FE2e94C9D1510184B7Adb064c",
-        "receiver": "0xFD5A025424686D654FAa99AFB53F2f966fd5ABB3"
+        "receiver": "0xc6daDCc6bF602dE9DF7d410d15a1b0fB2cAE1BB7"
       }
     },
     "examples": {
@@ -283,9 +283,9 @@
         },
         "permit2": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
         "pool": "0x48914C788295b5db23aF2b5F0B3BE775C4eA9440",
-        "receiver": "0xb49D3728F8C069866260B682941F57Bd389669f7"
+        "receiver": "0x3b5495960F3214cb1Cc893b21A31BE86F1F2a3b9"
       },
-      "nft": "0x6a7A87ae550dD0190f7c844a51a7F9f258EFBdA5",
+      "nft": "0x512D68181dDb00f1f3fe5BCA28dD8B5cf2F98Cd0",
       "amm": {
         "pool": "0xBEDbD1d5b74202c9E7277FeE72b01c598e438fd9",
         "token0": "0x641A018F7670f68213b9c20323c12EC94a939AcE",

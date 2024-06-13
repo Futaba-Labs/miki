@@ -16,6 +16,12 @@ do
   fi
 done
 
+echo Setting LayerZero/Axelar Peer...
+
+echo Chain: arbitrum_sepolia
+
+forge script script/adapters/SetPeer.s.sol -s "setLzAdapterPeer()" --rpc-url arbitrum_sepolia --broadcast --verify -vvvv --via-ir --ffi --private-key ${PRIVATE_KEY}
+
 for item in "${array[@]}"
 do
   echo Chain: ${item}
@@ -27,6 +33,12 @@ do
   fi
 done
 
-echo Chain: arbitrum_sepolia
+for item in "${array[@]}"
+do
+  echo Chain: ${item}
+  forge script script/Deploy.s.sol -s "setBridgeAdapter(string, address)" $item 0x0000000000000000000000000000000000000000 --rpc-url arbitrum_sepolia --broadcast --verify -vvvv --via-ir --ffi --private-key ${PRIVATE_KEY}
+done
 
-forge script script/adapters/SetPeer.s.sol -s "setLzAdapterPeer()" --rpc-url arbitrum_sepolia --broadcast --verify -vvvv --via-ir --ffi --private-key ${PRIVATE_KEY}
+echo Setting LayerZero eids...
+
+forge script script/Deploy.s.sol -s "setEids()" --rpc-url arbitrum_sepolia --broadcast --verify -vvvv --via-ir --ffi --private-key ${PRIVATE_KEY}

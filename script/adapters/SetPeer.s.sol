@@ -11,7 +11,7 @@ import { LayerZeroReceiver } from "../../src/adapters/LayerZeroReceiver.sol";
 /// @dev See the Solidity Scripting tutorial: https://book.getfoundry.sh/tutorials/solidity-scripting
 contract SetPeer is BaseScript {
     Network[] public deployedNetworks =
-        [networks[Chains.ArbitrumSepolia], networks[Chains.OptimismSepolia], networks[Chains.BaseSepolia]];
+        [networks[Chains.OptimismSepolia], networks[Chains.BaseSepolia], networks[Chains.ScrollSepolia]];
 
     function setMikiPeer() public broadcast {
         for (uint256 i = 0; i < deployedNetworks.length; i++) {
@@ -35,7 +35,6 @@ contract SetPeer is BaseScript {
 
         if (block.chainid == hubNetwork.chainId) {
             for (uint256 i = 0; i < deployedNetworks.length; i++) {
-                if (deployedNetworks[i].chainId == block.chainid) continue;
                 string memory targetChainKey = _getChainKey(deployedNetworks[i].chainId);
                 address peerAddress =
                     vm.parseJsonAddress(deploymentsJson, string.concat(targetChainKey, ".adapters.layerZero.receiver"));

@@ -390,6 +390,29 @@ contract Deploy is BaseScript {
         axelarReceiver.setChainId("arbitrum-sepolia", networks[Chains.ArbitrumSepolia].chainId);
     }
 
+    function setBridgeAdapter(string memory chainName, address adapter) public broadcast {
+        _setup();
+
+        uint256 dstChainId = _getChainId(chainName);
+
+        address ethTokenPoolAddr =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".pools.ethTokenPool.proxy"));
+
+        if (adapter == address(0)) {
+            adapter = vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.eth.sender"));
+        }
+
+        GaslessETHTokenPool(payable(ethTokenPoolAddr)).setBridgeAdapter(dstChainId, adapter);
+    }
+
+    function setEids() public broadcast {
+        _setup();
+        address lzAdapterAddr =
+            vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".adapters.layerZero.sender"));
+
+        LayerZeroAdapter(lzAdapterAddr).setEids(chainIds, eids);
+    }
+
     function _setup() internal {
         // Set configuration
         chainId = block.chainid;
@@ -399,9 +422,10 @@ contract Deploy is BaseScript {
         owner = broadcaster;
         console2.log("Owner: %s", owner);
 
-        Chains[] memory chains = new Chains[](2);
+        Chains[] memory chains = new Chains[](3);
         chains[0] = Chains.OptimismSepolia;
         chains[1] = Chains.BaseSepolia;
+        chains[2] = Chains.ScrollSepolia;
 
         for (uint256 i = 0; i < chains.length; i++) {
             Chains chain = chains[i];

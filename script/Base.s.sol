@@ -116,4 +116,14 @@ abstract contract BaseScript is Script {
     function _getChainKey(uint256 chainId) internal view returns (string memory) {
         return string.concat(".", _getNetwork(chainId).name);
     }
+
+    function _getChainId(string memory chainName) internal view returns (uint256) {
+        for (uint256 i = 0; i < deployedChains.length; i++) {
+            if (keccak256(abi.encodePacked(networks[deployedChains[i]].name)) == keccak256(abi.encodePacked(chainName)))
+            {
+                return networks[deployedChains[i]].chainId;
+            }
+        }
+        revert("Chain not found");
+    }
 }
