@@ -33,6 +33,8 @@ do
   fi
 done
 
+echo Setting Bridge Adapters...
+
 for item in "${array[@]}"
 do
   echo Chain: ${item}
