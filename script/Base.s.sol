@@ -74,7 +74,7 @@ abstract contract BaseScript is Script {
         networks[Chains.BaseSepolia] = Network("base_sepolia", 84_532, 40_245);
         networks[Chains.MantleSepolia] = Network("mantle_sepolia", 5003, 0);
         networks[Chains.ScrollSepolia] = Network("scroll_sepolia", 534_351, 40_170);
-        networks[Chains.AstarZkyoto] = Network("astar_zkyoto", 6_038_361, 40_210);
+        networks[Chains.AstarZkyoto] = Network("astar_zkyoto", 6_038_361, 40_266);
         networks[Chains.AvalancheFuji] = Network("avalanche_fuji", 43_113, 40_106);
         networks[Chains.BNBTestnet] = Network("bnb_testnet", 97, 40_102);
         networks[Chains.BlastSepolia] = Network("blast_sepolia", 168_587_773, 40_243);

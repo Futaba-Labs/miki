@@ -398,13 +398,13 @@
   "astar_zkyoto": {
     "name": "astar_zkyoto",
     "chainId": 6038361,
-    "eid": 40210,
+    "eid": 40266,
     "adapters": {
-      "mikiReceiver": "0x3063E6ed87eE62337ca7c976EF4B6c4d941D013C",
+      "mikiReceiver": "0xb8459636a5d82e68D0562E8EDa9c86195E573300",
       "layerZero": {
         "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
         "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-        "receiver": "0xBC5053295C99039140B0d305f82DEef13a98D43f"
+        "receiver": "0x8a83608d66894839C76c78674Ee96e430e6eF298"
       },
       "miki": {
         "token": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
@@ -436,7 +436,7 @@
         "pool": "0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b",
         "receiver": "0xb49D3728F8C069866260B682941F57Bd389669f7"
       },
-      "nft": "0x6a7A87ae550dD0190f7c844a51a7F9f258EFBdA5",
+      "nft": "0xc6daDCc6bF602dE9DF7d410d15a1b0fB2cAE1BB7",
       "amm": {
         "pool": "0xBEDbD1d5b74202c9E7277FeE72b01c598e438fd9",
         "token0": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
@@ -547,11 +547,11 @@
     "chainId": 2442,
     "eid": 40247,
     "adapters": {
-      "mikiReceiver": "0x3063E6ed87eE62337ca7c976EF4B6c4d941D013C",
+      "mikiReceiver": "0x6B8DF8e3B830304411729A6a5598DCda7AF6F65f",
       "layerZero": {
         "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
         "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-        "receiver": "0xBC5053295C99039140B0d305f82DEef13a98D43f"
+        "receiver": "0xb8459636a5d82e68D0562E8EDa9c86195E573300"
       },
       "miki": {
         "token": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
@@ -583,7 +583,7 @@
         "pool": "0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b",
         "receiver": "0xb49D3728F8C069866260B682941F57Bd389669f7"
       },
-      "nft": "0x6a7A87ae550dD0190f7c844a51a7F9f258EFBdA5",
+      "nft": "0x43b7C54E750c403565b848235D772A7A04eAB50E",
       "amm": {
         "pool": "0xBEDbD1d5b74202c9E7277FeE72b01c598e438fd9",
         "token0": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
