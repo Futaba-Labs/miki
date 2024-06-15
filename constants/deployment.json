@@ -498,11 +498,11 @@
     "chainId": 97,
     "eid": 40102,
     "adapters": {
-      "mikiReceiver": "0x3063E6ed87eE62337ca7c976EF4B6c4d941D013C",
+      "mikiReceiver": "0x5a4Ae660c4efA96D4565cdBDD6B14Dfd643DE471",
       "layerZero": {
         "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
         "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
-        "receiver": "0xBC5053295C99039140B0d305f82DEef13a98D43f"
+        "receiver": "0x3b36b03F94362e660919a2761774dacfc61DB7E1"
       },
       "miki": {
         "token": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
@@ -534,7 +534,7 @@
         "pool": "0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b",
         "receiver": "0xb49D3728F8C069866260B682941F57Bd389669f7"
       },
-      "nft": "0x6a7A87ae550dD0190f7c844a51a7F9f258EFBdA5",
+      "nft": "0xAEe4c88c930447e1c8eD0D170cfC828475b89ade",
       "amm": {
         "pool": "0xBEDbD1d5b74202c9E7277FeE72b01c598e438fd9",
         "token0": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
