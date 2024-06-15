@@ -15,7 +15,9 @@ contract SetPeer is BaseScript {
         networks[Chains.BaseSepolia],
         networks[Chains.ScrollSepolia],
         networks[Chains.AstarZkyoto],
-        networks[Chains.PolygonCardona]
+        networks[Chains.PolygonCardona],
+        networks[Chains.AvalancheFuji],
+        networks[Chains.BNBTestnet]
     ];
 
     function setMikiPeer() public broadcast {

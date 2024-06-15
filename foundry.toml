@@ -43,6 +43,7 @@ polygon_cardona = { key = "${API_KEY_POLYGON_ZKEVM}", url = "https://api-testnet
 bnb_testnet = { key = "${API_KEY_BSCSCAN}", url = "https://api-testnet.bscscan.com/api" }
 mantle_sepolia = { key = "", url = "https://api-sepolia.mantle.xyz/api" }
 astar_zkyoto = { key = "", url = "https://api-zkyoto.astar.network/api" }
+avalanche_fuji = { key = "", url = "https://api-zkyoto.astar.network/api" }
 
 [fmt]
 bracket_spacing = true
@@ -75,4 +76,4 @@ astar_zkyoto = "https://rpc.startale.com/zkyoto"
 blast_sepolia = "https://blast-sepolia.infura.io/v3/${API_KEY_INFURA}"
 polygon_cardona = "https://rpc.cardona.zkevm-rpc.com"
 bnb_testnet = "https://bsc-testnet-rpc.publicnode.com"
-fuji = "https://avalanche-fuji-c-chain-rpc.publicnode.com"
+avalanche_fuji = "https://avalanche-fuji-c-chain-rpc.publicnode.com"
