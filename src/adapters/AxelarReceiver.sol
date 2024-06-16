@@ -31,20 +31,12 @@ contract AxelarReceiver is AxelarExecutable, Ownable {
         MIKI_RECEIVER = _mikiReceiver;
     }
 
-    function _execute(
-        string calldata _sourceChain,
-        string calldata,
-        bytes calldata _payload
-    )
-        internal
-        virtual
-        override
-    {
-        uint256 chainId = chainIdOf[_sourceChain];
+    function _execute(string calldata sourceChain, string calldata, bytes calldata payload) internal virtual override {
+        uint256 chainId = chainIdOf[sourceChain];
 
-        if (chainId == 0) revert NoChainId(_sourceChain);
+        if (chainId == 0) revert NoChainId(sourceChain);
 
-        (address sender, address receiver, bytes memory messageWithId) = abi.decode(_payload, (address, address, bytes));
+        (address sender, address receiver, bytes memory messageWithId) = abi.decode(payload, (address, address, bytes));
         (bytes32 id, bytes memory message) = abi.decode(messageWithId, (bytes32, bytes));
 
         IMikiReceiver(MIKI_RECEIVER).mikiReceive(chainId, sender, receiver, address(0), 0, message, id);
