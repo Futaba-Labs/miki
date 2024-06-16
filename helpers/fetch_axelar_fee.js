@@ -17,7 +17,7 @@ async function main() {
     "arbitrum-sepolia",
     "mantle-sepolia",
     GasToken.ETH,
-    500000
+    500000000
   );
 
   console.log(ethers.utils.defaultAbiCoder.encode(["uint256"], [parseFloat(fee)]));

@@ -21,6 +21,36 @@ abstract contract BaseScript is Script {
 
     mapping(Chains chains => Network network) internal networks;
 
+    enum Chains {
+        ArbitrumSepolia,
+        OptimismSepolia,
+        PolygonAmoy,
+        BaseSepolia,
+        MantleSepolia,
+        ScrollSepolia,
+        AstarZkyoto,
+        AvalancheFuji,
+        BNBTestnet,
+        BlastSepolia,
+        ZkSyncSepolia,
+        PolygonCardona
+    }
+
+    string[] internal deployChainNames = [
+        "arbitrum_sepolia",
+        "optimism_sepolia",
+        "amoy",
+        "base_sepolia",
+        "mantle_sepolia",
+        "scroll_sepolia",
+        "astar_zkyoto",
+        "avalanche_fuji",
+        "bnb_testnet",
+        "blast_sepolia",
+        "zksync_sepolia",
+        "polygon_cardona"
+    ];
+
     Chains[] internal deployedChains = [
         Chains.ArbitrumSepolia,
         Chains.OptimismSepolia,
@@ -36,20 +66,16 @@ abstract contract BaseScript is Script {
         Chains.PolygonCardona
     ];
 
-    enum Chains {
-        ArbitrumSepolia,
-        OptimismSepolia,
-        PolygonAmoy,
-        BaseSepolia,
-        MantleSepolia,
-        ScrollSepolia,
-        AstarZkyoto,
-        AvalancheFuji,
-        BNBTestnet,
-        BlastSepolia,
-        ZkSyncSepolia,
-        PolygonCardona
-    }
+    Chains[] internal lzChains = [
+        Chains.OptimismSepolia,
+        Chains.BaseSepolia,
+        Chains.ScrollSepolia,
+        Chains.AstarZkyoto,
+        Chains.PolygonCardona,
+        Chains.AvalancheFuji,
+        Chains.BNBTestnet,
+        Chains.BlastSepolia
+    ];
 
     struct Network {
         string name;
@@ -68,18 +94,16 @@ abstract contract BaseScript is Script {
         uint256 privateKey = vm.envUint("PRIVATE_KEY");
         broadcaster = vm.addr(privateKey);
 
-        networks[Chains.ArbitrumSepolia] = Network("arbitrum_sepolia", 421_614, 40_231);
-        networks[Chains.OptimismSepolia] = Network("optimism_sepolia", 11_155_420, 40_232);
-        networks[Chains.PolygonAmoy] = Network("amoy", 80_002, 40_109);
-        networks[Chains.BaseSepolia] = Network("base_sepolia", 84_532, 40_245);
-        networks[Chains.MantleSepolia] = Network("mantle_sepolia", 5003, 0);
-        networks[Chains.ScrollSepolia] = Network("scroll_sepolia", 534_351, 40_170);
-        networks[Chains.AstarZkyoto] = Network("astar_zkyoto", 6_038_361, 40_266);
-        networks[Chains.AvalancheFuji] = Network("avalanche_fuji", 43_113, 40_106);
-        networks[Chains.BNBTestnet] = Network("bnb_testnet", 97, 40_102);
-        networks[Chains.BlastSepolia] = Network("blast_sepolia", 168_587_773, 40_243);
-        networks[Chains.ZkSyncSepolia] = Network("zksync_sepolia", 300, 0);
-        networks[Chains.PolygonCardona] = Network("polygon_cardona", 2442, 40_247);
+        // get networks
+        for (uint256 i = 0; i < deployedChains.length; i++) {
+            Chains chain = deployedChains[i];
+            string memory chainName = deployChainNames[i];
+            string memory chainKey = string.concat(".", chainName);
+            uint256 chainId = vm.parseJsonUint(deploymentsJson, string.concat(chainKey, ".chainId"));
+            uint32 eid = uint32(vm.parseJsonUint(deploymentsJson, string.concat(chainKey, ".eid")));
+
+            networks[chain] = Network(chainName, chainId, eid);
+        }
     }
 
     modifier broadcast() {
