@@ -21,15 +21,61 @@ abstract contract BaseScript is Script {
 
     mapping(Chains chains => Network network) internal networks;
 
-    Chains[] internal deployedChains =
-        [Chains.ArbitrumSepolia, Chains.OptimismSepolia, Chains.PolygonAmoy, Chains.BaseSepolia];
-
     enum Chains {
         ArbitrumSepolia,
         OptimismSepolia,
         PolygonAmoy,
-        BaseSepolia
+        BaseSepolia,
+        MantleSepolia,
+        ScrollSepolia,
+        AstarZkyoto,
+        AvalancheFuji,
+        BNBTestnet,
+        BlastSepolia,
+        ZkSyncSepolia,
+        PolygonCardona
     }
+
+    string[] internal deployChainNames = [
+        "arbitrum_sepolia",
+        "optimism_sepolia",
+        "amoy",
+        "base_sepolia",
+        "mantle_sepolia",
+        "scroll_sepolia",
+        "astar_zkyoto",
+        "avalanche_fuji",
+        "bnb_testnet",
+        "blast_sepolia",
+        "zksync_sepolia",
+        "polygon_cardona"
+    ];
+
+    Chains[] internal deployedChains = [
+        Chains.ArbitrumSepolia,
+        Chains.OptimismSepolia,
+        Chains.PolygonAmoy,
+        Chains.BaseSepolia,
+        Chains.MantleSepolia,
+        Chains.ScrollSepolia,
+        Chains.AstarZkyoto,
+        Chains.AvalancheFuji,
+        Chains.BNBTestnet,
+        Chains.BlastSepolia,
+        Chains.ZkSyncSepolia,
+        Chains.PolygonCardona
+    ];
+
+    Chains[] internal lzChains = [
+        Chains.OptimismSepolia,
+        Chains.BaseSepolia,
+        Chains.ScrollSepolia,
+        Chains.AstarZkyoto,
+        Chains.PolygonCardona,
+        Chains.AvalancheFuji,
+        Chains.BNBTestnet,
+        Chains.BlastSepolia
+    ];
 
     struct Network {
         string name;
@@ -45,18 +91,19 @@ abstract contract BaseScript is Script {
     ///
     /// The use case for $ETH_FROM is to specify the broadcaster key and its address via the command line.
     constructor() {
-        address from = vm.envOr({ name: "ETH_FROM", defaultValue: address(0) });
-        if (from != address(0)) {
-            broadcaster = from;
-        } else {
-            mnemonic = vm.envOr({ name: "MNEMONIC", defaultValue: TEST_MNEMONIC });
-            (broadcaster,) = deriveRememberKey({ mnemonic: mnemonic, index: 0 });
-        }
+        uint256 privateKey = vm.envUint("PRIVATE_KEY");
+        broadcaster = vm.addr(privateKey);
 
-        networks[Chains.ArbitrumSepolia] = Network("arbitrum_sepolia", 421_614, 40_231);
-        networks[Chains.OptimismSepolia] = Network("optimism_sepolia", 11_155_420, 40_232);
-        networks[Chains.PolygonAmoy] = Network("mumbai", 80_002, 40_109);
-        networks[Chains.BaseSepolia] = Network("base_sepolia", 84_532, 40_245);
+        // get networks
+        for (uint256 i = 0; i < deployedChains.length; i++) {
+            Chains chain = deployedChains[i];
+            string memory chainName = deployChainNames[i];
+            string memory chainKey = string.concat(".", chainName);
+            uint256 chainId = vm.parseJsonUint(deploymentsJson, string.concat(chainKey, ".chainId"));
+            uint32 eid = uint32(vm.parseJsonUint(deploymentsJson, string.concat(chainKey, ".eid")));
+
+            networks[chain] = Network(chainName, chainId, eid);
+        }
     }
 
     modifier broadcast() {
@@ -92,5 +139,15 @@ abstract contract BaseScript is Script {
 
     function _getChainKey(uint256 chainId) internal view returns (string memory) {
         return string.concat(".", _getNetwork(chainId).name);
+    }
+
+    function _getChainId(string memory chainName) internal view returns (uint256) {
+        for (uint256 i = 0; i < deployedChains.length; i++) {
+            if (keccak256(abi.encodePacked(networks[deployedChains[i]].name)) == keccak256(abi.encodePacked(chainName)))
+            {
+                return networks[deployedChains[i]].chainId;
+            }
+        }
+        revert("Chain not found");
     }
 }

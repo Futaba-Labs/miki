@@ -52,11 +52,16 @@
     "test:coverage:report": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage",
     "set-peer": "./bin/set_peer.sh",
     "deploy": "./bin/deploy.sh",
+    "deploy:hub": "./bin/deploy_hub_chain.sh",
+    "deploy:spoke": "./bin/deploy_spoke_chain.sh",
+    "deploy:eth-adpter": "./bin/deploy_eth_adapter.sh",
+    "deploy:axelar-adapter": "./bin/deploy_axelar_adapter.sh",
     "format": "forge fmt",
     "coverage": "forge coverage",
     "deposit": "./bin/deposit.sh",
     "withdraw": "./bin/withdraw.sh",
     "cross-chain-mint": "./bin/cross_chain_mint.sh",
-    "cross-chain-deposit": "./bin/cross_chain_deposit.sh"
+    "cross-chain-deposit": "./bin/cross_chain_deposit.sh",
+    "cross-chain-bridge": "./bin/cross_chain_bridge.sh"
   }
 }
