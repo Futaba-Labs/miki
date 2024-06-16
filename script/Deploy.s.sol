@@ -422,7 +422,7 @@ contract Deploy is BaseScript {
         owner = broadcaster;
         console2.log("Owner: %s", owner);
 
-        Chains[] memory chains = new Chains[](7);
+        Chains[] memory chains = new Chains[](8);
         chains[0] = Chains.OptimismSepolia;
         chains[1] = Chains.BaseSepolia;
         chains[2] = Chains.ScrollSepolia;
@@ -430,6 +430,7 @@ contract Deploy is BaseScript {
         chains[4] = Chains.PolygonCardona;
         chains[5] = Chains.BNBTestnet;
         chains[6] = Chains.AvalancheFuji;
+        chains[7] = Chains.BlastSepolia;
 
         for (uint256 i = 0; i < chains.length; i++) {
             Chains chain = chains[i];

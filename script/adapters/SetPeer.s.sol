@@ -17,7 +17,8 @@ contract SetPeer is BaseScript {
         networks[Chains.AstarZkyoto],
         networks[Chains.PolygonCardona],
         networks[Chains.AvalancheFuji],
-        networks[Chains.BNBTestnet]
+        networks[Chains.BNBTestnet],
+        networks[Chains.BlastSepolia]
     ];
 
     function setMikiPeer() public broadcast {
