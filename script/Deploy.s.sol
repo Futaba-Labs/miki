@@ -333,7 +333,12 @@ contract Deploy is BaseScript {
 
     function _deployAxelarAdapter() internal {
         // Set configuration
-        _setup();
+        chainId = block.chainid;
+        console2.log("ChainId: %s", chainId);
+        chainKey = _getChainKey(chainId);
+
+        owner = broadcaster;
+        console2.log("Owner: %s", owner);
 
         // Get routers
         address axelarGateway =

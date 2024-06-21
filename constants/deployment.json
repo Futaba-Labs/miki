@@ -30,7 +30,7 @@
       "axelar": {
         "gateway": "0xe1cE95479C84e9809269227C7F8524aE051Ae77a",
         "gasService": "0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6",
-        "sender": "0x5a4Ae660c4efA96D4565cdBDD6B14Dfd643DE471"
+        "sender": "0x550E0f070aB9BD47BFfC53BdC3Bc96C098297591"
       },
       "eth": {
         "mikiRouter": "0xa0F2e702D40996ceD792213D9e96741603bDee46",

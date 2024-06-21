@@ -127,7 +127,7 @@ contract MikiReceiver is Ownable, IMikiReceiver {
         external
         payable
     {
-        if (adapters[receiver]) {
+        if (!adapters[msg.sender]) {
             revert InvalidAdapter();
         }
 
