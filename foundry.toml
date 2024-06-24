@@ -44,6 +44,7 @@ bnb_testnet = { key = "${API_KEY_BSCSCAN}", url = "https://api-testnet.bscscan.c
 mantle_sepolia = { key = "", url = "https://api-sepolia.mantle.xyz/api" }
 astar_zkyoto = { key = "", url = "https://api-zkyoto.astar.network/api" }
 avalanche_fuji = { key = "", url = "https://api-zkyoto.astar.network/api" }
+zksync_sepolia = { key = "${API_KEY_ZKSYNC}", url = "https://api-sepolia-era.zksync.network/api" }
 
 [fmt]
 bracket_spacing = true

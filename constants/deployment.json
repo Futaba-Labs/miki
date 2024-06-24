@@ -36,7 +36,7 @@
         "mikiRouter": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
         "orbiterRouter": "0x78606Ea26275F6180745480FaF74E311586EB652",
         "orbiterMaker": "0x4eAF936c172b5e5511959167e8Ab4f7031113Ca3",
-        "sender": "0xD164DC0f1541c9Ce43A10BF8020D2277e62b21fC"
+        "sender": "0x1faE1d90D5989C0e5A06108C1B6AEaABBDbbCc21"
       },
       "miki": {
         "token": "0x9D2778CD4d232dC3e3f0C42caccA891D12EC9c8a",
@@ -121,7 +121,7 @@
       "eth": {
         "router": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
         "sender": "0x4f0b5D48E3a2FeC8fe65277a53dc0A12B15Db805",
-        "receiver": "0xFc3F0C0A90696Ce28762DE99b417109a97f3034c"
+        "receiver": "0xAD196D7a34cE71f2F4Fd2f904C2a292B7ee8c7B3"
       }
     },
     "examples": {
@@ -170,7 +170,7 @@
       "eth": {
         "router": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
         "sender": "0xeb6E0FEB61D3a65FE2e94C9D1510184B7Adb064c",
-        "receiver": "0xFD5A025424686D654FAa99AFB53F2f966fd5ABB3"
+        "receiver": "0x83463d342bc14c917fcC43578d1426be42aED1D3"
       }
     },
     "examples": {
@@ -200,7 +200,7 @@
     "chainId": 300,
     "eid": 0,
     "adapters": {
-      "mikiReceiver": "0x3063E6ed87eE62337ca7c976EF4B6c4d941D013C",
+      "mikiReceiver": "0x3b36b03F94362e660919a2761774dacfc61DB7E1",
       "layerZero": {
         "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
         "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
@@ -219,7 +219,7 @@
       "eth": {
         "router": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
         "sender": "0xeb6E0FEB61D3a65FE2e94C9D1510184B7Adb064c",
-        "receiver": "0xFD5A025424686D654FAa99AFB53F2f966fd5ABB3"
+        "receiver": "0xAD196D7a34cE71f2F4Fd2f904C2a292B7ee8c7B3"
       }
     },
     "examples": {
@@ -268,7 +268,7 @@
       "eth": {
         "router": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
         "sender": "0xeb6E0FEB61D3a65FE2e94C9D1510184B7Adb064c",
-        "receiver": "0xc6daDCc6bF602dE9DF7d410d15a1b0fB2cAE1BB7"
+        "receiver": "0xAddE0F91Ba014740910935Ec2344DA1F9F73f863"
       }
     },
     "examples": {
@@ -370,7 +370,7 @@
       "eth": {
         "router": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
         "sender": "0xeb6E0FEB61D3a65FE2e94C9D1510184B7Adb064c",
-        "receiver": "0xFD5A025424686D654FAa99AFB53F2f966fd5ABB3"
+        "receiver": "0x40ea82c4846F2C88B52aF9Ba774A97f99F7F351E"
       }
     },
     "examples": {

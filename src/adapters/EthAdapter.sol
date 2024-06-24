@@ -158,20 +158,9 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         external
         payable
     {
-        uint16 code = identificationCodes[dstChainId];
+        payable(mikiRouter).transfer(amount);
 
-        if (code == 0) {
-            revert InvalidCode();
-        }
-
-        uint256 totalAmount = amount + code;
-
-        bytes memory data = abi.encodePacked(string.concat("t=0x", _stringToHex(string(abi.encodePacked(recipient)))));
-
-        // Decoding results in "t={recipient}"
-        IOrbiterXRouterV3(orbiterRouter).transfer{ value: totalAmount }(orbiterMaker, data);
-
-        emit TransferOrbiterMaker(sender, dstChainId, recipient, totalAmount, data);
+        emit TransferMikiRouter(sender, dstChainId, recipient, amount, bytes(""));
     }
 
     /**

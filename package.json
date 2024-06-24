@@ -56,6 +56,7 @@
     "deploy:spoke": "./bin/deploy_spoke_chain.sh",
     "deploy:eth-adpter": "./bin/deploy_eth_adapter.sh",
     "deploy:axelar-adapter": "./bin/deploy_axelar_adapter.sh",
+    "deploy:miki-router-receiver": "./bin/deploy_miki_router_receiver.sh",
     "format": "forge fmt",
     "coverage": "forge coverage",
     "deposit": "./bin/deposit.sh",
