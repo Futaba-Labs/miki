@@ -135,7 +135,8 @@ contract MikiReceiver is Ownable, IMikiReceiver {
         /// @dev If the amount is 0, only the message is sent.
         /// @dev If the amount is greater than 0, the condition is divided again when handling ERC20 or Native tokens.
         if (amount > 0) {
-            if (token != address(0)) { /// @dev ERC20 token
+            if (token != address(0)) {
+                /// @dev ERC20 token
                 /// @dev Transfer the token to the appReceiver
                 bool success = IERC20(token).transfer(appReceiver, amount);
                 if (!success) {
@@ -151,7 +152,8 @@ contract MikiReceiver is Ownable, IMikiReceiver {
                         id, srcChainId, srcAddress, token, appReceiver, amount, message, "Unknown error"
                     );
                 }
-            } else { /// @dev Native token
+            } else {
+                /// @dev Native token
                 try IMikiAppReceiver(appReceiver).mikiReceive{ value: amount }(
                     srcChainId, srcAddress, token, amount, message
                 ) {

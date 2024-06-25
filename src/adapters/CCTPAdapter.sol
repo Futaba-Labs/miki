@@ -13,7 +13,7 @@ import { ITokenMessenger } from "../interfaces/ITokenMessenger.sol";
 contract CCTPAdapter is ICCTPAdapter, Ownable {
     /* ----------------------------- Storage -------------------------------- */
     ITokenMessenger public immutable tokenMessenger;
-    
+
     /// @dev The token will be burned on the source chain and minted on the destination chain, basically $USDC or $EURC
     IERC20 public immutable token;
 
@@ -55,12 +55,10 @@ contract CCTPAdapter is ICCTPAdapter, Ownable {
      * @param _tokenMessenger The address of the token messenger
      * @param _token The address of the token
      */
-    constructor(address _initialOwner, address _tokenMessenger, address _token)
-        Ownable(_initialOwner)
-     {
+    constructor(address _initialOwner, address _tokenMessenger, address _token) Ownable(_initialOwner) {
         tokenMessenger = ITokenMessenger(_tokenMessenger);
         token = IERC20(_token);
-     }
+    }
 
     /**
      * @notice Send message via CCTP
@@ -69,14 +67,7 @@ contract CCTPAdapter is ICCTPAdapter, Ownable {
      * @param dstChainId The destination chain id
      * @param recipient The recipient address
      */
-    function cctpSend(
-        address sender,
-        uint256 dstChainId,
-        address recipient
-    )
-        external
-        payable
-    {
+    function cctpSend(address sender, uint256 dstChainId, address recipient) external payable {
         uint32 domain = domains[dstChainId];
         _depositForBurn(sender, msg.value, domain);
         emit CCTPSend(sender, dstChainId, recipient);

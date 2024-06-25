@@ -21,7 +21,9 @@ contract CCTPReceiver is ICCTPReceiver, Ownable {
 
     /* ----------------------------- Events -------------------------------- */
 
-    event MessageReceived(bytes message, bytes attestation, address appReceiver, uint256 srcChainId, address srcAddress);
+    event MessageReceived(
+        bytes message, bytes attestation, address appReceiver, uint256 srcChainId, address srcAddress
+    );
 
     /* ----------------------------- Errors -------------------------------- */
 
@@ -37,20 +39,34 @@ contract CCTPReceiver is ICCTPReceiver, Ownable {
      * @param _mikiReceiver The address of the miki receiver
      * @param _token The address of the token
      */
-    constructor(address _initialOwner, address _messageTransmitter, address _token, address _mikiReceiver)
+    constructor(
+        address _initialOwner,
+        address _messageTransmitter,
+        address _token,
+        address _mikiReceiver
+    )
         Ownable(_initialOwner)
-     {
+    {
         messageTransmitter = IMessageTransmitter(_messageTransmitter);
         mikiReceiver = IMikiReceiver(_mikiReceiver);
         token = IERC20(_token);
-     }
+    }
 
     /* ----------------------------- Functions -------------------------------- */
 
-    function cctpReceive(bytes calldata _message, bytes calldata _attestation, address _appReceiver, uint256 _srcChainId, address _srcAddress) external {
+    function cctpReceive(
+        bytes calldata _message,
+        bytes calldata _attestation,
+        address _appReceiver,
+        uint256 _srcChainId,
+        address _srcAddress
+    )
+        external
+    {
         messageTransmitter.receiveMessage(_message, _attestation);
         uint256 amount = token.balanceOf(address(this)); // TODO: check if this is the correct way to get the amount
-        bytes32 _id = keccak256(abi.encodePacked(_message, _attestation)); // just a random id just used in mikiReceive for now
+        bytes32 _id = keccak256(abi.encodePacked(_message, _attestation)); // just a random id just used in mikiReceive
+            // for now
 
         mikiReceiver.mikiReceive(_srcChainId, _srcAddress, _appReceiver, address(token), amount, _message, _id);
         emit MessageReceived(_message, _attestation, _appReceiver, _srcChainId, _srcAddress);
