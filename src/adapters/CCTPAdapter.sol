@@ -3,14 +3,17 @@ pragma solidity 0.8.23;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { ICCTPAdapter } from "../interfaces/ICCTPAdapter.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { IL2BridgeAdapter } from "../interfaces/IL2BridgeAdapter.sol";
 import { ITokenMessenger } from "../interfaces/ITokenMessenger.sol";
 
 /**
  * @title CCTPAdapter
  * @notice CCTPAdapter is an adapter contract for using CCTP
  */
-contract CCTPAdapter is ICCTPAdapter, Ownable {
+contract CCTPAdapter is IL2BridgeAdapter, Ownable {
+    using SafeERC20 for IERC20;
+
     /* ----------------------------- Storage -------------------------------- */
     ITokenMessenger public immutable tokenMessenger;
 
@@ -48,6 +51,9 @@ contract CCTPAdapter is ICCTPAdapter, Ownable {
     /// @notice Emitted when the network is not supported
     error NotSupportedNetwork();
 
+    /// @notice Emitted when the token is not supported
+    error NotSupportedToken();
+
     /* ----------------------------- Constructor -------------------------------- */
     /**
      * @notice Constructor
@@ -60,17 +66,68 @@ contract CCTPAdapter is ICCTPAdapter, Ownable {
         token = IERC20(_token);
     }
 
-    /**
-     * @notice Send message via CCTP
-     * @dev Revert if the network is not supported
-     * @param sender The sender address
-     * @param dstChainId The destination chain id
-     * @param recipient The recipient address
-     */
-    function cctpSend(address sender, uint256 dstChainId, address recipient) external payable {
-        uint32 domain = domains[dstChainId];
-        _depositForBurn(sender, msg.value, domain);
-        emit CCTPSend(sender, dstChainId, recipient);
+    /* ----------------------------- Functions -------------------------------- */
+
+    function execCrossChainContractCall(
+        address sender,
+        uint256 dstChainId,
+        address recipient,
+        bytes calldata message,
+        uint256 fee,
+        bytes calldata params
+    )
+        external
+        payable
+    { }
+
+    function execCrossChainContractCallWithAsset(
+        address sender,
+        uint256 dstChainId,
+        address recipient,
+        address asset,
+        bytes calldata message,
+        uint256 fee,
+        uint256 amount,
+        bytes calldata params
+    )
+        external
+        payable
+    {
+    }
+
+    function execCrossChainTransferAsset(
+        address sender,
+        uint256 dstChainId,
+        address recipient,
+        address asset,
+        uint256 amount,
+        uint256 fee,
+        bytes calldata params
+    )
+        external
+        payable
+    {
+        if (asset != address(token)) {
+            revert NotSupportedToken();
+        }
+        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
+        _cctpSend(sender, dstChainId, amount, recipient);
+    }
+
+    function estimateFee(
+        address sender,
+        uint256 dstChainId,
+        address recipient,
+        address asset,
+        bytes calldata message,
+        uint256 amount,
+        bytes calldata params
+    )
+        external
+        view
+        returns (uint256)
+    {
+        return 0;
     }
 
     /**
@@ -94,14 +151,36 @@ contract CCTPAdapter is ICCTPAdapter, Ownable {
     }
 
     /* ----------------------------- Internal functions -------------------------------- */
-    function _depositForBurn(address sender, uint256 _value, uint32 _dstDomain) internal {
+    /**
+     * @notice Send message via CCTP
+     * @dev Revert if the network is not supported
+     * @param sender The sender address
+     * @param dstChainId The destination chain id
+     * @param finalRecipient The recipient address
+     */
+    function _cctpSend(address sender, uint256 dstChainId, uint256 amount, address finalRecipient) internal {
+        uint32 domain = domains[dstChainId];
+        _depositForBurn(amount, domain);
+        /// @dev The final recipient is the address that will receive the utility of the same value of the token
+        /// @dev But the token will be minted to CCTPReceiver contract on the destination chain first
+        /// @dev Then the final recipient will receive the utility of the token from CCTPReceiver contract
+        emit CCTPSend(sender, dstChainId, finalRecipient);
+    }
+
+    /**
+     * @notice Deposit for burn
+     * @dev Revert if the network is not supported
+     * @param _amount The amount of the token
+     * @param _dstDomain The destination domain
+     */
+    function _depositForBurn(uint256 _amount, uint32 _dstDomain) internal {
+        /// @dev The recipient is the address that will receive the minted token on the destination chain
+        /// @dev The recipient is expected to be a CCTPReceiver contract
         address recipient = mintRecipients[_dstDomain];
         if (recipient == address(0)) {
             revert NotSupportedNetwork();
         }
-        tokenMessenger.depositForBurn(_value, _dstDomain, _addressToBytes32(recipient), address(token));
-
-        emit DepositForBurn(sender, _dstDomain);
+        tokenMessenger.depositForBurn(_amount, _dstDomain, _addressToBytes32(recipient), address(token));
     }
 
     function _addressToBytes32(address addr) internal pure returns (bytes32) {
