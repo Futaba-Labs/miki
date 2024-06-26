@@ -30,9 +30,6 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
     /// @notice ref: https://docs.orbiter.finance/orbiterfinancesbridgeprotocol#workflow
     mapping(uint256 chainId => uint16 code) public identificationCodes;
 
-    /// @dev Mapping of supported CCTP token addresses
-    mapping(address => bool) public supportedCCTPTokens;
-
     /* ----------------------------- Events -------------------------------- */
     /**
      * @notice Event: Set identification code
@@ -77,8 +74,7 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         address _orbiterMaker,
         address payable _mikiRouter,
         address _lzAdapter,
-        address _initialOwner,
-        address[] memory _supportedCCTPTokens
+        address _initialOwner
     )
         Ownable(_initialOwner)
     {
@@ -86,9 +82,6 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         orbiterMaker = _orbiterMaker;
         mikiRouter = _mikiRouter;
         lzAdapter = _lzAdapter;
-        for (uint256 i = 0; i < _supportedCCTPTokens.length; i++) {
-            supportedCCTPTokens[_supportedCCTPTokens[i]] = true;
-        }
     }
 
     /* ----------------------------- External Functions -------------------------------- */
@@ -151,14 +144,13 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
      * @dev Send ETH to Orbiter's Maker via Orbiter Router
      * @param dstChainId The destination chain id
      * @param recipient The recipient address
-     * @param underlyingToken The underlying token address
      * @param amount The amount of the asset
      */
     function execCrossChainTransferAsset(
         address sender,
         uint256 dstChainId,
         address recipient,
-        address underlyingToken,
+        address,
         uint256,
         uint256 amount,
         bytes calldata
@@ -172,20 +164,14 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
             revert InvalidCode();
         }
 
-        // Check if the underlying token is supported
-        if (supportedCCTPTokens[underlyingToken]) {
-            revert("not implemented");
-        } else {
-            uint256 totalAmount = amount + code;
+        uint256 totalAmount = amount + code;
 
-            bytes memory data =
-                abi.encodePacked(string.concat("t=0x", _stringToHex(string(abi.encodePacked(recipient)))));
+        bytes memory data = abi.encodePacked(string.concat("t=0x", _stringToHex(string(abi.encodePacked(recipient)))));
 
-            // Decoding results in "t={recipient}"
-            IOrbiterXRouterV3(orbiterRouter).transfer{ value: totalAmount }(orbiterMaker, data);
+        // Decoding results in "t={recipient}"
+        IOrbiterXRouterV3(orbiterRouter).transfer{ value: totalAmount }(orbiterMaker, data);
 
-            emit TransferOrbiterMaker(sender, dstChainId, recipient, totalAmount, data);
-        }
+        emit TransferOrbiterMaker(sender, dstChainId, recipient, totalAmount, data);
     }
 
     /**
