@@ -42,7 +42,7 @@ contract AxelarAdapter is IL2BridgeAdapter, AxelarExecutable, Ownable {
         address recipient,
         bytes calldata message,
         uint256 fee,
-        bytes calldata params
+        bytes calldata
     )
         external
         payable

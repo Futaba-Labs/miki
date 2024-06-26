@@ -51,6 +51,8 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
      */
     event TransferMikiRouter(address sender, uint256 dstChainId, address recipient, uint256 amount, bytes message);
 
+    event TransferOrbiterMaker(address sender, uint256 dstChainId, address recipient, uint256 amount, bytes data);
+
     /* ----------------------------- Errors -------------------------------- */
     /// @notice Error: Invalid length
     error InvalidLength();
@@ -72,6 +74,7 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
      */
     constructor(
         address _orbiterRouter,
+        address _orbiterMaker,
         address payable _mikiRouter,
         address _lzAdapter,
         address _initialOwner,
@@ -80,6 +83,7 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         Ownable(_initialOwner)
     {
         orbiterRouter = _orbiterRouter;
+        orbiterMaker = _orbiterMaker;
         mikiRouter = _mikiRouter;
         lzAdapter = _lzAdapter;
         for (uint256 i = 0; i < _supportedCCTPTokens.length; i++) {
@@ -151,7 +155,7 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
      * @param amount The amount of the asset
      */
     function execCrossChainTransferAsset(
-        address,
+        address sender,
         uint256 dstChainId,
         address recipient,
         address underlyingToken,
@@ -172,10 +176,15 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         if (supportedCCTPTokens[underlyingToken]) {
             revert("not implemented");
         } else {
+            uint256 totalAmount = amount + code;
+
+            bytes memory data =
+                abi.encodePacked(string.concat("t=0x", _stringToHex(string(abi.encodePacked(recipient)))));
+
             // Decoding results in "t={recipient}"
-            IOrbiterXRouterV3(orbiterRouter).transfer{ value: amount }(
-                orbiterMaker, abi.encodePacked(string.concat("t=0x", _stringToHex(string(abi.encodePacked(recipient)))))
-            );
+            IOrbiterXRouterV3(orbiterRouter).transfer{ value: totalAmount }(orbiterMaker, data);
+
+            emit TransferOrbiterMaker(sender, dstChainId, recipient, totalAmount, data);
         }
     }
 
