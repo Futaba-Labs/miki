@@ -19,6 +19,13 @@ fs_permissions = [
   { access = "read-write", path = "constants/deployment.json" },
 ]
 
+# [profile.zksync]
+# src = 'src'
+# libs = ['lib']
+# fallback_oz = true
+# is_system = false
+# mode = "3"
+
 [profile.ci]
 fuzz = { runs = 10_000 }
 verbosity = 4

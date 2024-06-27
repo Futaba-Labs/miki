@@ -86,7 +86,7 @@ contract Deploy is BaseScript {
             new EthAdapter(payable(orbiterRouter), orbiterMaker, payable(mikiRouter), address(lzAdapter), broadcaster);
 
         // set identification codes for orbiter
-        // ethAdapter.setIdentificationCodes(chainIds, codes);
+        ethAdapter.setIdentificationCodes(chainIds, codes);
 
         // deploy asset manager
         l2AssetManagerImpl = new L2AssetManager();

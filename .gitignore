@@ -3,6 +3,7 @@ cache
 coverage
 node_modules
 out
+zkout
 
 # files
 *.env
@@ -18,3 +19,8 @@ yarn.lock
 !broadcast
 broadcast/*
 broadcast/*/31337/
+
+# hardhat
+artifacts-zk
+cache-zk
+deployments-zk

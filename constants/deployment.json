@@ -200,7 +200,7 @@
     "chainId": 300,
     "eid": 0,
     "adapters": {
-      "mikiReceiver": "0x3b36b03F94362e660919a2761774dacfc61DB7E1",
+      "mikiReceiver": "0x353a1C9879884C8c1Cf88702DC7Ea457F0Da7fBE",
       "layerZero": {
         "gateway": "0x6EDCE65403992e310A62460808c4b910D972f10f",
         "sender": "0x175EC2f76e71f7a0f28B29244bd947a40ff11642",
@@ -209,7 +209,7 @@
       "miki": {
         "token": "0x641A018F7670f68213b9c20323c12EC94a939AcE",
         "sender": "0x5d3144125BE4b16e9e79c77E8F32b7D564dfa85a",
-        "receiver": "0x995B7Ca5b97A58DF26A431b6124618B8b9509534"
+        "receiver": "0x7476EBdDdfd20068b3400c8f5557DbbfA124241b"
       },
       "orbiter": {
         "router": "0x78606Ea26275F6180745480FaF74E311586EB652",
@@ -219,7 +219,7 @@
       "eth": {
         "router": "0xa0F2e702D40996ceD792213D9e96741603bDee46",
         "sender": "0xeb6E0FEB61D3a65FE2e94C9D1510184B7Adb064c",
-        "receiver": "0xAD196D7a34cE71f2F4Fd2f904C2a292B7ee8c7B3"
+        "receiver": "0x7476EBdDdfd20068b3400c8f5557DbbfA124241b"
       }
     },
     "examples": {
