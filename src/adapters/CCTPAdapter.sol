@@ -64,6 +64,22 @@ contract CCTPAdapter is IL2BridgeAdapter, Ownable {
     constructor(address _initialOwner, address _tokenMessenger, address _token) Ownable(_initialOwner) {
         tokenMessenger = ITokenMessenger(_tokenMessenger);
         token = IERC20(_token);
+
+        uint256[] memory chainIds = new uint256[](6);
+        chainIds[0] = 11155111; // Sepolia
+        chainIds[1] = 43113; // Avalanche Fuji
+        chainIds[2] = 11155420; // OP Sepolia 
+        chainIds[3] = 421614; // Arbitrum Sepolia 
+        chainIds[4] = 84532; // Base Sepolia
+        chainIds[5] = 80002; // Polygon Amoy
+        uint32[] memory domainsArray = new uint32[](6);
+        domainsArray[0] = 0;
+        domainsArray[1] = 1;
+        domainsArray[2] = 2;
+        domainsArray[3] = 3;
+        domainsArray[4] = 6;
+        domainsArray[5] = 7;
+        _setChainIdsToDomains(chainIds, domainsArray);
     }
 
     /* ----------------------------- Functions -------------------------------- */
@@ -136,7 +152,12 @@ contract CCTPAdapter is IL2BridgeAdapter, Ownable {
      * @param _chainIds The list of chain ids
      * @param _domains The list of domains
      */
-    function setChainIdsToDomains(uint256[] calldata _chainIds, uint32[] calldata _domains) external onlyOwner {
+    function setChainIdsToDomains(uint256[] memory _chainIds, uint32[] memory _domains) external onlyOwner {
+        _setChainIdsToDomains(_chainIds, _domains);
+    }
+
+    /* ----------------------------- Internal functions -------------------------------- */
+    function _setChainIdsToDomains(uint256[] memory _chainIds, uint32[] memory _domains) internal {
         if (_chainIds.length == 0 || _domains.length == 0) {
             revert InvalidLength();
         }
@@ -150,7 +171,6 @@ contract CCTPAdapter is IL2BridgeAdapter, Ownable {
         }
     }
 
-    /* ----------------------------- Internal functions -------------------------------- */
     /**
      * @notice Send message via CCTP
      * @dev Revert if the network is not supported
