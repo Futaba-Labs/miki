@@ -19,7 +19,7 @@ contract MikiRouterReceiver is Ownable {
 
     /* ----------------------------- Events -------------------------------- */
 
-    event Transfer(address indexed to, uint256 value);
+    event Transfer(bytes32 indexed id, address sender, address to, uint256 value);
 
     /* ----------------------------- Erorrs -------------------------------- */
 
@@ -75,9 +75,9 @@ contract MikiRouterReceiver is Ownable {
      * @notice This function is the receiver of the ETH from the MikiRouter operated by Gelato
      * @param to The address to transfer the ETH to
      */
-    function transfer(address to) external payable onlyMikiRouter {
+    function transfer(bytes32 id, address sender, address to) external payable onlyMikiRouter {
         payable(to).transfer(msg.value);
-        emit Transfer(to, msg.value);
+        emit Transfer(id, sender, to, msg.value);
     }
 
     fallback() external payable { }

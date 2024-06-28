@@ -210,8 +210,7 @@ contract Deploy is BaseScript {
 
         if (
             chainId == networks[Chains.BaseSepolia].chainId || chainId == networks[Chains.OptimismSepolia].chainId
-                || chainId == networks[Chains.ScrollSepolia].chainId || chainId == networks[Chains.ZkSyncSepolia].chainId
-                || chainId == networks[Chains.BlastSepolia].chainId
+                || chainId == networks[Chains.ScrollSepolia].chainId || chainId == networks[Chains.BlastSepolia].chainId
         ) {
             // deploy miki router receiver
             mikiRouterReceiver = new MikiRouterReceiver(mikiRouter, address(mikiReceiver), owner);
@@ -288,27 +287,27 @@ contract Deploy is BaseScript {
             vm.parseJsonAddress(deploymentsJson, string.concat(chainKey, ".l2AssetManagerProxy"));
 
         // deploy impls
-        l2AssetManagerImpl = new L2AssetManager();
+        // l2AssetManagerImpl = new L2AssetManager();
         ethTokenPoolImpl = new GaslessETHTokenPool(l2AssetManagerAddr, owner);
-        usdcTokenPoolImpl = new ERC20TokenPool(l2AssetManagerAddr, owner);
+        // usdcTokenPoolImpl = new ERC20TokenPool(l2AssetManagerAddr, owner);
 
         // upgrade contracts
-        _upgrade(l2AssetManagerAddr, address(l2AssetManagerImpl), "");
+        // _upgrade(l2AssetManagerAddr, address(l2AssetManagerImpl), "");
         _upgrade(ethTokenPoolAddr, address(ethTokenPoolImpl), "");
-        _upgrade(usdcTokenPoolAddr, address(usdcTokenPoolImpl), "");
+        // _upgrade(usdcTokenPoolAddr, address(usdcTokenPoolImpl), "");
 
         // write json
-        vm.writeJson(
-            vm.toString(address(l2AssetManagerImpl)), deploymentPath, string.concat(chainKey, ".l2AssetManagerImpl")
-        );
+        // vm.writeJson(
+        //     vm.toString(address(l2AssetManagerImpl)), deploymentPath, string.concat(chainKey, ".l2AssetManagerImpl")
+        // );
         vm.writeJson(
             vm.toString(address(ethTokenPoolImpl)), deploymentPath, string.concat(chainKey, ".pools.ethTokenPool.impl")
         );
-        vm.writeJson(
-            vm.toString(address(usdcTokenPoolImpl)),
-            deploymentPath,
-            string.concat(chainKey, ".pools.usdcTokenPool.impl")
-        );
+        // vm.writeJson(
+        //     vm.toString(address(usdcTokenPoolImpl)),
+        //     deploymentPath,
+        //     string.concat(chainKey, ".pools.usdcTokenPool.impl")
+        // );
     }
 
     function deployEthAdapter() public broadcast {
