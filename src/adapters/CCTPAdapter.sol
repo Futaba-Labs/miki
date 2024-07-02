@@ -156,7 +156,21 @@ contract CCTPAdapter is IL2BridgeAdapter, Ownable {
         _setChainIdsToDomains(_chainIds, _domains);
     }
 
+    /**
+     * @notice Set the mint recipients for the supported chain ids
+     * @param _chainIds The list of chain ids
+     * @param _recipients The list of recipients
+     */
+    function setMintRecipients(uint256[] memory _chainIds, address[] memory _recipients) external onlyOwner {
+        _setMintRecipients(_chainIds, _recipients);
+    }
+
     /* ----------------------------- Internal functions -------------------------------- */
+    /**
+     * @notice Set the domains for the supported chain ids
+     * @param _chainIds The list of chain ids
+     * @param _domains The list of domains
+     */
     function _setChainIdsToDomains(uint256[] memory _chainIds, uint32[] memory _domains) internal {
         if (_chainIds.length == 0 || _domains.length == 0) {
             revert InvalidLength();
@@ -168,6 +182,25 @@ contract CCTPAdapter is IL2BridgeAdapter, Ownable {
 
         for (uint256 i; i < _chainIds.length; i++) {
             domains[_chainIds[i]] = _domains[i];
+        }
+    }
+
+    /**
+     * @notice Set the mint recipients for the supported chain ids
+     * @param _chainIds The list of chain ids
+     * @param _recipients The list of recipients
+     */
+    function _setMintRecipients(uint256[] memory _chainIds, address[] memory _recipients) internal {
+        if (_chainIds.length == 0 || _recipients.length == 0) {
+            revert InvalidLength();
+        }
+
+        if (_chainIds.length != _recipients.length) {
+            revert MismatchedLength();
+        }
+
+        for (uint256 i; i < _chainIds.length; i++) {
+            mintRecipients[_chainIds[i]] = _recipients[i];
         }
     }
 
