@@ -66,12 +66,12 @@ contract CCTPAdapter is IL2BridgeAdapter, Ownable {
         token = IERC20(_token);
 
         uint256[] memory chainIds = new uint256[](6);
-        chainIds[0] = 11155111; // Sepolia
-        chainIds[1] = 43113; // Avalanche Fuji
-        chainIds[2] = 11155420; // OP Sepolia 
-        chainIds[3] = 421614; // Arbitrum Sepolia 
-        chainIds[4] = 84532; // Base Sepolia
-        chainIds[5] = 80002; // Polygon Amoy
+        chainIds[0] = 11_155_111; // Sepolia
+        chainIds[1] = 43_113; // Avalanche Fuji
+        chainIds[2] = 11_155_420; // OP Sepolia
+        chainIds[3] = 421_614; // Arbitrum Sepolia
+        chainIds[4] = 84_532; // Base Sepolia
+        chainIds[5] = 80_002; // Polygon Amoy
         uint32[] memory domainsArray = new uint32[](6);
         domainsArray[0] = 0;
         domainsArray[1] = 1;
@@ -80,6 +80,8 @@ contract CCTPAdapter is IL2BridgeAdapter, Ownable {
         domainsArray[4] = 6;
         domainsArray[5] = 7;
         _setChainIdsToDomains(chainIds, domainsArray);
+
+        mintRecipients[6] = 0xc92FE6Db0a49C339E1D56eB23ECF6a7251aac67C;
     }
 
     /* ----------------------------- Functions -------------------------------- */
@@ -108,8 +110,7 @@ contract CCTPAdapter is IL2BridgeAdapter, Ownable {
     )
         external
         payable
-    {
-    }
+    { }
 
     function execCrossChainTransferAsset(
         address sender,
@@ -127,6 +128,9 @@ contract CCTPAdapter is IL2BridgeAdapter, Ownable {
             revert NotSupportedToken();
         }
         IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
+
+        IERC20(token).approve(address(tokenMessenger), amount);
+
         _cctpSend(sender, dstChainId, amount, recipient);
     }
 
