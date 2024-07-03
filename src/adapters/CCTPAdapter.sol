@@ -80,8 +80,6 @@ contract CCTPAdapter is IL2BridgeAdapter, Ownable {
         domainsArray[4] = 6;
         domainsArray[5] = 7;
         _setChainIdsToDomains(chainIds, domainsArray);
-
-        mintRecipients[6] = 0xc92FE6Db0a49C339E1D56eB23ECF6a7251aac67C;
     }
 
     /* ----------------------------- Functions -------------------------------- */
