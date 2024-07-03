@@ -16,6 +16,12 @@ contract CCTPAdapterScript is BaseScript {
     function run() public broadcast {
         cctpAdapter = new CCTPAdapter(broadcaster, tokenMessanger, usdc);
 
+        uint32[] memory chainIds = new uint32[](1);
+        chainIds[0] = 6;
+        address[] memory recipients = new address[](1);
+        recipients[0] = cctpReceiver;
+        cctpAdapter.setMintRecipients(chainIds, recipients);
+
         IERC20(usdc).approve(address(cctpAdapter), amount);
 
         cctpAdapter.execCrossChainTransferAsset(broadcaster, dstChainId, receipient, usdc, amount, 0, bytes(""));
