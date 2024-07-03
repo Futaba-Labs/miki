@@ -22,7 +22,7 @@ contract CCTPAdapter is IL2BridgeAdapter, Ownable {
 
     /// @notice Mapping: ChainId => MintRecipient
     /// @dev The mint recipient is the address that will receive the minted token on the destination chain
-    mapping(uint256 chainId => address recipient) public mintRecipients;
+    mapping(uint32 domain => address recipient) public mintRecipients;
 
     /// @notice Mapping: ChainId => Domain
     /// @dev A domain is a Circle-issued identifier for a blockchain where CCTP contracts are deployed
@@ -162,11 +162,11 @@ contract CCTPAdapter is IL2BridgeAdapter, Ownable {
 
     /**
      * @notice Set the mint recipients for the supported chain ids
-     * @param _chainIds The list of chain ids
+     * @param _domains The list of domains
      * @param _recipients The list of recipients
      */
-    function setMintRecipients(uint256[] memory _chainIds, address[] memory _recipients) external onlyOwner {
-        _setMintRecipients(_chainIds, _recipients);
+    function setMintRecipients(uint32[] memory _domains, address[] memory _recipients) external onlyOwner {
+        _setMintRecipients(_domains, _recipients);
     }
 
     /* ----------------------------- Internal functions -------------------------------- */
@@ -191,20 +191,20 @@ contract CCTPAdapter is IL2BridgeAdapter, Ownable {
 
     /**
      * @notice Set the mint recipients for the supported chain ids
-     * @param _chainIds The list of chain ids
+     * @param _domains The list of domains
      * @param _recipients The list of recipients
      */
-    function _setMintRecipients(uint256[] memory _chainIds, address[] memory _recipients) internal {
-        if (_chainIds.length == 0 || _recipients.length == 0) {
+    function _setMintRecipients(uint32[] memory _domains, address[] memory _recipients) internal {
+        if (_domains.length == 0 || _recipients.length == 0) {
             revert InvalidLength();
         }
 
-        if (_chainIds.length != _recipients.length) {
+        if (_domains.length != _recipients.length) {
             revert MismatchedLength();
         }
 
-        for (uint256 i; i < _chainIds.length; i++) {
-            mintRecipients[_chainIds[i]] = _recipients[i];
+        for (uint256 i; i < _domains.length; i++) {
+            mintRecipients[_domains[i]] = _recipients[i];
         }
     }
 
