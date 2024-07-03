@@ -8,12 +8,14 @@ interface ICCTPReceiver {
     // @param _recipient - the final recipient of tokens
     // @param _srcChainId - the source chain id for MikiReceiver
     // @param _srcAddress - the source address for MikiReceiver
+    // @param _mikiMessage - the message to be validated by MikiReceiver
     function cctpReceive(
         bytes calldata _message,
         bytes calldata _attestation,
         address _recipient,
         uint256 _srcChainId,
-        address _srcAddress
+        address _srcAddress,
+        bytes calldata _mikiMessage
     )
         external;
 }

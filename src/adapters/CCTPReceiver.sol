@@ -22,7 +22,7 @@ contract CCTPReceiver is ICCTPReceiver, Ownable {
     /* ----------------------------- Events -------------------------------- */
 
     event MessageReceived(
-        bytes message, bytes attestation, address appReceiver, uint256 srcChainId, address srcAddress
+        bytes message, bytes attestation, address appReceiver, uint256 srcChainId, address srcAddress, bytes mikiMessage
     );
 
     /* ----------------------------- Errors -------------------------------- */
@@ -59,17 +59,17 @@ contract CCTPReceiver is ICCTPReceiver, Ownable {
         bytes calldata _attestation,
         address _appReceiver,
         uint256 _srcChainId,
-        address _srcAddress
+        address _srcAddress,
+        bytes calldata _mikiMessage
     )
         external
     {
         messageTransmitter.receiveMessage(_message, _attestation);
         uint256 amount = token.balanceOf(address(this)); // TODO: check if this is the correct way to get the amount
         bytes32 _id = keccak256(abi.encodePacked(_message, _attestation)); // just a random id just used in mikiReceive
-            // for now
 
-        mikiReceiver.mikiReceive(_srcChainId, _srcAddress, _appReceiver, address(token), amount, _message, _id);
-        emit MessageReceived(_message, _attestation, _appReceiver, _srcChainId, _srcAddress);
+        mikiReceiver.mikiReceive(_srcChainId, _srcAddress, _appReceiver, address(token), amount, _mikiMessage, _id);
+        emit MessageReceived(_message, _attestation, _appReceiver, _srcChainId, _srcAddress, _mikiMessage);
     }
 
     /* ----------------------------- Internal functions -------------------------------- */
