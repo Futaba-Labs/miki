@@ -2,7 +2,7 @@
 pragma solidity 0.8.23;
 
 import { ETHTokenPool } from "./ETHTokenPool.sol";
-import { GelatoRelayContextERC2771 } from "@gelatonetwork/relay-context/contracts/GelatoRelayContextERC2771.sol";
+import { GelatoRelayContextERC2771 } from "@miki/gelato-relay-context/contracts/GelatoRelayContextERC2771.sol";
 
 contract GaslessETHTokenPool is ETHTokenPool, GelatoRelayContextERC2771 {
     /* ----------------------------- Events -------------------------------- */

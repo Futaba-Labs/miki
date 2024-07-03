@@ -127,7 +127,6 @@ contract MikiReceiver is Ownable, IMikiReceiver {
         external
         payable
     {
-        /// @dev Check if the provided appReceiver is an authorized adapter
         if (!adapters[msg.sender]) {
             revert InvalidAdapter();
         }

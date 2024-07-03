@@ -167,7 +167,7 @@ contract ETHTokenPool is TokenPoolBase {
         bytes memory payload = _buildPayload(id, data);
 
         bridgeAdapter.execCrossChainContractCallWithAsset{ value: total }(
-            user, dstChainId, recipient, underlyingToken, payload, fee, amount, params
+            user, dstChainId, recipient, underlyingToken, payload, fee, amount, abi.encodePacked(id)
         );
 
         _afterBridge(user, total);
@@ -200,12 +200,13 @@ contract ETHTokenPool is TokenPoolBase {
 
         uint256 total = fee + amount;
 
+        bytes32 id = _extractId(user, dstChainId, recipient, bytes(""));
+
         bridgeAdapter.execCrossChainTransferAsset{ value: total }(
-            user, dstChainId, recipient, underlyingToken, fee, amount, params
+            user, dstChainId, recipient, underlyingToken, fee, amount, abi.encodePacked(id)
         );
 
         _afterBridge(user, total);
-        bytes32 id = _extractId(user, dstChainId, recipient, bytes(""));
 
         emit CrossChainTransferAsset(id, user, dstChainId, recipient, underlyingToken, fee, amount);
     }

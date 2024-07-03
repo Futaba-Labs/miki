@@ -85,7 +85,7 @@ contract ETHTokenPoolTest is PRBTest, StdCheats {
 
         // Set the miki receiver.
         address[] memory adapters = new address[](1);
-        adapters[0] = address(mikiReceiver);
+        adapters[0] = address(bridgeReceiverMock);
         vm.prank(owner);
         mikiReceiver.setAdapters(adapters);
     }

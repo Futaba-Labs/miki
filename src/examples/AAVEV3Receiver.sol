@@ -6,7 +6,7 @@ import { IMikiAppReceiver } from "../interfaces/IMikiAppReceiver.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IAToken } from "@aave/core-v3/contracts/interfaces/IAToken.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { GelatoRelayContextERC2771 } from "@gelatonetwork/relay-context/contracts/GelatoRelayContextERC2771.sol";
+import { GelatoRelayContextERC2771 } from "@miki/gelato-relay-context/contracts/GelatoRelayContextERC2771.sol";
 import { IAllowanceTransfer } from "../interfaces/IAllowanceTransfer.sol";
 import { ISampleAMM } from "../interfaces/ISampleAMM.sol";
 import { IWETH } from "../interfaces/IWETH.sol";

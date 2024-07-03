@@ -16,6 +16,8 @@ do
     else
       forge script script/Deploy.s.sol --rpc-url $item --broadcast --verify -vvvv --via-ir --ffi --private-key ${PRIVATE_KEY} --legacy --with-gas-price 3000000000
     fi
+  elif [ "${item}" = "zksync_sepolia" ]; then
+    yarn hardhat deploy-zksync --script deployZksync.ts --network zkSyncTestnet
   else
     forge script script/Deploy.s.sol --rpc-url $item --broadcast --verify -vvvv --via-ir --ffi --private-key ${PRIVATE_KEY}
   fi

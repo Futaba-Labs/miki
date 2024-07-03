@@ -40,13 +40,16 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
 
     /**
      * @notice Event: Transfer miki router
+     * @param id The id of the transfer
      * @param sender The sender address
      * @param dstChainId The destination chain id
      * @param recipient The recipient address
      * @param amount The amount of the asset
      * @param message The message of the cross chain contract call
      */
-    event TransferMikiRouter(address sender, uint256 dstChainId, address recipient, uint256 amount, bytes message);
+    event TransferMikiRouter(
+        bytes32 id, address sender, uint256 dstChainId, address recipient, uint256 amount, bytes message
+    );
 
     event TransferOrbiterMaker(address sender, uint256 dstChainId, address recipient, uint256 amount, bytes data);
 
@@ -127,16 +130,17 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         bytes calldata message,
         uint256 fee,
         uint256 amount,
-        bytes calldata
+        bytes calldata params
     )
         external
         payable
     {
         bytes memory _payload = abi.encode(sender, recipient, message);
+        bytes32 id = abi.decode(params, (bytes32));
 
         payable(mikiRouter).transfer(amount + fee);
 
-        emit TransferMikiRouter(sender, dstChainId, recipient, amount, _payload);
+        emit TransferMikiRouter(id, sender, dstChainId, recipient, amount, _payload);
     }
 
     /**
@@ -153,25 +157,15 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         address,
         uint256,
         uint256 amount,
-        bytes calldata
+        bytes calldata params
     )
         external
         payable
     {
-        uint16 code = identificationCodes[dstChainId];
+        bytes32 id = abi.decode(params, (bytes32));
+        payable(mikiRouter).transfer(amount);
 
-        if (code == 0) {
-            revert InvalidCode();
-        }
-
-        uint256 totalAmount = amount + code;
-
-        bytes memory data = abi.encodePacked(string.concat("t=0x", _stringToHex(string(abi.encodePacked(recipient)))));
-
-        // Decoding results in "t={recipient}"
-        IOrbiterXRouterV3(orbiterRouter).transfer{ value: totalAmount }(orbiterMaker, data);
-
-        emit TransferOrbiterMaker(sender, dstChainId, recipient, totalAmount, data);
+        emit TransferMikiRouter(id, sender, dstChainId, recipient, amount, bytes(""));
     }
 
     /**
