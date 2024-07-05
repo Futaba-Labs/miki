@@ -65,6 +65,7 @@
     "deploy:cctp-adapter": "./bin/deploy_cctp_adapter.sh",
     "deploy:cctp-receiver": "./bin/deploy_cctp_receiver.sh",
     "deploy:miki-router-receiver": "./bin/deploy_miki_router_receiver.sh",
+    "deploy:empty-app-receiver": "./bin/deploy_empty_app_receiver.sh",
     "upgrade-contracts": "./bin/upgrade.sh",
     "format": "forge fmt",
     "coverage": "forge coverage",
