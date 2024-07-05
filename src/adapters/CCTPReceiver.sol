@@ -25,6 +25,10 @@ contract CCTPReceiver is ICCTPReceiver, Ownable {
         bytes message, bytes attestation, address appReceiver, uint256 srcChainId, address srcAddress, bytes mikiMessage
     );
 
+    event FailedMessageReceived(
+        address appReceiver, uint256 srcChainId, address srcAddress, bytes mikiMessage, string reason
+    );
+
     /* ----------------------------- Errors -------------------------------- */
 
     /* ----------------------------- Constructor -------------------------------- */
@@ -66,10 +70,16 @@ contract CCTPReceiver is ICCTPReceiver, Ownable {
     {
         messageTransmitter.receiveMessage(_message, _attestation);
         uint256 amount = token.balanceOf(address(this)); // TODO: check if this is the correct way to get the amount
-        bytes32 _id = keccak256(abi.encodePacked(_message, _attestation)); // just a random id just used in mikiReceive
+        bytes32 _id = bytes32(0);
 
-        mikiReceiver.mikiReceive(_srcChainId, _srcAddress, _appReceiver, address(token), amount, _mikiMessage, _id);
-        emit MessageReceived(_message, _attestation, _appReceiver, _srcChainId, _srcAddress, _mikiMessage);
+        try mikiReceiver.mikiReceive(_srcChainId, _srcAddress, _appReceiver, address(token), amount, _mikiMessage, _id)
+        {
+            emit MessageReceived(_message, _attestation, _appReceiver, _srcChainId, _srcAddress, _mikiMessage);
+        } catch Error(string memory reason) {
+            emit FailedMessageReceived(_appReceiver, _srcChainId, _srcAddress, _mikiMessage, reason);
+        } catch {
+            emit FailedMessageReceived(_appReceiver, _srcChainId, _srcAddress, _mikiMessage, "Unknown error");
+        }
     }
 
     /* ----------------------------- Internal functions -------------------------------- */
