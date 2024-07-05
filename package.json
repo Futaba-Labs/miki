@@ -74,6 +74,8 @@
     "cross-chain-mint": "./bin/cross_chain_mint.sh",
     "cross-chain-deposit": "./bin/cross_chain_deposit.sh",
     "cross-chain-bridge": "./bin/cross_chain_bridge.sh",
-    "cctp-attestation": "./bin/cctp_attestation.sh"
+    "cctp-attestation": "./bin/cctp_attestation.sh",
+    "cctp-exec-adapter": "./bin/cctp_exec_adapter.sh",
+    "cctp-exec-receiver": "./bin/cctp_exec_receiver.sh"
   }
 }
