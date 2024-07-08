@@ -158,6 +158,7 @@ contract MikiReceiver is Ownable, IMikiReceiver {
                 ) {
                     emit SentMsgAndToken(id, srcChainId, srcAddress, address(0), appReceiver, amount, message);
                 } catch Error(string memory reason) {
+                    // solhint-disable-next-line
                     emit FailedMsgAndToken(id, srcChainId, srcAddress, address(0), appReceiver, amount, message, reason);
                 } catch {
                     emit FailedMsgAndToken(
