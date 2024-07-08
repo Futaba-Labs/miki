@@ -29,13 +29,16 @@
     "@nomicfoundation/hardhat-verify": "^2.0.8",
     "@openzeppelin/contracts-upgradeable": "^5.0.2",
     "@prb/test": "^0.6.4",
+    "@typechain/ethers-v6": "^0.5.1",
     "dotenv": "^16.4.5",
+    "ethers": "^6.13.1",
     "forge-std": "github:foundry-rs/forge-std#v1.7.5",
     "ky": "^1.4.0",
     "prettier": "^3.0.0",
     "solhint": "^3.6.2",
     "solidity-bytes-utils": "^0.8.2",
     "ts-node": "^10.9.2",
+    "typechain": "^8.3.2",
     "typescript": "^5.5.2"
   },
   "keywords": [
@@ -78,6 +81,7 @@
     "cross-chain-bridge": "./bin/cross_chain_bridge.sh",
     "cctp-attestation": "./bin/cctp_attestation.sh",
     "cctp-exec-adapter": "./bin/cctp_exec_adapter.sh",
-    "cctp-exec-receiver": "./bin/cctp_exec_receiver.sh"
+    "cctp-exec-receiver": "./bin/cctp_exec_receiver.sh",
+    "cctp:relayer:compile": "typechain --target ethers-v6 --out-dir ./src/relayers/gelato-cctp/typechain ./src/relayers/gelato-cctp/abi/*.json"
   }
 }
