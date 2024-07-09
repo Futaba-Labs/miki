@@ -109,7 +109,7 @@ contract MikiReceiver is Ownable, IMikiReceiver {
      * @dev Revert if the adapter is not registered
      * @param srcChainId The source chain id
      * @param srcAddress The source address
-     * @param receiver The receiver address
+     * @param appReceiver The appReceiver address
      * @param token The token address
      * @param amount The amount of the token
      * @param message The message
@@ -118,7 +118,7 @@ contract MikiReceiver is Ownable, IMikiReceiver {
     function mikiReceive(
         uint256 srcChainId,
         address srcAddress,
-        address receiver,
+        address appReceiver,
         address token,
         uint256 amount,
         bytes calldata message,
@@ -135,40 +135,44 @@ contract MikiReceiver is Ownable, IMikiReceiver {
         /// @dev If the amount is greater than 0, the condition is divided again when handling ERC20 or Native tokens.
         if (amount > 0) {
             if (token != address(0)) {
-                bool success = IERC20(token).transfer(receiver, amount);
+                /// @dev ERC20 token
+                /// @dev Transfer the token to the appReceiver
+                bool success = IERC20(token).transfer(appReceiver, amount);
                 if (!success) {
                     revert TransferFailed();
                 }
 
-                try IMikiAppReceiver(receiver).mikiReceive(srcChainId, srcAddress, token, amount, message) {
-                    emit SentMsgAndToken(id, srcChainId, srcAddress, token, receiver, amount, message);
+                try IMikiAppReceiver(appReceiver).mikiReceive(srcChainId, srcAddress, token, amount, message) {
+                    emit SentMsgAndToken(id, srcChainId, srcAddress, token, appReceiver, amount, message);
                 } catch Error(string memory reason) {
-                    emit FailedMsgAndToken(id, srcChainId, srcAddress, token, receiver, amount, message, reason);
+                    emit FailedMsgAndToken(id, srcChainId, srcAddress, token, appReceiver, amount, message, reason);
                 } catch {
                     emit FailedMsgAndToken(
-                        id, srcChainId, srcAddress, token, receiver, amount, message, "Unknown error"
+                        id, srcChainId, srcAddress, token, appReceiver, amount, message, "Unknown error"
                     );
                 }
             } else {
-                try IMikiAppReceiver(receiver).mikiReceive{ value: amount }(
+                /// @dev Native token
+                try IMikiAppReceiver(appReceiver).mikiReceive{ value: amount }(
                     srcChainId, srcAddress, token, amount, message
                 ) {
-                    emit SentMsgAndToken(id, srcChainId, srcAddress, address(0), receiver, amount, message);
+                    emit SentMsgAndToken(id, srcChainId, srcAddress, address(0), appReceiver, amount, message);
                 } catch Error(string memory reason) {
-                    emit FailedMsgAndToken(id, srcChainId, srcAddress, address(0), receiver, amount, message, reason);
+                    // solhint-disable-next-line
+                    emit FailedMsgAndToken(id, srcChainId, srcAddress, address(0), appReceiver, amount, message, reason);
                 } catch {
                     emit FailedMsgAndToken(
-                        id, srcChainId, srcAddress, address(0), receiver, amount, message, "Unknown error"
+                        id, srcChainId, srcAddress, address(0), appReceiver, amount, message, "Unknown error"
                     );
                 }
             }
         } else {
-            try IMikiAppReceiver(receiver).mikiReceiveMsg(srcChainId, srcAddress, message) {
-                emit SentMsg(id, srcChainId, srcAddress, receiver, message);
+            try IMikiAppReceiver(appReceiver).mikiReceiveMsg(srcChainId, srcAddress, message) {
+                emit SentMsg(id, srcChainId, srcAddress, appReceiver, message);
             } catch Error(string memory reason) {
-                emit FailedMsg(id, srcChainId, srcAddress, receiver, message, reason);
+                emit FailedMsg(id, srcChainId, srcAddress, appReceiver, message, reason);
             } catch {
-                emit FailedMsg(id, srcChainId, srcAddress, receiver, message, "Unknown error");
+                emit FailedMsg(id, srcChainId, srcAddress, appReceiver, message, "Unknown error");
             }
         }
     }

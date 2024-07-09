@@ -24,3 +24,5 @@ broadcast/*/31337/
 artifacts-zk
 cache-zk
 deployments-zk
+
+typechain
