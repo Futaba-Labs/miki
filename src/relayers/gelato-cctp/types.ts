@@ -1,5 +1,3 @@
-import { AuthorizationStruct } from "./typechain/contracts/GelatoCCTPReceiver";
-
 export enum TaskState {
   CheckPending = "CheckPending",
   ExecPending = "ExecPending",
@@ -25,10 +23,10 @@ export interface IAttestation {
 
 export interface ITransfer {
   owner: string;
-  maxFee: bigint;
-  domain: number;
+  chainId: number;
   message: string;
-  authorization: AuthorizationStruct;
+  mikiMessage: string;
+  appReceiver: string;
   state: TransferState;
   expiry: number;
   attestation?: string;

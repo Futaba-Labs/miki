@@ -2,6 +2,7 @@ export const TWO_HOURS = 2 * 60 * 60 * 1000;
 
 interface INetwork {
   domain: number;
+  chainId: number;
   mikiCCTPAdapter: string;
   mikiCCTPReceiver: string;
   circleTokenMessenger: string;
@@ -17,6 +18,7 @@ export enum ChainId {
 export const NETWORKS: { [id in ChainId]: INetwork } = {
   [ChainId.Arbitrum]: {
     domain: 3,
+    chainId: ChainId.Arbitrum,
     mikiCCTPAdapter: "0x330F25c20621dE38132516dcC9C7C49982B37A23",
     mikiCCTPReceiver: "",
     circleTokenMessenger: "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5",
@@ -25,6 +27,7 @@ export const NETWORKS: { [id in ChainId]: INetwork } = {
   },
   [ChainId.Base]: {
     domain: 6,
+    chainId: ChainId.Base,
     mikiCCTPAdapter: "",
     mikiCCTPReceiver: "0x1d3E172C336D782B7d3869A9541b039DA376AA5C",
     circleTokenMessenger: "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5",

@@ -5,7 +5,7 @@ import { ChainId, NETWORKS } from "./constants";
 import { TWO_HOURS } from "./constants";
 import { ethers } from "ethers";
 import { Web3Function, Web3FunctionContext } from "@gelatonetwork/web3-functions-sdk";
-import { IMessageTransmitter__factory, GelatoCCTPReceiver__factory, GelatoCCTPSender__factory } from "./typechain";
+import { IMessageTransmitter__factory, CCTPAdapter__factory, CCTPReceiver__factory } from "./typechain";
 
 // eslint-disable-next-line
 (BigInt.prototype as any).toJSON = function () {
@@ -48,9 +48,9 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
 
   const circleMessageTransmitter = IMessageTransmitter__factory.connect(network.circleMessageTransmitter, runner);
 
-  const gelatoCCTPReceiver = GelatoCCTPReceiver__factory.connect(network.gelatoCCTPReceiver, runner);
+  const mikiCCTPAdapter = CCTPAdapter__factory.connect(network.mikiCCTPAdapter, runner);
 
-  const gelatoCCTPSender = GelatoCCTPSender__factory.connect(network.gelatoCCTPSender, runner);
+  const mikiCCTPReceiver = CCTPReceiver__factory.connect(network.mikiCCTPReceiver, runner);
 
   // query the state of all relayed transfers and mark successful transfers as confirmed
   // retry failed transfers by marking them as pending relay request
@@ -85,26 +85,22 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
     currentBlock,
   );
 
-  const gelatoDepositForBurns = await gelatoCCTPSender.queryFilter(
-    gelatoCCTPSender.filters.DepositForBurn,
-    lastBlock + 1,
-    currentBlock,
-  );
+  const mikiCCTPSend = await mikiCCTPAdapter.queryFilter(mikiCCTPAdapter.filters.CCTPSend, lastBlock + 1, currentBlock);
 
-  // both MessageTransmitter and GelatoCCTPSender emit on depositForBurn
+  // MessageTransmitter and GelatoCCTPSender emit on depositForBurn
   // every GelatoCCTPSender event corresponds to a MessageTransmitter event
   // but not every MessageTransmitter event corresponds to a GelatoCCTPSender event
   // we merge these events together based on their transactionHash
   // ths can be optimised since events are in the same order
-  const indexedTransferRequests = gelatoDepositForBurns.map((deposit): ITransfer => {
-    const message = circleMessageSents.find((message) => message.transactionHash === deposit.transactionHash)!;
+  const indexedTransferRequests = mikiCCTPSend.map((sendEvent): ITransfer => {
+    const message = circleMessageSents.find((message) => message.transactionHash === sendEvent.transactionHash)!;
 
     return {
-      owner: deposit.args.owner,
-      maxFee: deposit.args.maxFee,
-      domain: Number(deposit.args.domain),
+      owner: sendEvent.args.sender,
+      chainId: Number(sendEvent.args.dstChainId),
       message: message.args.message,
-      authorization: deposit.args.authorization,
+      mikiMessage: "", // TODO: update
+      appReceiver: "0x928842BB2aD5A2161277e62260e6AC5c5C16d6c1", // EmptyAppReceiver
       state: TransferState.PendingAttestation,
       expiry: Date.now() + TWO_HOURS,
     };
@@ -134,17 +130,31 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
     transferRequests.map(async (transferRequest, index): Promise<void> => {
       if (
         transferRequest.state !== TransferState.PendingRelayRequest ||
-        transferRequest.domain !== network.domain ||
+        transferRequest.chainId !== network.chainId ||
         !transferRequest.attestation
       )
         return;
 
-      const receiveMessage = await gelatoCCTPReceiver.receiveMessage.populateTransaction(
-        transferRequest.owner,
-        transferRequest.maxFee,
+      /*
+       * function cctpReceive(
+       *  bytes calldata _message,
+       *  bytes calldata _attestation,
+       *  address _appReceiver,
+       *  uint256 _srcChainId,
+       *  address _srcAddress,
+       *  bytes calldata _mikiMessage
+       * )
+       */
+
+      // TODO: update to dynamic
+
+      const receiveMessage = await mikiCCTPReceiver.cctpReceive.populateTransaction(
         transferRequest.message,
         transferRequest.attestation,
-        transferRequest.authorization,
+        transferRequest.appReceiver,
+        transferRequest.chainId,
+        transferRequest.owner,
+        transferRequest.mikiMessage,
       );
 
       const request: CallWithSyncFeeRequest = {
@@ -190,7 +200,7 @@ Web3Function.onRun(async (context: Web3FunctionContext) => {
   const message =
     `network: ${ChainId[Number(chainId) as ChainId]}, ` +
     `processed: ${currentBlock - lastBlock}, ` +
-    `indexed: ${gelatoDepositForBurns.length}, ` +
+    `indexed: ${indexedTransferRequests.length}, ` +
     `attesting: ${stateCount[TransferState.PendingAttestation]}, ` +
     `executed: ${stateCount[TransferState.PendingConfirmation]}, ` +
     `confirmed: ${stateCount[TransferState.Confirmed]}`;
