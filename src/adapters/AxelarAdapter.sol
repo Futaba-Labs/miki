@@ -42,7 +42,7 @@ contract AxelarAdapter is IL2BridgeAdapter, AxelarExecutable, Ownable {
         address recipient,
         bytes calldata message,
         uint256 fee,
-        bytes calldata params
+        bytes calldata
     )
         external
         payable
@@ -52,7 +52,7 @@ contract AxelarAdapter is IL2BridgeAdapter, AxelarExecutable, Ownable {
         string memory destinationAddress = chainIdToReceiver[dstChainId];
 
         IAxelarGasService(axelarGasService).payNativeGasForContractCall{ value: fee }(
-            msg.sender, dstChainDomain, destinationAddress, payload, msg.sender
+            address(this), dstChainDomain, destinationAddress, payload, msg.sender
         );
         gateway.callContract(dstChainDomain, destinationAddress, payload);
     }

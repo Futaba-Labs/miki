@@ -19,6 +19,13 @@ fs_permissions = [
   { access = "read-write", path = "constants/deployment.json" },
 ]
 
+# [profile.zksync]
+# src = 'src'
+# libs = ['lib']
+# fallback_oz = true
+# is_system = false
+# mode = "3"
+
 [profile.ci]
 fuzz = { runs = 10_000 }
 verbosity = 4
@@ -37,7 +44,14 @@ arbitrum_sepolia = { key = "${API_KEY_ARBISCAN}", url = "https://api-sepolia.arb
 optimism_sepolia = { key = "${API_KEY_OPTIMISTIC_ETHERSCAN}", url = "https://api-sepolia-optimistic.etherscan.io/api" }
 mumbai = { key = "${API_KEY_POLYGONSCAN}", url = "https://api-testnet.polygonscan.com/api" }
 base_sepolia = { key = "${API_KEY_BASESCAN}", url = "https://api-sepolia.basescan.org/api" }
-
+scroll_sepolia = { key = "${API_KEY_SCROLLSCAN}", url = "https://api-sepolia.scrollscan.com/api" }
+blast_sepolia = { key = "${API_KEY_BLASTSCAN}", url = "https://api-sepolia.blastscan.io/api" }
+polygon_cardona = { key = "${API_KEY_POLYGON_ZKEVM}", url = "https://api-testnet-zkevm.polygonscan.com/api" }
+bnb_testnet = { key = "${API_KEY_BSCSCAN}", url = "https://api-testnet.bscscan.com/api" }
+mantle_sepolia = { key = "", url = "https://api-sepolia.mantle.xyz/api" }
+astar_zkyoto = { key = "", url = "https://api-zkyoto.astar.network/api" }
+avalanche_fuji = { key = "", url = "https://api-zkyoto.astar.network/api" }
+zksync_sepolia = { key = "${API_KEY_ZKSYNC}", url = "https://api-sepolia-era.zksync.network/api" }
 
 [fmt]
 bracket_spacing = true
@@ -58,9 +72,16 @@ goerli = "https://goerli.infura.io/v3/${API_KEY_INFURA}"
 localhost = "http://localhost:8545"
 mainnet = "https://eth-mainnet.g.alchemy.com/v2/${API_KEY_ALCHEMY}"
 optimism = "https://optimism-mainnet.infura.io/v3/${API_KEY_INFURA}"
-polygon = "https://polygon-mainnet.infura.io/v3/${API_KEY_INFURA}"
-arbitrum_sepolia = "https://arbitrum-sepolia.infura.io/v3/${API_KEY_INFURA}"
+amoy = "https://polygon-amoy.infura.io/v3/${API_KEY_INFURA}"
+arbitrum_sepolia = "https://arb-sepolia.g.alchemy.com/v2/O5jQ7VIjQuWX8Xz39wY7opqUAz3BPxM2"
 optimism_sepolia = "https://optimism-sepolia.infura.io/v3/${API_KEY_INFURA}"
 sepolia = "https://sepolia.infura.io/v3/${API_KEY_INFURA}"
-mumbai = "https://polygon-mumbai.infura.io/v3/${API_KEY_INFURA}"
-base_sepolia = "https://base-sepolia.g.alchemy.com/v2/Q1dFDcQzAvlFKv8dUZkXkojWbjiI1a_v"
+base_sepolia = "https://base-sepolia.infura.io/v3/${API_KEY_INFURA}"
+zksync_sepolia = "https://sepolia.era.zksync.dev"
+scroll_sepolia = "https://scroll-public.scroll-testnet.quiknode.pro"
+mantle_sepolia = "https://rpc.sepolia.mantle.xyz"
+astar_zkyoto = "https://rpc.startale.com/zkyoto"
+blast_sepolia = "https://blast-sepolia.infura.io/v3/${API_KEY_INFURA}"
+polygon_cardona = "https://rpc.cardona.zkevm-rpc.com"
+bnb_testnet = "https://bsc-testnet-rpc.publicnode.com"
+avalanche_fuji = "https://avalanche-fuji-c-chain-rpc.publicnode.com"

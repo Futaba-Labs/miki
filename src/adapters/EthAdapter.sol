@@ -40,13 +40,18 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
 
     /**
      * @notice Event: Transfer miki router
+     * @param id The id of the transfer
      * @param sender The sender address
      * @param dstChainId The destination chain id
      * @param recipient The recipient address
      * @param amount The amount of the asset
      * @param message The message of the cross chain contract call
      */
-    event TransferMikiRouter(address sender, uint256 dstChainId, address recipient, uint256 amount, bytes message);
+    event TransferMikiRouter(
+        bytes32 id, address sender, uint256 dstChainId, address recipient, uint256 amount, bytes message
+    );
+
+    event TransferOrbiterMaker(address sender, uint256 dstChainId, address recipient, uint256 amount, bytes data);
 
     /* ----------------------------- Errors -------------------------------- */
     /// @notice Error: Invalid length
@@ -69,6 +74,7 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
      */
     constructor(
         address _orbiterRouter,
+        address _orbiterMaker,
         address payable _mikiRouter,
         address _lzAdapter,
         address _initialOwner
@@ -76,6 +82,7 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         Ownable(_initialOwner)
     {
         orbiterRouter = _orbiterRouter;
+        orbiterMaker = _orbiterMaker;
         mikiRouter = _mikiRouter;
         lzAdapter = _lzAdapter;
     }
@@ -123,16 +130,17 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
         bytes calldata message,
         uint256 fee,
         uint256 amount,
-        bytes calldata
+        bytes calldata params
     )
         external
         payable
     {
         bytes memory _payload = abi.encode(sender, recipient, message);
+        bytes32 id = abi.decode(params, (bytes32));
 
         payable(mikiRouter).transfer(amount + fee);
 
-        emit TransferMikiRouter(sender, dstChainId, recipient, amount, _payload);
+        emit TransferMikiRouter(id, sender, dstChainId, recipient, amount, _payload);
     }
 
     /**
@@ -143,27 +151,21 @@ contract EthAdapter is IL2BridgeAdapter, Ownable {
      * @param amount The amount of the asset
      */
     function execCrossChainTransferAsset(
-        address,
+        address sender,
         uint256 dstChainId,
         address recipient,
         address,
         uint256,
         uint256 amount,
-        bytes calldata
+        bytes calldata params
     )
         external
         payable
     {
-        uint16 code = identificationCodes[dstChainId];
+        bytes32 id = abi.decode(params, (bytes32));
+        payable(mikiRouter).transfer(amount);
 
-        if (code == 0) {
-            revert InvalidCode();
-        }
-
-        // Decoding results in "t={recipient}"
-        IOrbiterXRouterV3(orbiterRouter).transfer{ value: amount }(
-            orbiterMaker, abi.encodePacked(string.concat("t=0x", _stringToHex(string(abi.encodePacked(recipient)))))
-        );
+        emit TransferMikiRouter(id, sender, dstChainId, recipient, amount, bytes(""));
     }
 
     /**

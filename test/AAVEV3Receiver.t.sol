@@ -57,7 +57,7 @@ contract AAVEV3ReceiverTest is PRBTest, StdCheats {
         anotherErc20.mint(owner, 11_000 ether);
 
         vm.startPrank(owner);
-        adapters = [address(mikiReceiver)];
+        adapters = [address(bridgeReceiver)];
         mikiReceiver.setAdapters(adapters);
         aaveReceiver.setTokenPool(address(erc20), address(aToken), address(pool));
 
